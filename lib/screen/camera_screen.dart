@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import '../api/ImageUploadApi.dart';
 import '../widget/cameraoverlay.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -117,6 +118,14 @@ class _CameraScreenState extends State<CameraScreen> {
       });
 
       final String fulltext = recognizedText.text;
+      // Upload image after text recognition
+      final uploaded = await ImageuploadApi.uploadImage(File(path));
+      if (!uploaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image.')),
+        );
+      }
+
 
       if (captureMode == 'single') {
         final ok = await Navigator.push<bool>(

@@ -5,6 +5,11 @@ class AppApiConst {
 
   ///Login
   static String login = '$baseUrl/auth/login';
+
+//   group
+static String groupget = '$baseUrl/group/getgroup';
+static String tagget = '$baseUrl/tag/gettag';
+static String imageupload = '$baseUrl/card/uploadcard';
 }
 
 const IS_LOGGED_IN = 'IS_LOGGED_IN';
