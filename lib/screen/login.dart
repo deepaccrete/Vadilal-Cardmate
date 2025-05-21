@@ -1,10 +1,18 @@
+import 'dart:convert';
+
+import 'package:camera_app/api/AuthAPI.dart';
 import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/componets/textform.dart';
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/main.dart';
+import 'package:camera_app/model/LoginModel.dart';
 import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/camera_screen.dart';
+import 'package:camera_app/util/const.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,12 +27,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final outborder = OutlineInputBorder(
     borderSide: BorderSide(color: primarycolor),
-      borderRadius: BorderRadius.circular(10));
+    borderRadius: BorderRadius.circular(10),
+  );
 
   FocusNode emaiilFocus = FocusNode();
   FocusNode passwordFocus = FocusNode();
 
   final _formkey = GlobalKey<FormState>();
+
+  String? validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+
+    if (!EmailValidator.validate(value)) {
+      return 'Enter a valid email';
+    }
+
+    // // Simple email regex
+    // final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    //
+    // if (!emailRegex.hasMatch(value)) {
+    //   return 'Enter a valid email';
+    // }
+
+    return null; // Valid
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: height * 0.15,
                     child: Text(
                       'Hello!',
-                        textAlign: TextAlign.end,
-                        textHeightBehavior: TextHeightBehavior(
-                          applyHeightToFirstAscent: false,
-                          applyHeightToLastDescent: false
-                        )
-                        ,textScaler: TextScaler.linear(1.0),
+                      textAlign: TextAlign.end,
+                      textHeightBehavior: TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
+                      ),
+                      textScaler: TextScaler.linear(1.0),
                       // textAlign: TextAlign.center,
                       style: GoogleFonts.rubik(
                         fontSize: 90,
@@ -126,37 +154,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: 10),
                           TextFormField(
-                             controller: emailController,
-                             obscureText: false,
-                             focusNode: emaiilFocus,
-                             onFieldSubmitted: (value) {
-                               FocusScope.of(
-                                 context,
-                               ).requestFocus(passwordFocus);
-                             },
-                             validator: (value) {
-                               if (value == null || value.isEmpty) {
-                                 return "Please Enter Email";
-                               }
-                             },
-                             decoration: InputDecoration(
-                               filled: true,
-                               contentPadding: EdgeInsets.all(5),
-                               fillColor: Colors.white,
-                               focusColor: Colors.white,
-                               hintText: 'Enter Email Address',
-                               // label: Icon(Icons.email_outlined,color: primarycolor,),
-                               prefixIcon: Icon(
-                                 Icons.email_outlined,
-                                 color: primarycolor,
-                               ),
-                               enabledBorder: outborder,
-                               disabledBorder: outborder,
-                               focusedBorder: outborder,
-                               errorBorder: outborder,
-                               focusedErrorBorder: outborder,
-                             ),
-                           ),
+                            controller: emailController,
+                            obscureText: false,
+                            focusNode: emaiilFocus,
+                            onFieldSubmitted: (value) {
+                              FocusScope.of(
+                                context,
+                              ).requestFocus(passwordFocus);
+                            },
+
+                            validator: validateEmail,
+                            // validator: (value) {
+                            //   if (value == null || value.isEmpty) {
+                            //     return "Please Enter Email";
+                            //   }
+                            // },
+                            decoration: InputDecoration(
+                              filled: true,
+                              contentPadding: EdgeInsets.all(5),
+                              fillColor: Colors.white,
+                              focusColor: Colors.white,
+                              hintText: 'Enter Email Address',
+                              // label: Icon(Icons.email_outlined,color: primarycolor,),
+                              prefixIcon: Icon(
+                                Icons.email_outlined,
+                                color: primarycolor,
+                              ),
+                              enabledBorder: outborder,
+                              disabledBorder: outborder,
+                              focusedBorder: outborder,
+                              errorBorder: outborder,
+                              focusedErrorBorder: outborder,
+                            ),
+                          ),
 
                           SizedBox(height: 20),
                           Text(
@@ -179,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 validator: (value) {
                                   if (value == null ||
                                       value.isEmpty ||
-                                      value.length < 6) {
+                                      value.length < 4) {
                                     return "Please Enter Password";
                                     // :"Please enter "
                                   }
@@ -202,8 +232,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   suffixIcon: GestureDetector(
                                     onTap: () {
-                                      obsecurepass.value =
-                                          !obsecurepass.value;
+                                      obsecurepass.value = !obsecurepass.value;
                                     },
                                     child:
                                         obsecurepass.value == true
@@ -235,14 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: height * 0.07,
                               width: width * 0.75,
                               onTap: () {
-                                if (_formkey.currentState!.validate()) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Bottomnav(),
-                                    ),
-                                  );
-                                }
+                                loginReq();
                               },
                               child: Text(
                                 'LOG IN',
@@ -279,5 +301,44 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  loginReq() async {
+    if (_formkey.currentState!.validate()) {
+      try {
+        final loginResponse = await AuthApi.login(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        if (loginResponse.success == 1) {
+          SharedPreferences pref = await SharedPreferences.getInstance();
+          await pref.setString(TOKEN, loginResponse.userData?.token ?? '');
+          await pref.setBool(IS_LOGGED_IN, true);
+          String userDetailsString = jsonEncode(loginResponse.userData);
+          await pref.setString(USER_DETAIL, userDetailsString);
+          appStore.setUserToken(loginResponse.userData?.token);
+          appStore.setIsLogin(true);
+          appStore.setUser(loginResponse.userData);
+
+          print("Login success");
+          //
+          // if (!context.mounted) return;
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Bottomnav()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(loginResponse.msg ?? 'Invalid credentials')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred. Please try again.')),
+        );
+      }
+    }
   }
 }

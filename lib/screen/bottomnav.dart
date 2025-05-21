@@ -7,8 +7,8 @@ import 'package:camera_app/screen/search.dart';
 import 'package:flutter/material.dart';
 
 class Bottomnav extends StatefulWidget {
-  const Bottomnav({super.key});
-
+  final String? Token ;
+  const Bottomnav({super.key, this.Token});
   @override
   State<Bottomnav> createState() => _BottomnavState();
 }
@@ -28,7 +28,7 @@ class _BottomnavState extends State<Bottomnav> {
   Widget _getSelectedScreen(int index){
     switch (index) {
       case 0:
-          return HomeScreen();
+          return HomeScreen(token: widget.Token,);
       case 1:
           return  SearchScreen();
       case 2:

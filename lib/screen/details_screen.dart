@@ -19,7 +19,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return Scaffold(
       backgroundColor: screenBGColor,
       appBar: AppBar(
-        elevation: 5,
+        surfaceTintColor: Colors.transparent, // <- This disables tinting
+        shadowColor: Colors.black.withValues(alpha: 1), // manually define shadow
+        elevation: 10,
         backgroundColor: screenBGColor,
         centerTitle: true,
         automaticallyImplyLeading: false,

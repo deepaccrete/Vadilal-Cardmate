@@ -4,7 +4,12 @@ import 'package:camera_app/screen/groupandtags.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/login.dart';
 import 'package:camera_app/screen/splash.dart';
+import 'package:camera_app/store/appStore.dart';
 import 'package:flutter/material.dart';
+
+
+final appStore = AppStore();
+
 
 void main() {
   runApp(const MyApp());

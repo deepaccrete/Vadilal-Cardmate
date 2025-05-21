@@ -29,8 +29,10 @@ class _EditDetailsState extends State<EditDetails> {
     return Scaffold(
       backgroundColor: screenBGColor,
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent, // <- This disables tinting
+        shadowColor: Colors.black.withValues(alpha: 1), // manually define shadow
         backgroundColor: screenBGColor,
-        // elevation:5,
+        elevation:10,
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: IconButton(
@@ -63,9 +65,13 @@ class _EditDetailsState extends State<EditDetails> {
               Center(
                 child: Container(
                   alignment: Alignment.center,
-                  color: Colors.grey.shade300,
                   height: height * 0.2,
-                  width: width * 0.65,
+                  width: width * 0.6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey.shade300,
+
+                  ),
                   child: Icon(Icons.image, color: Colors.grey),
                 ),
               ),
@@ -85,11 +91,12 @@ class _EditDetailsState extends State<EditDetails> {
               ),
 
               Card(
-                elevation: 10,
+                // surfaceTintColor: Colors.transparent, // <- This disables tinting
+                shadowColor: Colors.black.withValues(alpha: 1,), // manually define shadow
+                elevation: 20,
                 color: Colors.black,
                 child: Container(
                   color: screenBGColor,
-
                   padding: EdgeInsets.all(5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

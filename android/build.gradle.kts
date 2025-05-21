@@ -19,3 +19,17 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+//////////////////// 🔧 ADD THIS FIX BLOCK BELOW ////////////////////
+//
+//subprojects {
+//    afterEvaluate { project ->
+//        if (project.name.contains("camera") ||
+//            project.name.contains("image_picker") ||
+//            project.name.contains("path_provider") ||
+//            project.name.contains("flutter_plugin_android_lifecycle")) {
+//            project.tasks.matching { it.name.contains("generateDebugUnitTestConfig") }.all {
+//                it.enabled = false
+//            }
+//        }
+//    }
+//}

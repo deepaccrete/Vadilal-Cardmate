@@ -1,10 +1,14 @@
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? token;
+
+  const HomeScreen({super.key, this.token});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -32,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             child: Column(
               children: [
-                // Name 
+                // Name
                 Row(
                   children: [
                     Container(
@@ -41,17 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         // color: Colors.red,
-                      shape: BoxShape.circle,
+                        shape: BoxShape.circle,
                         color: Colors.blue,
                       ),
                       child: Text(
-                        'D',
+                        '${appStore.userData?.firstname![0]}',
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ),
                     SizedBox(width: 10),
                     Text(
-                      'Deep Patel',
+                      '${appStore.userData?.firstname} ${appStore.userData?.lastname}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -59,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                
+
                 Divider(),
                 // Search textform
                 Row(
@@ -76,10 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: TextFormField(
                           controller: nameController,
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                            contentPadding: EdgeInsets.all(15),
                             hintText: 'Name, email, tags,etc...',
-                            hintStyle:
-                            GoogleFonts.poppins(
+                            hintStyle: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.grey,
                             ),
@@ -175,8 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: screenBGColor,
-                                borderRadius: BorderRadius.circular(10)
-                                
+
+
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               padding: EdgeInsets.all(5),
                               child: Column(
@@ -195,38 +199,45 @@ class _HomeScreenState extends State<HomeScreen> {
                                         child: Icon(
                                           Icons.image,
                                           color: Colors.white,
+                                          size: 40,
                                         ),
                                       ),
-                                      // SizedBox(width: 5),
-                                      Container(
-                                        width: width * 0.5,
-                                        // color: Colors.purple,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'XYZ Person',
-                                              textScaler: TextScaler.linear(1.2),
+                                      SizedBox(width: 20),
+                                      Expanded(
+                                        child: Container(
+                                          width: width * 0.5,
+                                          // color: Colors.purple,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'XYZ Person',
+                                                textScaler: TextScaler.linear(
+                                                  1.2,
+                                                ),
 
-                                              style: GoogleFonts.raleway(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 16,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Location of dummy, address of dummy, location map, directions to dummy',
-                                              textScaler: TextScaler.linear(1.2),
                                                 style: GoogleFonts.raleway(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 11,
-                                                color: subtext,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 16,
+                                                  color: Colors.black,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                              Text(
+                                                'Location of dummy, address of dummy, location map, directions to dummy',
+                                                textScaler: TextScaler.linear(
+                                                  1.2,
+                                                ),
+                                                style: GoogleFonts.raleway(
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 11,
+                                                  color: subtext,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -236,19 +247,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.date_range,
-                                            color: Colors.black,
-                                          ),
-                                          Text(DateTime.now().day.toString()),
-                                          SizedBox(width: 5),
-                                          Text(DateTime.now().month.toString()),
-                                          SizedBox(width: 5),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15,
+                                          top: 15,
+                                          bottom: 15,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.date_range,
+                                              color: Colors.grey,
+                                            ),
+                                            Text(
+                                              DateTime.now().day.toString(),
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                            SizedBox(width: 2),
+                                            Text(
+                                              DateTime.now().month.toString(),
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12,
+                                                color: Colors.grey.shade700,
 
-                                          Text(DateTime.now().year.toString()),
-                                        ],
+                                              ),
+                                            ),
+                                            SizedBox(width: 2),
+
+                                            Text(
+                                              DateTime.now().year.toString(),
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12,
+                                                color: Colors.grey.shade700,
+
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
 
                                       Row(
@@ -265,6 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               style: GoogleFonts.poppins(
                                                 color: Colors.white,
                                                 fontSize: 10,
+                                                fontWeight: FontWeight.w600
                                               ),
                                             ),
                                           ),

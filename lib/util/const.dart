@@ -9,3 +9,4 @@ class AppApiConst {
 
 const IS_LOGGED_IN = 'IS_LOGGED_IN';
 const TOKEN = "TOKEN";
+const USER_DETAIL= 'USER_DETAIL';

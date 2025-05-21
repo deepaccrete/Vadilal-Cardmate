@@ -91,9 +91,10 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                         width: width * 0.3,
                         height: height * 0.15,
                         decoration: BoxDecoration(
+
                           color: Colors.white,
-                          shape: BoxShape.rectangle,
-                          // borderRadius: BorderRadius.circular(10),
+                          // shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(10),
                         ),
 
                         child: Column(
@@ -106,8 +107,10 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                                 Container(
                                   padding: EdgeInsets.all(5),
                                   decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+
                                     color: Colors.blue.shade100,
-                                    shape: BoxShape.circle,
+                                    // shape: BoxShape.circle,
                                   ),
                                   child: Text(
                                     'MC',
