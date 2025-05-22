@@ -53,8 +53,7 @@ class _CameraScreenState extends State<CameraScreen> {
     setState(() => isInitialized = true);
   }
 
-
-/*  Future<void> pickImageFromGallery(BuildContext context)async{
+  /*  Future<void> pickImageFromGallery(BuildContext context)async{
     try{
       final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
           if(pickedFile == null) return;
@@ -99,9 +98,12 @@ class _CameraScreenState extends State<CameraScreen> {
 
     }
   }*/
+
   Future<void> pickImageFromGallery(BuildContext context) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
       if (pickedFile == null) return;
 
       final String path = pickedFile.path;
@@ -111,99 +113,28 @@ class _CameraScreenState extends State<CameraScreen> {
       });
 
       final inputImage = InputImage.fromFilePath(path);
-      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-
-      setState(() {
-        isProcessing = false;
-      });
-
-      final String fulltext = recognizedText.text;
-      // Upload image after text recognition
-      final uploaded = await ImageuploadApi.uploadImage(File(path));
-      if (!uploaded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image.')),
-        );
-      }
-
-
-      if (captureMode == 'single') {
-        final ok = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
-          ),
-        ) ?? false;
-
-        if (ok) Navigator.pop(context, {'front': path});
-      } else {
-        if (frontImagePath == null) {
-          frontImagePath = path;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Front image selected. Now select back image.')),
-          );
-        } else {
-          backImagePath = path;
-          final ok = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => Dualimage(frontImage: frontImagePath!, backImage: backImagePath!),
-            ),
-          ) ?? false;
-
-          if (ok) {
-            Navigator.pop(context, {'front': frontImagePath!, 'back': backImagePath!});
-          } else {
-            frontImagePath = backImagePath = null;
-          }
-        }
-      }
-    } catch (e) {
-      print('Error selecting image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image.')),
-      );
-    }
-  }
-
-
-  Future<void> takePicture(BuildContext context) async {
-    if (!controller!.value.isInitialized || isCapturing) return;
-    isCapturing = true;
-
-    try {
-      final Directory dir = await getTemporaryDirectory();
-      final String path = join(
-        dir.path,
-        '${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      print(path);
-      // Take picture and save it to the path
-      final XFile file = await controller!.takePicture();
-      await file.saveTo(path);
-
-      setState(() {
-        isProcessing = true;
-      });
-
-      // image text extract
-      final inputImage = InputImage.fromFilePath(path);
       final RecognizedText recognizedText = await textRecognizer.processImage(
         inputImage,
       );
+
       setState(() {
         isProcessing = false;
       });
+
       final String fulltext = recognizedText.text;
-      print('ocr found: $fulltext');
 
-
-
-
-      // final String fulltext = await compute(_recognizationInIsolate, path);
-      // print('ocr found: $fulltext');
 
       if (captureMode == 'single') {
+
+
+        // Upload image after text recognition
+        final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+        if (!uploaded) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+        }
+
         final ok =
             await Navigator.push<bool>(
               context,
@@ -213,15 +144,32 @@ class _CameraScreenState extends State<CameraScreen> {
               ),
             ) ??
             false;
+
         if (ok) Navigator.pop(context, {'front': path});
       } else {
         if (frontImagePath == null) {
           frontImagePath = path;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Front Captured NOw capture Back')),
+            SnackBar(
+              content: Text('Front image selected. Now select back image.'),
+            ),
           );
         } else {
           backImagePath = path;
+
+          // upload both images only when both are ready
+          final uploaded = await ImageuploadApi.uploadImage(frontImage: File(frontImagePath!),
+          backImage: File(backImagePath!)
+          );
+
+          if(!uploaded){
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Faild to upload images'))
+            );
+            frontImagePath = backImagePath = null;
+            return;
+          }
+
           final ok =
               await Navigator.push<bool>(
                 context,
@@ -245,54 +193,102 @@ class _CameraScreenState extends State<CameraScreen> {
           }
         }
       }
+    } catch (e) {
+      print('Error selecting image: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to pick image.')));
+    }
+  }
 
-      //
-      //
-      // // Navigate to the preview screen
-      // final bool confirmedPath = await Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (_) => ImagePreview(imagePath: path)),
-      // )?? false;
-      //
-      // if (!confirmedPath) {
-      //   // User chose to retake the picture
-      //   isCapturing = false;
-      //   return;
-      // }
-      //
-      // // If capturing mode is "single", return only the front image
-      // if (captureMode == "single") {
-      //   Navigator.pop(context, {'front': path});
-      // } else {
-      //   // If capturing mode is "two-side", capture both front and back images
-      //   if (!capturingBack) {
-      //     setState(() {
-      //       frontImagePath = path;
-      //       capturingBack = true;
-      //     });
-      //
-      //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Front is Captured. NOw Shoot back Side')));
-      //
-      //     isCapturing = false;
-      //     return ;
-      //     // await Future.delayed(Duration(milliseconds: 200));
-      //     // await takePicture(context);
-      //   } else {
-      //     backImagePath = path;
-      //     await Future.delayed(Duration(milliseconds: 200));
-      //     Navigator.pop(context, {
-      //       'front': frontImagePath!,
-      //       'back': backImagePath!,
-      //     });
-      //
-      //   //   reset flag for next time
-      //     setState(() {
-      //       capturingBack = false;
-      //     });
-      //   }
-      // }
+  Future<void> takePicture(BuildContext context) async {
+    if (!controller!.value.isInitialized || isCapturing) return;
+    isCapturing = true;
+
+    try {
+      final Directory dir = await getTemporaryDirectory();
+      final String path = join(
+        dir.path,
+        '${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      final XFile file = await controller!.takePicture();
+      await file.saveTo(path);
+
+      setState(() {
+        isProcessing = true;
+      });
+
+      // OCR
+      final inputImage = InputImage.fromFilePath(path);
+      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+      setState(() {
+        isProcessing = false;
+      });
+
+      final String fulltext = recognizedText.text;
+      print('OCR found: $fulltext');
+
+      if (captureMode == 'single') {
+        // ✅ Upload single image
+        final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+        if (uploaded) {
+          final ok = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
+            ),
+          ) ?? false;
+
+          if (ok) Navigator.pop(context, {'front': path});
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+        }
+      } else {
+        // two-side mode
+        if (frontImagePath == null) {
+          frontImagePath = path;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Front Captured. Now capture Back')),
+          );
+        } else {
+          backImagePath = path;
+
+          // ✅ Upload both images when back is captured
+          final uploaded = await ImageuploadApi.uploadImage(
+            frontImage: File(frontImagePath!),
+            backImage: File(backImagePath!),
+          );
+
+          if (uploaded) {
+            final ok = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => Dualimage(
+                  frontImage: frontImagePath!,
+                  backImage: backImagePath!,
+                ),
+              ),
+            ) ?? false;
+
+            if (ok) {
+              Navigator.pop(context, {
+                'front': frontImagePath!,
+                'back': backImagePath!,
+              });
+            } else {
+              frontImagePath = backImagePath = null;
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+            frontImagePath = backImagePath = null;
+          }
+        }
+      }
     } catch (e) {
       print('Error taking picture: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       isCapturing = false;
       setState(() {});
@@ -352,83 +348,92 @@ class _CameraScreenState extends State<CameraScreen> {
             bottom: 30,
             left: 0,
             right: 0,
-              // color: Colors.red,
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [modeButton("Single"), modeButton("Two-side")],
-                  ),
-                  const SizedBox(height: 16),
+            // color: Colors.red,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [modeButton("Single"), modeButton("Two-side")],
+                ),
+                const SizedBox(height: 16),
 
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        GestureDetector(
-                          onTap: (){
-                            pickImageFromGallery(context);
-                          },
-                          child: Container(
-                            child:Column(
-                              children: [
-                                Icon(Icons.image,color:  Colors.lightBlue,),
-                                Text('Image',style: GoogleFonts.inter(
-                                  color:  Colors.lightBlue,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600
-                                ),)
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        GestureDetector(
-                          onTap: () {
-                            takePicture(context);
-                          },
-                          child:isProcessing ? Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Colors.lightBlue,
-                              shape: BoxShape.circle
-                            ),
-                            child: CircularProgressIndicator(color: Colors.red,),):
-                          Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Colors.lightBlue,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.black, width: 2),
-                            ),
-                          ),
-                        ),
-
-
-                        Container(
-                          child:Column(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          pickImageFromGallery(context);
+                        },
+                        child: Container(
+                          child: Column(
                             children: [
-                              Icon(Icons.rotate_right,color:  Colors.lightBlue),
-                              Text('Rotate',style: GoogleFonts.inter(
+                              Icon(Icons.image, color: Colors.lightBlue),
+                              Text(
+                                'Image',
+                                style: GoogleFonts.inter(
                                   color: Colors.lightBlue,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w600
-                              ),)
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ],
                           ),
                         ),
+                      ),
 
-                      ],
-                    ),
+                      GestureDetector(
+                        onTap: () {
+                          takePicture(context);
+                        },
+                        child:
+                            isProcessing
+                                ? Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    color: Colors.lightBlue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.red,
+                                  ),
+                                )
+                                : Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    color: Colors.lightBlue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.black,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                      ),
+
+                      Container(
+                        child: Column(
+                          children: [
+                            Icon(Icons.rotate_right, color: Colors.lightBlue),
+                            Text(
+                              'Rotate',
+                              style: GoogleFonts.inter(
+                                color: Colors.lightBlue,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-
-
-                ],
-              ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
