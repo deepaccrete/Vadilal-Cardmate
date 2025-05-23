@@ -1,5 +1,6 @@
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
+import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,8 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? token;
+  final List<dynamic>? datalist;
 
-  const HomeScreen({super.key, this.token});
+  const HomeScreen({super.key, this.token,  this.datalist});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -71,16 +73,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     Card(
                       elevation: 10,
                       child: Container(
-                        height: height * 0.06,
+                        // height: height * 0.06,
                         width: width * 0.65,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: TextFormField(
                           controller: nameController,
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.all(15),
+                            // contentPadding: EdgeInsets.all(10),
                             hintText: 'Name, email, tags,etc...',
                             hintStyle: GoogleFonts.poppins(
                               fontSize: 12,
@@ -96,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-
+                    // icons
                     Card(
                       elevation: 10,
                       child: Container(
@@ -156,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 //     ],
                 //   ),
                 // ),
-                Container(
+             Container(
                   color: Colors.white,
                   width: width,
                   height: height * 0.6,
@@ -177,15 +179,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: screenBGColor,
-
-
+                                // color: Colors.red,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              padding: EdgeInsets.all(5),
+                              padding: EdgeInsets.all(16),
                               child: Column(
                                 children: [
                                   Row(
+                                    // crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
@@ -193,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         height: height * 0.1,
                                         width: width * 0.2,
                                         decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
+                                          // shape: BoxShape.circle,
                                           color: darkcolor,
                                         ),
                                         child: Icon(
@@ -204,116 +205,99 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                       SizedBox(width: 20),
                                       Expanded(
-                                        child: Container(
-                                          width: width * 0.5,
-                                          // color: Colors.purple,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'XYZ Person',
-                                                textScaler: TextScaler.linear(
-                                                  1.2,
-                                                ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Container(
+                                            // height: height * 0.08,
 
-                                                style: GoogleFonts.raleway(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
-                                                  color: Colors.black,
+                                            width: width * 0.5,
+                                            // color: Colors.purple,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'XYZ Person',
+                                                  textScaler: TextScaler.linear(
+                                                    1.2,
+                                                  ),
+
+                                                  style: GoogleFonts.raleway(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                'Location of dummy, address of dummy, location map, directions to dummy',
-                                                textScaler: TextScaler.linear(
-                                                  1.2,
+                                                Text(
+                                                  'Location of dummy, address of dummy, location map, directions to dummy',
+                                                  textScaler: TextScaler.linear(
+                                                    1.2,
+                                                  ),
+                                                  style: GoogleFonts.raleway(
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 11,
+                                                    color: subtext,
+                                                  ),
                                                 ),
-                                                style: GoogleFonts.raleway(
-                                                  fontWeight: FontWeight.w400,
-                                                  fontSize: 11,
-                                                  color: subtext,
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                   Divider(),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 15,
-                                          top: 15,
-                                          bottom: 15,
-                                        ),
-                                        child: Row(
+                                  Container(
+                                    // color: Colors.blueGrey,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
                                           children: [
                                             Icon(
                                               Icons.date_range,
                                               color: Colors.grey,
+                                              size: 25,
                                             ),
                                             Text(
-                                              DateTime.now().day.toString(),
+                                            "23 May 25",
                                               style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.w700,
-                                                fontSize: 12,
+                                                fontSize: 14,
                                                 color: Colors.grey.shade700,
                                               ),
                                             ),
-                                            SizedBox(width: 2),
-                                            Text(
-                                              DateTime.now().month.toString(),
-                                              style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 12,
-                                                color: Colors.grey.shade700,
 
-                                              ),
-                                            ),
-                                            SizedBox(width: 2),
-
-                                            Text(
-                                              DateTime.now().year.toString(),
-                                              style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 12,
-                                                color: Colors.grey.shade700,
-
-                                              ),
-                                            ),
                                           ],
                                         ),
-                                      ),
 
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: Text(
-                                              'General',
-                                              style: GoogleFonts.poppins(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600
+                                        Row(
+                                          children: [
+                                            Container(
+                                              // margin: EdgeInsets.all(5),
+                                              padding: EdgeInsets.all(5),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                'General',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          Icon(Icons.more_vert_outlined),
-                                        ],
-                                      ),
-                                    ],
+                                            Icon(Icons.more_vert_outlined),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -326,9 +310,212 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
+
+
+                // list
+              /*  Container(
+                  width: width,
+                  height: height *0.2,
+                  child:ListView.builder(
+                      itemCount: widget.datalist!.length,
+                      itemBuilder: (context, index){
+
+                    final data  = widget.datalist![index];
+                    return   Container(
+                           color: Colors.white,
+                           width: width,
+                           height: height * 0.6,
+                           child: Column(
+                             children: [
+                               Padding(
+                                 padding: const EdgeInsets.all(8.0),
+                                 child: Card(
+                                   elevation: 10,
+                                   child: InkWell(
+                                     onTap: () {
+                                       Navigator.push(
+                                         context,
+                                         MaterialPageRoute(
+                                           builder: (context) => DetailsScreen(),
+                                         ),
+                                       );
+                                     },
+                                     child: Container(
+                                       decoration: BoxDecoration(
+                                         color: screenBGColor,
+
+
+                                         borderRadius: BorderRadius.circular(10),
+                                       ),
+                                       padding: EdgeInsets.all(5),
+                                       child: Column(
+                                         children: [
+                                           Row(
+                                             mainAxisAlignment:
+                                                 MainAxisAlignment.spaceAround,
+                                             children: [
+                                               Container(
+                                                 height: height * 0.1,
+                                                 width: width * 0.2,
+                                                 decoration: BoxDecoration(
+                                                   shape: BoxShape.circle,
+                                                   color: darkcolor,
+                                                 ),
+                                                 child: Icon(
+                                                   Icons.image,
+                                                   color: Colors.white,
+                                                   size: 40,
+                                                 ),
+                                               ),
+                                               SizedBox(width: 20),
+                                               Expanded(
+                                                 child: Container(
+                                                   width: width * 0.5,
+                                                   // color: Colors.purple,
+                                                   child: Column(
+                                                     mainAxisAlignment:
+                                                         MainAxisAlignment.start,
+                                                     crossAxisAlignment:
+                                                         CrossAxisAlignment.start,
+                                                     children: [
+                                                       Text(
+                                                         data['name'].toString(),
+                                                         textScaler: TextScaler.linear(
+                                                           1.2,
+                                                         ),
+
+                                                         style: GoogleFonts.raleway(
+                                                           fontWeight: FontWeight.w700,
+                                                           fontSize: 16,
+                                                           color: Colors.black,
+                                                         ),
+                                                       ),
+                                                       Text(
+                                                         data['note'].toString(),
+                                                         textScaler: TextScaler.linear(
+                                                           1.2,
+                                                         ),
+                                                         style: GoogleFonts.raleway(
+                                                           fontWeight: FontWeight.w400,
+                                                           fontSize: 11,
+                                                           color: subtext,
+                                                         ),
+                                                       ),
+                                                     ],
+                                                   ),
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                           Divider(),
+                                           Row(
+                                             mainAxisAlignment:
+                                                 MainAxisAlignment.spaceBetween,
+                                             children: [
+                                               Padding(
+                                                 padding: const EdgeInsets.only(
+                                                   left: 15,
+                                                   top: 15,
+                                                   bottom: 15,
+                                                 ),
+                                                 child: Row(
+                                                   children: [
+                                                     Icon(
+                                                       Icons.date_range,
+                                                       color: Colors.grey,
+                                                     ),
+                                                     Text(
+                                                       DateTime.now().day.toString(),
+                                                       style: GoogleFonts.inter(
+                                                         fontWeight: FontWeight.w700,
+                                                         fontSize: 12,
+                                                         color: Colors.grey.shade700,
+                                                       ),
+                                                     ),
+                                                     SizedBox(width: 2),
+                                                     Text(
+                                                       DateTime.now().month.toString(),
+                                                       style: GoogleFonts.inter(
+                                                         fontWeight: FontWeight.w700,
+                                                         fontSize: 12,
+                                                         color: Colors.grey.shade700,
+
+                                                       ),
+                                                     ),
+                                                     SizedBox(width: 2),
+
+                                                     Text(
+                                                       DateTime.now().year.toString(),
+                                                       style: GoogleFonts.inter(
+                                                         fontWeight: FontWeight.w700,
+                                                         fontSize: 12,
+                                                         color: Colors.grey.shade700,
+
+                                                       ),
+                                                     ),
+                                                   ],
+                                                 ),
+                                               ),
+
+                                               Row(
+                                                 children: [
+                                                   Container(
+                                                     padding: EdgeInsets.all(5),
+                                                     decoration: BoxDecoration(
+                                                       color: Colors.blue,
+                                                       borderRadius:
+                                                           BorderRadius.circular(10),
+                                                     ),
+                                                     child: Text(
+                                                       'General',
+                                                       style: GoogleFonts.poppins(
+                                                         color: Colors.white,
+                                                         fontSize: 10,
+                                                         fontWeight: FontWeight.w600
+                                                       ),
+                                                     ),
+                                                   ),
+                                                   Icon(Icons.more_vert_outlined),
+                                                 ],
+                                               ),
+                                             ],
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                   ),
+                                 ),
+                               ),
+
+                               SizedBox(height: 10),
+                             ],
+                           ),
+                         );
+
+                      }),
+                )*/
+
+
+
+
               ],
             ),
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> AddDetails()));
+
+            // showModalBottomSheet(context: context, builder: (BuildContext context){
+            //  return Container(
+            //   height: height * 0.8,
+            //    width: double.infinity,
+            //  ) ;
+            // });
+          },
+        child: Icon(Icons.add, color: Colors.white,),
+          backgroundColor: Colors.blue,
+
         ),
       ),
     );

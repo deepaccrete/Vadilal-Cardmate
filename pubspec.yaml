@@ -45,8 +45,10 @@ dependencies:
   email_validator:
   shared_preferences: ^2.5.3
 
+
   mobx: ^2.2.0
   flutter_mobx: ^2.0.6+5
+  image_cropper: ^9.1.0
 
 dev_dependencies:
   flutter_test:

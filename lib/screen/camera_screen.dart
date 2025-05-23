@@ -6,6 +6,7 @@ import 'package:camera_app/screen/image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import '../api/ImageUploadApi.dart';
@@ -99,6 +100,31 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }*/
 
+  Future<File?> cropImage(File imageFile , BuildContext context)async{
+    final croppedFile = await ImageCropper().cropImage(sourcePath: imageFile.path,
+    uiSettings: [
+      AndroidUiSettings(
+        toolbarTitle: 'Crop Image',
+        toolbarColor: primarycolor,
+        toolbarWidgetColor: Colors.white,
+        aspectRatioPresets: [
+          CropAspectRatioPreset.original,
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.ratio3x2,
+        ]
+      ),
+      WebUiSettings(context: context),
+    ]
+    );
+    return croppedFile != null ? File(croppedFile.path):null;
+  }
+
+// @override
+// (int, int)? get data => (2,3);
+//
+//   @override
+// String get name => '2 x 3 (customized)';
+
   Future<void> pickImageFromGallery(BuildContext context) async {
     try {
       final pickedFile = await ImagePicker().pickImage(
@@ -106,7 +132,29 @@ class _CameraScreenState extends State<CameraScreen> {
       );
       if (pickedFile == null) return;
 
-      final String path = pickedFile.path;
+
+      final originalFile = File(pickedFile.path);
+
+      /// crop image
+      final croppedFile = await cropImage(originalFile, context);
+      if(croppedFile==null) {
+        isProcessing = false;
+        setState(() {
+        });
+        return;
+      };
+
+      final String path = croppedFile.path;
+
+      setState(() {
+
+        isProcessing = true;
+      });
+
+
+
+
+      // final String path = pickedFile.path;
 
       setState(() {
         isProcessing = true;
@@ -207,17 +255,32 @@ class _CameraScreenState extends State<CameraScreen> {
 
     try {
       final Directory dir = await getTemporaryDirectory();
-      final String path = join(
+      final String originalPath = join(
         dir.path,
         '${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
 
       final XFile file = await controller!.takePicture();
-      await file.saveTo(path);
+      await file.saveTo(originalPath);
 
       setState(() {
         isProcessing = true;
       });
+
+      // crop image
+
+      final croppedFile = await cropImage(File(originalPath), context);
+      if (croppedFile == null ){
+       setState(() {
+         isCapturing = false;
+         isProcessing= false;
+       });
+        return;
+      }
+
+
+      final String path = croppedFile.path;
+
 
       // OCR
       final inputImage = InputImage.fromFilePath(path);
@@ -439,4 +502,7 @@ class _CameraScreenState extends State<CameraScreen> {
       ),
     );
   }
+
+
+
 }

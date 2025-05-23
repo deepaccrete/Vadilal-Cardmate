@@ -5,6 +5,7 @@ import 'package:camera_app/model/LoginModel.dart';
 import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/camera_screen.dart';
 import 'package:camera_app/screen/login.dart';
+import 'package:camera_app/screen/login1.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
