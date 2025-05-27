@@ -1,17 +1,24 @@
+import 'dart:async';
+import 'dart:core';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/db/hive_pimage.dart';
+import 'package:camera_app/model/dbModel/imagemodel.dart';
 import 'package:camera_app/screen/dualimage.dart';
 import 'package:camera_app/screen/image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:hive/hive.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:uuid/uuid.dart';
 import '../api/ImageUploadApi.dart';
 import '../widget/cameraoverlay.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 // Future<String> _recognizationInIsolate(String jpegpath) async {
 //   final input = InputImage.fromFilePath(jpegpath);
@@ -44,6 +51,7 @@ class _CameraScreenState extends State<CameraScreen> {
   void initState() {
     super.initState();
     initCamera();
+    startSyncListener();
   }
 
   Future<void> initCamera() async {
@@ -125,6 +133,132 @@ class _CameraScreenState extends State<CameraScreen> {
 //   @override
 // String get name => '2 x 3 (customized)';
 
+  // Future<void> pickImageFromGallery(BuildContext context) async {
+  //   try {
+  //     final pickedFile = await ImagePicker().pickImage(
+  //       source: ImageSource.gallery,
+  //     );
+  //     if (pickedFile == null) return;
+  //
+  //
+  //     final originalFile = File(pickedFile.path);
+  //
+  //     /// crop image
+  //     final croppedFile = await cropImage(originalFile, context);
+  //     if(croppedFile==null) {
+  //       isProcessing = false;
+  //       setState(() {
+  //       });
+  //       return;
+  //     };
+  //
+  //     final String path = croppedFile.path;
+  //
+  //     setState(() {
+  //
+  //       isProcessing = true;
+  //     });
+  //
+  //
+  //
+  //
+  //     // final String path = pickedFile.path;
+  //
+  //     setState(() {
+  //       isProcessing = true;
+  //     });
+  //
+  //     final inputImage = InputImage.fromFilePath(path);
+  //     final RecognizedText recognizedText = await textRecognizer.processImage(
+  //       inputImage,
+  //     );
+  //
+  //     setState(() {
+  //       isProcessing = false;
+  //     });
+  //
+  //     final String fulltext = recognizedText.text;
+  //
+  //
+  //     if (captureMode == 'single') {
+  //
+  //
+  //
+  //       // Upload image after text recognition
+  //       final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+  //       if (!uploaded) {
+  //         ScaffoldMessenger.of(
+  //           context,
+  //         ).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+  //       }
+  //
+  //       final ok =
+  //           await Navigator.push<bool>(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder:
+  //                   (_) => ImagePreview(imagePath: path, initialText: fulltext),
+  //             ),
+  //           ) ??
+  //           false;
+  //
+  //       if (ok) Navigator.pop(context, {'front': path});
+  //     } else {
+  //       if (frontImagePath == null) {
+  //         frontImagePath = path;
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text('Front image selected. Now select back image.'),
+  //           ),
+  //         );
+  //       } else {
+  //         backImagePath = path;
+  //
+  //         // upload both images only when both are ready
+  //         final uploaded = await ImageuploadApi.uploadImage(frontImage: File(frontImagePath!),
+  //         backImage: File(backImagePath!)
+  //         );
+  //
+  //         if(!uploaded){
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             SnackBar(content: Text('Faild to upload images'))
+  //           );
+  //           frontImagePath = backImagePath = null;
+  //           return;
+  //         }
+  //
+  //         final ok =
+  //             await Navigator.push<bool>(
+  //               context,
+  //               MaterialPageRoute(
+  //                 builder:
+  //                     (_) => Dualimage(
+  //                       frontImage: frontImagePath!,
+  //                       backImage: backImagePath!,
+  //                     ),
+  //               ),
+  //             ) ??
+  //             false;
+  //
+  //         if (ok) {
+  //           Navigator.pop(context, {
+  //             'front': frontImagePath!,
+  //             'back': backImagePath!,
+  //           });
+  //         } else {
+  //           frontImagePath = backImagePath = null;
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error selecting image: $e');
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text('Failed to pick image.')));
+  //   }
+  // }
+
+
   Future<void> pickImageFromGallery(BuildContext context) async {
     try {
       final pickedFile = await ImagePicker().pickImage(
@@ -173,14 +307,31 @@ class _CameraScreenState extends State<CameraScreen> {
 
 
       if (captureMode == 'single') {
+        bool uploaded =  false;
+
+if(await hasInternet()){
+  uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+  if(!uploaded){
+    await HivePimage.savePendingImage(
+      PendingImage(id: Uuid().v4(),
+          frontImage: path)
+    );
+  }
+}else{
+  await HivePimage.savePendingImage(
+    PendingImage(id: Uuid().v4(),
+        frontImage:path)
+  );
+}
+
 
 
         // Upload image after text recognition
-        final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+        // final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
         if (!uploaded) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('Failed to upload image.')));
+          ).showSnackBar(SnackBar(content: Text('Image Saved for later upload')));
         }
 
         final ok =
@@ -205,14 +356,40 @@ class _CameraScreenState extends State<CameraScreen> {
         } else {
           backImagePath = path;
 
+
+          bool uploaded = false;
           // upload both images only when both are ready
-          final uploaded = await ImageuploadApi.uploadImage(frontImage: File(frontImagePath!),
-          backImage: File(backImagePath!)
-          );
+          // final uploaded = await ImageuploadApi.uploadImage(frontImage: File(frontImagePath!),
+          //
+          //
+          //
+          //     backImage: File(backImagePath!)
+          // );
+
+          if(await hasInternet()){
+            uploaded = await ImageuploadApi.uploadImage(frontImage: File(frontImagePath!),
+            backImage: File(backImagePath!)
+            );
+          }
 
           if(!uploaded){
+            await HivePimage.savePendingImage(
+              PendingImage(id: Uuid().v4(),
+                  frontImage: frontImagePath!,
+              backPath: backImagePath!
+              ),
+            );
+          }else{
+            await HivePimage.savePendingImage(
+              PendingImage(id: Uuid().v4(),
+                  frontImage: frontImagePath!,
+                  backPath: backImagePath!
+              ),
+            );
+          }
+          if(!uploaded){
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Faild to upload images'))
+              SnackBar(content: Text('Images saved for upload later.'))
             );
             frontImagePath = backImagePath = null;
             return;
@@ -249,6 +426,161 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  // Future<void> takePicture(BuildContext context) async {
+  //   if (!controller!.value.isInitialized || isCapturing) return;
+  //   isCapturing = true;
+  //
+  //   try {
+  //     final Directory dir = await getTemporaryDirectory();
+  //     final String originalPath = join(
+  //       dir.path,
+  //       '${DateTime.now().millisecondsSinceEpoch}.jpg',
+  //     );
+  //
+  //     final XFile file = await controller!.takePicture();
+  //     await file.saveTo(originalPath);
+  //
+  //     setState(() {
+  //       isProcessing = true;
+  //     });
+  //
+  //     // crop image
+  //
+  //     final croppedFile = await cropImage(File(originalPath), context);
+  //     if (croppedFile == null ){
+  //      setState(() {
+  //        isCapturing = false;
+  //        isProcessing= false;
+  //      });
+  //       return;
+  //     }
+  //
+  //
+  //     final String path = croppedFile.path;
+  //
+  //
+  //     // OCR
+  //     final inputImage = InputImage.fromFilePath(path);
+  //     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+  //
+  //     setState(() {
+  //       isProcessing = false;
+  //     });
+  //
+  //     final String fulltext = recognizedText.text;
+  //     print('OCR found: $fulltext');
+  //
+  //     if (captureMode == 'single') {
+  //       // ✅ Upload single image
+  //       // final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+  //
+  //       // no internet func//
+  //       if(await hasInternet()){
+  //          uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+  //
+  //       if(!uploaded){
+  //         await HivePimage.savePendingImage(
+  //           PendingImage(id: Uuid().v4(),
+  //               frontImage: path,),
+  //         );
+  //       }
+  //       }else{
+  //         await HivePimage.savePendingImage(
+  //           PendingImage(id: Uuid().v4(),
+  //               frontImage: path)
+  //         );
+  //       }
+  //
+  //
+  //
+  //
+  //
+  //
+  //       if (uploaded) {
+  //         final ok = await Navigator.push<bool>(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
+  //           ),
+  //         ) ?? false;
+  //
+  //         if (ok) Navigator.pop(context, {'front': path});
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+  //       }
+  //     } else {
+  //       // two-side mode
+  //       if (frontImagePath == null) {
+  //         frontImagePath = path;
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text('Front Captured. Now capture Back')),
+  //         );
+  //       } else {
+  //         backImagePath = path;
+  //
+  //         // ✅ Upload both images when back is captured
+  //         // final uploaded = await ImageuploadApi.uploadImage(
+  //         //   frontImage: File(frontImagePath!),
+  //         //   backImage: File(backImagePath!),
+  //         // );
+  //         if (await hasInternet()) {
+  //           final uploaded = await ImageuploadApi.uploadImage(
+  //             frontImage: File(frontImagePath!),
+  //             backImage: File(backImagePath!),
+  //           );
+  //           if (!uploaded) {
+  //             await HiveBoxes.savePendingImage(
+  //               PendingImage(
+  //                 id: Uuid().v4(),
+  //                 frontPath: frontImagePath!,
+  //                 backPath: backImagePath!,
+  //               ),
+  //             );
+  //           }
+  //         } else {
+  //           await HiveBoxes.savePendingImage(
+  //             PendingImage(
+  //               id: Uuid().v4(),
+  //               frontPath: frontImagePath!,
+  //               backPath: backImagePath!,
+  //             ),
+  //           );
+  //         }
+  //
+  //         if (uploaded) {
+  //           final ok = await Navigator.push<bool>(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (_) => Dualimage(
+  //                 frontImage: frontImagePath!,
+  //                 backImage: backImagePath!,
+  //               ),
+  //             ),
+  //           ) ?? false;
+  //
+  //           if (ok) {
+  //             Navigator.pop(context, {
+  //               'front': frontImagePath!,
+  //               'back': backImagePath!,
+  //             });
+  //           } else {
+  //             frontImagePath = backImagePath = null;
+  //           }
+  //         } else {
+  //           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+  //           frontImagePath = backImagePath = null;
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error taking picture: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+  //   } finally {
+  //     isCapturing = false;
+  //     setState(() {});
+  //   }
+  // }
+
   Future<void> takePicture(BuildContext context) async {
     if (!controller!.value.isInitialized || isCapturing) return;
     isCapturing = true;
@@ -267,20 +599,17 @@ class _CameraScreenState extends State<CameraScreen> {
         isProcessing = true;
       });
 
-      // crop image
-
+      // Crop image
       final croppedFile = await cropImage(File(originalPath), context);
-      if (croppedFile == null ){
-       setState(() {
-         isCapturing = false;
-         isProcessing= false;
-       });
+      if (croppedFile == null) {
+        setState(() {
+          isCapturing = false;
+          isProcessing = false;
+        });
         return;
       }
 
-
       final String path = croppedFile.path;
-
 
       // OCR
       final inputImage = InputImage.fromFilePath(path);
@@ -294,8 +623,21 @@ class _CameraScreenState extends State<CameraScreen> {
       print('OCR found: $fulltext');
 
       if (captureMode == 'single') {
-        // ✅ Upload single image
-        final uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+        bool uploaded = false;
+
+        if (await hasInternet()) {
+          uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+          if (!uploaded) {
+            await HivePimage.savePendingImage(
+              PendingImage(id: Uuid().v4(), frontImage: path),
+            );
+          }
+        } else {
+          await HivePimage.savePendingImage(
+            PendingImage(id: Uuid().v4(), frontImage: path),
+          );
+        }
+
         if (uploaded) {
           final ok = await Navigator.push<bool>(
             context,
@@ -306,10 +648,11 @@ class _CameraScreenState extends State<CameraScreen> {
 
           if (ok) Navigator.pop(context, {'front': path});
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image saved for later upload')));
         }
+
       } else {
-        // two-side mode
+        // Two-side mode
         if (frontImagePath == null) {
           frontImagePath = path;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -318,11 +661,31 @@ class _CameraScreenState extends State<CameraScreen> {
         } else {
           backImagePath = path;
 
-          // ✅ Upload both images when back is captured
-          final uploaded = await ImageuploadApi.uploadImage(
-            frontImage: File(frontImagePath!),
-            backImage: File(backImagePath!),
-          );
+          bool uploaded = false;
+
+          if (await hasInternet()) {
+            uploaded = await ImageuploadApi.uploadImage(
+              frontImage: File(frontImagePath!),
+              backImage: File(backImagePath!),
+            );
+            if (!uploaded) {
+              await HivePimage.savePendingImage(
+                PendingImage(
+                  id: Uuid().v4(),
+                  frontImage: frontImagePath!,
+                  backPath: backImagePath!,
+                ),
+              );
+            }
+          } else {
+            await HivePimage.savePendingImage(
+              PendingImage(
+                id: Uuid().v4(),
+                frontImage: frontImagePath!,
+                backPath: backImagePath!,
+              ),
+            );
+          }
 
           if (uploaded) {
             final ok = await Navigator.push<bool>(
@@ -344,7 +707,7 @@ class _CameraScreenState extends State<CameraScreen> {
               frontImagePath = backImagePath = null;
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed')));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Images saved for later upload')));
             frontImagePath = backImagePath = null;
           }
         }
@@ -358,12 +721,56 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<bool> hasInternet()async{
+    final result = await Connectivity().checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+
+
+  void startSyncListener() {
+    Connectivity().onConnectivityChanged.listen((result) {
+      if (result != ConnectivityResult.none) {
+        syncPendingImages();
+      }
+    });
+  }
+
+  Future<void> syncPendingImages() async {
+    final images = await HivePimage.getAllPendingImages();
+
+    for (final image in images) {
+      bool success = false;
+      try {
+        if (image.backPath == null) {
+          success = await ImageuploadApi.uploadImage(frontImage: File(image.frontImage));
+        } else {
+          success = await ImageuploadApi.uploadImage(
+            frontImage: File(image.frontImage),
+            backImage: File(image.backPath!),
+          );
+        }
+
+        if (success) {
+          await HivePimage.deletePendingImage(image.id);
+        }
+      } catch (e) {
+        print('Error syncing image ${image.id}: $e');
+      }
+    }
+  }
+
+
+
+
+  // Future<bool>
   @override
   void dispose() {
     controller?.dispose();
     super.dispose();
     textRecognizer.close();
   }
+
+
 
   Widget modeButton(String label) {
     final lower = label.toLowerCase();
@@ -394,6 +801,8 @@ class _CameraScreenState extends State<CameraScreen> {
       ),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {

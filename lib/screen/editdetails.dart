@@ -1,12 +1,16 @@
 import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/componets/textform.dart';
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/groupandtags.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 
 class EditDetails extends StatefulWidget {
-  const EditDetails({super.key});
+  final CardDetails cardDetails;
+  final int index;
+  const EditDetails({super.key, required this.cardDetails, required this.index});
 
   @override
   State<EditDetails> createState() => _EditDetailsState();
@@ -22,6 +26,50 @@ class _EditDetailsState extends State<EditDetails> {
   final TextEditingController  addressController = TextEditingController();
   final TextEditingController  webController = TextEditingController();
   final TextEditingController  noteController = TextEditingController();
+
+
+  void fillfunc(){
+    nameController.text = widget.cardDetails.fullname!;
+    designationController.text = widget.cardDetails.designation!;
+    phoneController.text = widget.cardDetails.number!;
+    emailController.text = widget.cardDetails.email!;
+    companynameController.text = widget.cardDetails.companyname!;
+    addressController.text = widget.cardDetails.address!;
+    webController.text = widget.cardDetails.website!;
+    noteController.text = widget.cardDetails.note!;
+  }
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  fillfunc();
+  }
+
+
+  Future<void> updateCard() async {
+    var box = await Hive.openBox<CardDetails>('cardbox');
+
+    final updatedCard = CardDetails(
+      fullname: nameController.text,
+      designation: designationController.text,
+      number: phoneController.text,
+      email: emailController.text,
+      companyname: companynameController.text,
+      address: addressController.text,
+      website: webController.text,
+      note: noteController.text,
+    );
+
+    await box.putAt(widget.index, updatedCard);
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Card updated SuccessFully!'))
+    );
+
+    Navigator.pop(context, true); // Go back after updating
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -37,7 +85,7 @@ class _EditDetailsState extends State<EditDetails> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           },
           icon: Icon(Icons.arrow_back),
         ),
@@ -173,7 +221,7 @@ class _EditDetailsState extends State<EditDetails> {
                       ),
                       SizedBox(height: 5),
                       CommonTextForm(
-                        controller: phoneController,
+                        controller: designationController,
                         heightTextform: height * 0.06,
                         hintText: 'XYZ ',
                         borderc: 10,
@@ -310,7 +358,9 @@ class _EditDetailsState extends State<EditDetails> {
               CommonButton(
                 height: height * 0.06,
                 bordercircular: 20,
-                onTap: () {},
+                onTap: () {
+                  updateCard();
+                },
                 child: Text(
                   'Update',
                   style: GoogleFonts.poppins(

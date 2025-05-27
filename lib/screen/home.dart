@@ -1,16 +1,17 @@
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
+import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? token;
-  final List<dynamic>? datalist;
 
-  const HomeScreen({super.key, this.token,  this.datalist});
+  const HomeScreen({super.key, this.token});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -23,6 +24,22 @@ class _HomeScreenState extends State<HomeScreen> {
     borderSide: BorderSide(width: 2, color: Colors.transparent),
     borderRadius: BorderRadius.circular(10),
   );
+
+  List<CardDetails> _cards = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadCard();
+  }
+
+  Future<void> _loadCard() async {
+    final box = await Hive.openBox<CardDetails>('cardbox');
+    setState(() {
+      _cards = box.values.toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,162 +175,185 @@ class _HomeScreenState extends State<HomeScreen> {
                 //     ],
                 //   ),
                 // ),
-             Container(
+
+
+                Container(
                   color: Colors.white,
                   width: width,
                   height: height * 0.6,
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          elevation: 10,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DetailsScreen(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                // color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
+
+                      SizedBox(height: 10),
+
+                      Expanded(
+                        child: _cards.isEmpty
+                            ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_search, size: 100, color: Colors.grey.shade300),
+                              Text(
+                                'No Card Found',
+                                style: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
                               ),
-                              padding: EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    // crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Container(
-                                        height: height * 0.1,
-                                        width: width * 0.2,
-                                        decoration: BoxDecoration(
-                                          // shape: BoxShape.circle,
-                                          color: darkcolor,
-                                        ),
-                                        child: Icon(
-                                          Icons.image,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                      ),
-                                      SizedBox(width: 20),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Container(
-                                            // height: height * 0.08,
-
-                                            width: width * 0.5,
-                                            // color: Colors.purple,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'XYZ Person',
-                                                  textScaler: TextScaler.linear(
-                                                    1.2,
-                                                  ),
-
-                                                  style: GoogleFonts.raleway(
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Location of dummy, address of dummy, location map, directions to dummy',
-                                                  textScaler: TextScaler.linear(
-                                                    1.2,
-                                                  ),
-                                                  style: GoogleFonts.raleway(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 11,
-                                                    color: subtext,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                            ],
+                          ),
+                        )
+                            : ListView.builder(
+                          itemCount: _cards.length,
+                          itemBuilder: (context, index) {
+                            final card = _cards[index];
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Card(
+                                elevation: 10,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailsScreen(
+                                            cardDetails: card,
+                                          index: index
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  Divider(),
-                                  Container(
-                                    // color: Colors.blueGrey,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                    ).then((result){
+                                      if(result == true){
+                                        _loadCard();
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(16),
+                                    child: Column(
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(
-                                              Icons.date_range,
-                                              color: Colors.grey,
-                                              size: 25,
+                                            Container(
+                                              height: height * 0.1,
+                                              width: width * 0.2,
+                                              decoration: BoxDecoration(
+                                                color: darkcolor,
+                                              ),
+                                              child: Icon(Icons.image, color: Colors.white, size: 40),
                                             ),
-                                            Text(
-                                            "23 May 25",
-                                              style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                                color: Colors.grey.shade700,
+                                            SizedBox(width: 20),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    card.fullname!,
+                                                    style: GoogleFonts.raleway(
+                                                      fontWeight: FontWeight.w700,
+                                                      fontSize: 16,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    card.address!,
+                                                    style: GoogleFonts.raleway(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 11,
+                                                      color: subtext,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-
                                           ],
                                         ),
-
+                                        Divider(),
                                         Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                              // margin: EdgeInsets.all(5),
-                                              padding: EdgeInsets.all(5),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Text(
-                                                'General',
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.date_range,
+                                                  color: Colors.grey,
                                                 ),
-                                              ),
+                                                Text(
+                                               '23 May 2025',
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 12,
+                                                    color: Colors.grey.shade700,
+                                                  ),
+                                                ),
+
+                                              ],
                                             ),
-                                            Icon(Icons.more_vert_outlined),
+
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.blue,
+                                                    borderRadius:
+                                                    BorderRadius.circular(10),
+                                                  ),
+                                                  child: Text(
+                                                    'General',
+                                                    style: GoogleFonts.poppins(
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w600
+                                                    ),
+                                                  ),
+                                                ),
+                                                Icon(Icons.more_vert_outlined),
+                                              ],
+                                            ),
                                           ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      ),
+                      )
 
-                      SizedBox(height: 10),
                     ],
                   ),
                 ),
 
 
-                // list
-              /*  Container(
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: ()async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddDetails()),
+            );
+            _loadCard();
+
+            // showModalBottomSheet(context: context, builder: (BuildContext context){
+            //  return Container(
+            //   height: height * 0.8,
+            //    width: double.infinity,
+            //  ) ;
+            // });
+          },
+          child: Icon(Icons.add, color: Colors.white),
+          backgroundColor: Colors.blue,
+        ),
+      ),
+    );
+  }
+}
+
+// list
+/*  Container(
                   width: width,
                   height: height *0.2,
                   child:ListView.builder(
@@ -498,26 +538,144 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-              ],
-            ),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=> AddDetails()));
 
-            // showModalBottomSheet(context: context, builder: (BuildContext context){
-            //  return Container(
-            //   height: height * 0.8,
-            //    width: double.infinity,
-            //  ) ;
-            // });
-          },
-        child: Icon(Icons.add, color: Colors.white,),
-          backgroundColor: Colors.blue,
-
-        ),
-      ),
-    );
-  }
-}
+////////////////////////////////////
+// Padding(
+//   padding: const EdgeInsets.all(8.0),
+//   child: Card(
+//     elevation: 10,
+//     child: InkWell(
+//       onTap: () {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => DetailsScreen(),
+//           ),
+//         );
+//       },
+//       child: Container(
+//         decoration: BoxDecoration(
+//           // color: Colors.red,
+//           borderRadius: BorderRadius.circular(10),
+//         ),
+//         padding: EdgeInsets.all(16),
+//         child: Column(
+//           children: [
+//             Row(
+//               // crossAxisAlignment: CrossAxisAlignment.start,
+//               mainAxisAlignment:
+//                   MainAxisAlignment.spaceAround,
+//               children: [
+//                 Container(
+//                   height: height * 0.1,
+//                   width: width * 0.2,
+//                   decoration: BoxDecoration(
+//                     // shape: BoxShape.circle,
+//                     color: darkcolor,
+//                   ),
+//                   child: Icon(
+//                     Icons.image,
+//                     color: Colors.white,
+//                     size: 40,
+//                   ),
+//                 ),
+//                 SizedBox(width: 20),
+//                 Expanded(
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(5.0),
+//                     child: Container(
+//                       // height: height * 0.08,
+//                       width: width * 0.5,
+//                       // color: Colors.purple,
+//                       child: Column(
+//                         mainAxisAlignment:
+//                             MainAxisAlignment.start,
+//                         crossAxisAlignment:
+//                             CrossAxisAlignment.start,
+//                         children: [
+//                           Text(
+//                             'XYZ Person',
+//                             textScaler: TextScaler.linear(
+//                               1.2,
+//                             ),
+//
+//                             style: GoogleFonts.raleway(
+//                               fontWeight: FontWeight.w700,
+//                               fontSize: 16,
+//                               color: Colors.black,
+//                             ),
+//                           ),
+//                           Text(
+//                             'Location of dummy, address of dummy, location map, directions to dummy',
+//                             textScaler: TextScaler.linear(
+//                               1.2,
+//                             ),
+//                             style: GoogleFonts.raleway(
+//                               fontWeight: FontWeight.w400,
+//                               fontSize: 11,
+//                               color: subtext,
+//                             ),
+//                           ),
+//                         ],
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             Divider(),
+//             Container(
+//               // color: Colors.blueGrey,
+//               child: Row(
+//                 mainAxisAlignment:
+//                     MainAxisAlignment.spaceBetween,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       Icon(
+//                         Icons.date_range,
+//                         color: Colors.grey,
+//                         size: 25,
+//                       ),
+//                       Text(
+//                         "23 May 25",
+//                         style: GoogleFonts.inter(
+//                           fontWeight: FontWeight.w700,
+//                           fontSize: 14,
+//                           color: Colors.grey.shade700,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//
+//                   Row(
+//                     children: [
+//                       Container(
+//                         // margin: EdgeInsets.all(5),
+//                         padding: EdgeInsets.all(5),
+//                         decoration: BoxDecoration(
+//                           color: Colors.blue,
+//                           borderRadius:
+//                               BorderRadius.circular(10),
+//                         ),
+//                         child: Text(
+//                           'General',
+//                           style: GoogleFonts.poppins(
+//                             color: Colors.white,
+//                             fontSize: 12,
+//                             fontWeight: FontWeight.w600,
+//                           ),
+//                         ),
+//                       ),
+//                       Icon(Icons.more_vert_outlined),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     ),
+//   ),
+// ),
