@@ -18,6 +18,7 @@ class CommonTextForm extends StatelessWidget {
   final double? borderc;
   final double? heightTextform;
   final double? widthTextform;
+  final double? contentpadding;
   final int? maxline;
   final TextInputType? keyboardType;
 
@@ -29,7 +30,7 @@ class CommonTextForm extends StatelessWidget {
         this.keyboardType,
         this.hintText,
         required this.obsecureText,
-        this.validator, this.icon,  this.gesture, this.focusNode, this.onfieldsumbitted, this.BorderColor, this.HintColor, this.borderc, this.heightTextform, this.widthTextform, this.maxline,  });
+        this.validator, this.icon,  this.gesture, this.focusNode, this.onfieldsumbitted, this.BorderColor, this.HintColor, this.borderc, this.heightTextform, this.widthTextform, this.maxline, this.contentpadding,  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,7 @@ class CommonTextForm extends StatelessWidget {
       height: heightTextform,
       width: widthTextform,
       child: TextFormField(
+
         maxLines:maxline,
         keyboardType: keyboardType??TextInputType.text,
         onFieldSubmitted:onfieldsumbitted ,
@@ -47,6 +49,7 @@ class CommonTextForm extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         decoration: InputDecoration(
+          contentPadding: EdgeInsets.all(contentpadding ?? 0),
           suffixIcon: gesture,
           // labelText: labelText,
           hintText: hintText,

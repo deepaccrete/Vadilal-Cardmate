@@ -1,17 +1,36 @@
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/editdetails.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:hive/hive.dart';
+
+import '../db/hive_card.dart';
 
 class DetailsScreen extends StatefulWidget {
-  const DetailsScreen({super.key});
+  final CardDetails cardDetails;
+  final int index;
+  const DetailsScreen({super.key , required this.cardDetails, required this.index});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
+List<CardDetails> _cards = [];
 
 class _DetailsScreenState extends State<DetailsScreen> {
+
+  Future<void> _loadCard() async {
+    final box = await Hive.openBox<CardDetails>('cardbox');
+    setState(() {
+      _cards = box.values.toList();
+    });
+  }
+
+  void _deleteCardhive(dynamic id) async{
+
+    await HiveBoxes.deleteCard(id);
+  }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -32,7 +51,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           icon: Icon(Icons.arrow_back),
         ),
         title: Text(
-          'XYZ Person',
+          widget.cardDetails!.fullname!,
           style: GoogleFonts.raleway(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
@@ -111,8 +130,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
                     // Edit button
                     InkWell(
-                      onTap: (){
-Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
+                      onTap: ()async{
+                        final result =  await
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
+                            index:widget.index)));
+                        if(result == true){
+                        Navigator.pop(context , true);
+                        }
                       },
                       child: Column(
                         children: [
@@ -141,29 +165,57 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                     ),
 
                     // Delete button
-                    Column(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade100,
-                            shape: BoxShape.circle,
+                    InkWell(
+                      onTap: () async {
+                        final confirm  = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Delete Card'),
+                            content: Text('Are you sure you want to delete this card?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: Text('Delete', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
                           ),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: HexColor('903034'),
+                        );
+
+                        if (confirm == true) {
+                          final box = await Hive.openBox<CardDetails>('cardbox');
+                          await box.deleteAt(widget.index); // Delete using index
+                          Navigator.pop(context, true); // Pop and return true to refresh previous screen
+                        }
+                      },
+
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: HexColor('903034'),
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Delete',
-                          style: GoogleFonts.raleway(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                            color: HexColor('903034'),
+                          Text(
+                            'Delete',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('903034'),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -236,7 +288,7 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                                   ),
                                 ),
                                 Text(
-                                  'Xyz Person',
+                                  widget.cardDetails!.fullname!,
                                   style: GoogleFonts.raleway(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w300,
@@ -275,7 +327,7 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                                       ),
                                     ),
                                     Text(
-                                      'xyz@gmail.com',
+                                      widget.cardDetails!.email!,
                                       style: GoogleFonts.raleway(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w300,
@@ -315,7 +367,7 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                                   ),
                                 ),
                                 Text(
-                                  'Xyz Comapany',
+                                  widget.cardDetails!.companyname!,
                                   style: GoogleFonts.raleway(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w300,
@@ -353,7 +405,7 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                                       ),
                                     ),
                                     Text(
-                                      '9874561230',
+                                      widget.cardDetails!.number!,
                                       style: GoogleFonts.raleway(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w300,
@@ -402,7 +454,7 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=> EditDetails()));
                                   ),
                                 ),
                                 Text(
-                                  '1, tower 1 , infocity',
+                                widget.cardDetails!.address!,
                                   style: GoogleFonts.raleway(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w300,

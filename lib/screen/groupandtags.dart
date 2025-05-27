@@ -88,6 +88,11 @@ class _GroupAndTagsState extends State<GroupAndTags> {
         backgroundColor: screenBGColor,
         // shadowColor: Colors.black12,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back_ios)),
         title: Text(
           'Group & Tags',
           style: GoogleFonts.raleway(
