@@ -44,10 +44,13 @@ dependencies:
   image_picker:
   email_validator:
   shared_preferences: ^2.5.3
-
-
+  #Bottom nav
+  circle_nav_bar: ^2.2.0
+  #Mobx
   mobx: ^2.2.0
   flutter_mobx: ^2.0.6+5
+  #Utils
+  nb_utils: ^7.1.4
   image_cropper: ^9.1.0
 
 dev_dependencies:

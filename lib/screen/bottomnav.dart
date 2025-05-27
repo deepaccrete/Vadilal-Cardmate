@@ -4,11 +4,11 @@ import 'package:camera_app/screen/cart.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';
+import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 class Bottomnav extends StatefulWidget {
-  final String? Token ;
-  const Bottomnav({super.key, this.Token});
   @override
   State<Bottomnav> createState() => _BottomnavState();
 }
@@ -28,11 +28,11 @@ class _BottomnavState extends State<Bottomnav> {
   Widget _getSelectedScreen(int index){
     switch (index) {
       case 0:
-          return HomeScreen(token: widget.Token,);
+          return HomeScreen();
       case 1:
-          return  SearchScreen();
+          return  CameraScreen();
       case 2:
-          return CameraScreen();
+          return SearchScreen();
       case 3:
           return CartScreen();
       case 4:
@@ -51,6 +51,7 @@ class _BottomnavState extends State<Bottomnav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: _SelectedIndex==1?false:true,
       body: _getSelectedScreen(_SelectedIndex),
 
       // IndexedStack(
@@ -70,41 +71,100 @@ class _BottomnavState extends State<Bottomnav> {
       //   ),
       // ),
       // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomNavigationBar(
-      selectedLabelStyle: TextStyle(color: Colors.black),
-          backgroundColor: Colors.black,
-          currentIndex: _SelectedIndex,
-          onTap: _onTap,
-          items: [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home_filled,color: Colors.black,),
-              activeIcon: Icon(Icons.home_filled,color: Colors.blue,),
-              label: 'Home',
-              backgroundColor: Colors.white
-            ), BottomNavigationBarItem(
-                icon: Icon(Icons.search,color: Colors.black,),
-              activeIcon: Icon(Icons.search,color:  Colors.blue,),
-              label: 'Search',
-              backgroundColor: Colors.white
-            ),BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt_outlined,color: Colors.black,),
-              activeIcon: Icon(Icons.camera,color:  Colors.blue,),
-              label: 'Camera',
-              backgroundColor: Colors.white
-            ), BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart_outlined,color: Colors.black,),
-              activeIcon: Icon(Icons.shopping_cart_outlined,color:  Colors.blue,),
-              label: 'Cart',
-              backgroundColor: Colors.white
-            ), BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline,color: Colors.black,),
-              activeIcon: Icon(Icons.person_outline,color:  Colors.blue,),
-              label: 'profile',
-              backgroundColor: Colors.white
-            ),
+        //=------------------------------------------------------------------
+      bottomNavigationBar:CircleNavBar(
+          activeIcons:[
+            Icon(Icons.home, color: Colors.white),
+            Icon(Icons.camera, color: Colors.white),
+            Icon(Icons.logout, color: Colors.white),
+          ],
+        inactiveIcons: const [
+          Column(
+            children: [
+              Icon(Icons.home, color: Color(0xff042E64)),
+              Text("Home"),
+            ],
+          ),
+          Column(
+            children: [
+              Icon(Icons.camera, color: Color(0xff042E64)),
+              Text("Capture Card"),
+            ],
+          ),
+          Column(
+            children: [
+              Icon(Icons.logout, color: Color(0xff042E64)),
+              Text("Logout"),
+            ],
+          ),
+        ],
+        color: Colors.white,
+        height: 60,
+        circleWidth: 60,
+        circleColor: Color(0xff042E64),
+        activeIndex: _SelectedIndex,
+        onTap: (index) {
+            print("-----------------------------------$index");
+            if(index==2){
+              showConfirmDialogCustom(
+                context,
+                title: "Do you want to logout from the app?",
+                dialogType: DialogType.CONFIRMATION,
+                centerImage: 'URL',
+                onAccept:(p0) {
 
-          ]
-      ),
+                },
+              );
+            }else {
+              _onTap(index);
+            }
+        },
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+        cornerRadius: const BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
+          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(24),
+        ),
+        shadowColor: Color(0xff042E64),
+        elevation: 10,
+      )
+        //---------------------------------------------------------------------------------------------------------
+      // BottomNavigationBar(
+      // selectedLabelStyle: TextStyle(color: Colors.black),
+      //     backgroundColor: Colors.black,
+      //     currentIndex: _SelectedIndex,
+      //     onTap: _onTap,
+      //     items: [
+      //       BottomNavigationBarItem(
+      //           icon: Icon(Icons.home_filled,color: Colors.black,),
+      //         activeIcon: Icon(Icons.home_filled,color: Colors.blue,),
+      //         label: 'Home',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.search,color: Colors.black,),
+      //         activeIcon: Icon(Icons.search,color:  Colors.blue,),
+      //         label: 'Search',
+      //         backgroundColor: Colors.white
+      //       ),BottomNavigationBarItem(
+      //         icon: Icon(Icons.camera_alt_outlined,color: Colors.black,),
+      //         activeIcon: Icon(Icons.camera,color:  Colors.blue,),
+      //         label: 'Camera',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.shopping_cart_outlined,color: Colors.black,),
+      //         activeIcon: Icon(Icons.shopping_cart_outlined,color:  Colors.blue,),
+      //         label: 'Cart',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.person_outline,color: Colors.black,),
+      //         activeIcon: Icon(Icons.person_outline,color:  Colors.blue,),
+      //         label: 'profile',
+      //         backgroundColor: Colors.white
+      //       ),
+      //
+      //     ]
+      // ),
     );
   }
 }
