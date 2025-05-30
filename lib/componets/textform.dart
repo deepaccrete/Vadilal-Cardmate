@@ -32,6 +32,8 @@ class CommonTextForm extends StatelessWidget {
         required this.obsecureText,
         this.validator, this.icon,  this.gesture, this.focusNode, this.onfieldsumbitted, this.BorderColor, this.HintColor, this.borderc, this.heightTextform, this.widthTextform, this.maxline, this.contentpadding,  });
 
+
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -75,6 +77,10 @@ class CommonTextForm extends StatelessWidget {
           ),
           errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(borderc??15)),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderc??15),
+          ),
+
 
         ),
       ),

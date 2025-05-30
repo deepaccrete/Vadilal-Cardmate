@@ -44,7 +44,7 @@ class _CameraScreenState extends State<CameraScreen> {
   String? backImagePath;
   bool capturingBack = false;
   bool isCapturing = false;
-
+bool istwoside = false;
   bool isProcessing = false;
 
   @override
@@ -581,6 +581,7 @@ if(await hasInternet()){
   //   }
   // }
 
+
   Future<void> takePicture(BuildContext context) async {
     if (!controller!.value.isInitialized || isCapturing) return;
     isCapturing = true;
@@ -651,13 +652,16 @@ if(await hasInternet()){
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image saved for later upload')));
         }
 
-      } else {
+      }
+      else {
+
         // Two-side mode
         if (frontImagePath == null) {
           frontImagePath = path;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Front Captured. Now capture Back')),
           );
+          istwoside = true;
         } else {
           backImagePath = path;
 
@@ -697,19 +701,22 @@ if(await hasInternet()){
                 ),
               ),
             ) ?? false;
-
+            istwoside = false;
             if (ok) {
               Navigator.pop(context, {
                 'front': frontImagePath!,
                 'back': backImagePath!,
               });
+              istwoside = false;
             } else {
               frontImagePath = backImagePath = null;
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Images saved for later upload')));
             frontImagePath = backImagePath = null;
+            istwoside = false;
           }
+
         }
       }
     } catch (e) {
@@ -825,7 +832,12 @@ if(await hasInternet()){
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [modeButton("Single"), modeButton("Two-side")],
+                  children: [
+
+                    istwoside == false?
+                    modeButton("Single"):
+                    SizedBox(),
+                    modeButton("Two-side")],
                 ),
                 const SizedBox(height: 16),
 
@@ -834,27 +846,32 @@ if(await hasInternet()){
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          pickImageFromGallery(context);
-                        },
-                        child: Container(
-                          child: Column(
-                            children: [
-                              Icon(Icons.image, color: Colors.lightBlue),
-                              Text(
-                                'Image',
-                                style: GoogleFonts.inter(
-                                  color: Colors.lightBlue,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                      // image from gallary
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20,right: 5,left: 5),
+                        child: GestureDetector(
+                          onTap: () {
+                            pickImageFromGallery(context);
+                          },
+                          child: Container(
+                            child: Column(
+                              children: [
+                                Icon(Icons.image, color: Colors.lightBlue),
+                                Text(
+                                  'Image',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.lightBlue,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
 
+                      // click picture
                       GestureDetector(
                         onTap: () {
                           takePicture(context);
@@ -886,19 +903,23 @@ if(await hasInternet()){
                                 ),
                       ),
 
-                      Container(
-                        child: Column(
-                          children: [
-                            Icon(Icons.rotate_right, color: Colors.lightBlue),
-                            Text(
-                              'Rotate',
-                              style: GoogleFonts.inter(
-                                color: Colors.lightBlue,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20,right: 5,left: 5),
+
+                        child: Container(
+                          child: Column(
+                            children: [
+                              Icon(Icons.rotate_right, color: Colors.lightBlue),
+                              Text(
+                                'Rotate',
+                                style: GoogleFonts.inter(
+                                  color: Colors.lightBlue,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -19,7 +19,7 @@ class _BottomnavState extends State<Bottomnav> {
   static final List<Widget> _WidgetOption =[
     HomeScreen(),
     SearchScreen(),
-    CameraScreen(),
+    // CameraScreen(),
     CartScreen(),
     ProfileScreen()
   ];
@@ -29,13 +29,13 @@ class _BottomnavState extends State<Bottomnav> {
     switch (index) {
       case 0:
           return HomeScreen();
+      // case 1:
+      //     return  CameraScreen();
       case 1:
-          return  CameraScreen();
-      case 2:
           return SearchScreen();
-      case 3:
+      case 2:
           return CartScreen();
-      case 4:
+      case 3:
           return ProfileScreen();
       default:
         return HomeScreen();
@@ -50,34 +50,18 @@ class _BottomnavState extends State<Bottomnav> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: _SelectedIndex==1?false:true,
-      body: _getSelectedScreen(_SelectedIndex),
+    bool showBottomNav = _SelectedIndex != 1; // hide on index 1
 
-      // IndexedStack(
-      // index: _SelectedIndex,
-      // children: _WidgetOption,
-      // ), //   onTap: (){
-      //     _onTap(2);
-      //   },
-      //   child: Container(
-      //     height: 70,
-      //     width: 70,
-      //     decoration: BoxDecoration(
-      //       color: Colors.indigo[900],
-      //       shape: BoxShape.circle,
-      //       border:
-      //     ),
-      //   ),
-      // ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        //=------------------------------------------------------------------
-      bottomNavigationBar:CircleNavBar(
-          activeIcons:[
-            Icon(Icons.home, color: Colors.white),
-            Icon(Icons.camera, color: Colors.white),
-            Icon(Icons.logout, color: Colors.white),
-          ],
+    return Scaffold(
+      extendBody: showBottomNav, // Optional: for proper rendering with notch shadows
+      body: _getSelectedScreen(_SelectedIndex),
+      bottomNavigationBar: showBottomNav
+          ? CircleNavBar(
+        activeIcons: [
+          Icon(Icons.home, color: Colors.white),
+          Icon(Icons.camera, color: Colors.white),
+          Icon(Icons.logout, color: Colors.white),
+        ],
         inactiveIcons: const [
           Column(
             children: [
@@ -104,20 +88,21 @@ class _BottomnavState extends State<Bottomnav> {
         circleColor: Color(0xff042E64),
         activeIndex: _SelectedIndex,
         onTap: (index) {
-            print("-----------------------------------$index");
-            if(index==2){
-              showConfirmDialogCustom(
-                context,
-                title: "Do you want to logout from the app?",
-                dialogType: DialogType.CONFIRMATION,
-                centerImage: 'URL',
-                onAccept:(p0) {
-
-                },
-              );
-            }else {
-              _onTap(index);
-            }
+          print("-----------------------------------$index");
+      if(index == 1){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen()));
+      }
+         else if (index == 2) {
+            showConfirmDialogCustom(
+              context,
+              title: "Do you want to logout from the app?",
+              dialogType: DialogType.CONFIRMATION,
+              centerImage: 'URL',
+              onAccept: (p0) {},
+            );
+          } else {
+            _onTap(index);
+          }
         },
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
         cornerRadius: const BorderRadius.only(
@@ -129,42 +114,7 @@ class _BottomnavState extends State<Bottomnav> {
         shadowColor: Color(0xff042E64),
         elevation: 10,
       )
-        //---------------------------------------------------------------------------------------------------------
-      // BottomNavigationBar(
-      // selectedLabelStyle: TextStyle(color: Colors.black),
-      //     backgroundColor: Colors.black,
-      //     currentIndex: _SelectedIndex,
-      //     onTap: _onTap,
-      //     items: [
-      //       BottomNavigationBarItem(
-      //           icon: Icon(Icons.home_filled,color: Colors.black,),
-      //         activeIcon: Icon(Icons.home_filled,color: Colors.blue,),
-      //         label: 'Home',
-      //         backgroundColor: Colors.white
-      //       ), BottomNavigationBarItem(
-      //           icon: Icon(Icons.search,color: Colors.black,),
-      //         activeIcon: Icon(Icons.search,color:  Colors.blue,),
-      //         label: 'Search',
-      //         backgroundColor: Colors.white
-      //       ),BottomNavigationBarItem(
-      //         icon: Icon(Icons.camera_alt_outlined,color: Colors.black,),
-      //         activeIcon: Icon(Icons.camera,color:  Colors.blue,),
-      //         label: 'Camera',
-      //         backgroundColor: Colors.white
-      //       ), BottomNavigationBarItem(
-      //           icon: Icon(Icons.shopping_cart_outlined,color: Colors.black,),
-      //         activeIcon: Icon(Icons.shopping_cart_outlined,color:  Colors.blue,),
-      //         label: 'Cart',
-      //         backgroundColor: Colors.white
-      //       ), BottomNavigationBarItem(
-      //           icon: Icon(Icons.person_outline,color: Colors.black,),
-      //         activeIcon: Icon(Icons.person_outline,color:  Colors.blue,),
-      //         label: 'profile',
-      //         backgroundColor: Colors.white
-      //       ),
-      //
-      //     ]
-      // ),
+          : null, // <--- Hide the bottom nav here
     );
   }
 }

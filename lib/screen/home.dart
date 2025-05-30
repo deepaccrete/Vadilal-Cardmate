@@ -1,5 +1,7 @@
+import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
+import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
@@ -26,12 +28,34 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   List<CardDetails> _cards = [];
+  List<DataCard> _cardapi = [];
+
+  bool isCardLoading = true;
+  String? errormessage;
+
+  Future<void> FetchCard()async {
+    try{
+      CardModel cardModel = await CardApi.getCard();
+      if(cardModel.success == 1 && cardModel.data !=null){
+        setState(() {
+          _cardapi = cardModel.data!;
+          isCardLoading = false;
+        });
+      }
+    }catch(e){
+      setState(() {
+        errormessage = "Something Went Wrong ==========>>>>>>>>>>>> $e";
+      });
+    }
+  }
+
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _loadCard();
+    // _loadCard();
+    FetchCard();
   }
 
   Future<void> _loadCard() async {
@@ -162,19 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
 
-                // No card Found
-                // Container(
-                //   // color: Colors.red,
-                //   width: width,
-                //   height:  height * 0.6,
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       Icon(Icons.person_search,size: 100,color: Colors.grey.shade300,),
-                //       Text('No Card Found',style: GoogleFonts.poppins(color: Colors.grey.shade400,fontSize: 14),)
-                //     ],
-                //   ),
-                // ),
+
 
 
                 Container(
@@ -187,42 +199,37 @@ class _HomeScreenState extends State<HomeScreen> {
                       SizedBox(height: 10),
 
                       Expanded(
-                        child: _cards.isEmpty
-                            ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.person_search, size: 100, color: Colors.grey.shade300),
-                              Text(
-                                'No Card Found',
-                                style: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        )
+                        child: isCardLoading
+                            ? Center(child: CircularProgressIndicator())
                             : ListView.builder(
-                          itemCount: _cards.length,
+                          itemCount: _cardapi.length,
                           itemBuilder: (context, index) {
-                            final card = _cards[index];
+                            final card = _cardapi[index];
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Card(
                                 elevation: 10,
                                 child: InkWell(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => DetailsScreen(
-                                            cardDetails: card,
-                                          index: index
-                                        ),
-                                      ),
-                                    ).then((result){
-                                      if(result == true){
-                                        _loadCard();
-                                      }
-                                    });
+
+
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> DetailsScreen(
+                                    dataCard: card,
+                                        // index: index
+                                    )));
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) => DetailsScreen(
+                                    //         cardDetails: card,
+                                    //       index: index
+                                    //     ),
+                                    //   ),
+                                    // ).then((result){
+                                    //   if(result == true){
+                                    //     _loadCard();
+                                    //   }
+                                    // });
                                   },
                                   child: Container(
                                     padding: EdgeInsets.all(16),
@@ -244,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    card.fullname!,
+                                                    card.companyName?.toString() ?? 'No data',
                                                     style: GoogleFonts.raleway(
                                                       fontWeight: FontWeight.w700,
                                                       fontSize: 16,
@@ -252,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    card.address!,
+                                                    card.companyAddress?.toString() ?? "No Data",
                                                     style: GoogleFonts.raleway(
                                                       fontWeight: FontWeight.w400,
                                                       fontSize: 11,
@@ -535,9 +542,140 @@ class _HomeScreenState extends State<HomeScreen> {
                       }),
                 )*/
 
-
-
-
+///hive data
+/* Expanded(
+//                         child: _cards.isEmpty
+//                             ? Center(
+//                           child: Column(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Icon(Icons.person_search, size: 100, color: Colors.grey.shade300),
+//                               Text(
+//                                 'No Card Found',
+//                                 style: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
+//                               ),
+//                             ],
+//                           ),
+//                         )
+//                             : ListView.builder(
+//                           itemCount: _cards.length,
+//                           itemBuilder: (context, index) {
+//                             final card = _cards[index];
+//                             return Padding(
+//                               padding: const EdgeInsets.all(8.0),
+//                               child: Card(
+//                                 elevation: 10,
+//                                 child: InkWell(
+//                                   onTap: () {
+//                                     Navigator.push(
+//                                       context,
+//                                       MaterialPageRoute(
+//                                         builder: (context) => DetailsScreen(
+//                                             cardDetails: card,
+//                                           index: index
+//                                         ),
+//                                       ),
+//                                     ).then((result){
+//                                       if(result == true){
+//                                         _loadCard();
+//                                       }
+//                                     });
+//                                   },
+//                                   child: Container(
+//                                     padding: EdgeInsets.all(16),
+//                                     child: Column(
+//                                       children: [
+//                                         Row(
+//                                           children: [
+//                                             Container(
+//                                               height: height * 0.1,
+//                                               width: width * 0.2,
+//                                               decoration: BoxDecoration(
+//                                                 color: darkcolor,
+//                                               ),
+//                                               child: Icon(Icons.image, color: Colors.white, size: 40),
+//                                             ),
+//                                             SizedBox(width: 20),
+//                                             Expanded(
+//                                               child: Column(
+//                                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                                 children: [
+//                                                   Text(
+//                                                     card.fullname!,
+//                                                     style: GoogleFonts.raleway(
+//                                                       fontWeight: FontWeight.w700,
+//                                                       fontSize: 16,
+//                                                       color: Colors.black,
+//                                                     ),
+//                                                   ),
+//                                                   Text(
+//                                                     card.address!,
+//                                                     style: GoogleFonts.raleway(
+//                                                       fontWeight: FontWeight.w400,
+//                                                       fontSize: 11,
+//                                                       color: subtext,
+//                                                     ),
+//                                                   ),
+//                                                 ],
+//                                               ),
+//                                             ),
+//                                           ],
+//                                         ),
+//                                         Divider(),
+//                                         Row(
+//                                           mainAxisAlignment:
+//                                           MainAxisAlignment.spaceBetween,
+//                                           children: [
+//                                             Row(
+//                                               children: [
+//                                                 Icon(
+//                                                   Icons.date_range,
+//                                                   color: Colors.grey,
+//                                                 ),
+//                                                 Text(
+//                                                '23 May 2025',
+//                                                   style: GoogleFonts.inter(
+//                                                     fontWeight: FontWeight.w700,
+//                                                     fontSize: 12,
+//                                                     color: Colors.grey.shade700,
+//                                                   ),
+//                                                 ),
+//
+//                                               ],
+//                                             ),
+//
+//                                             Row(
+//                                               children: [
+//                                                 Container(
+//                                                   padding: EdgeInsets.all(5),
+//                                                   decoration: BoxDecoration(
+//                                                     color: Colors.blue,
+//                                                     borderRadius:
+//                                                     BorderRadius.circular(10),
+//                                                   ),
+//                                                   child: Text(
+//                                                     'General',
+//                                                     style: GoogleFonts.poppins(
+//                                                         color: Colors.white,
+//                                                         fontSize: 10,
+//                                                         fontWeight: FontWeight.w600
+//                                                     ),
+//                                                   ),
+//                                                 ),
+//                                                 Icon(Icons.more_vert_outlined),
+//                                               ],
+//                                             ),
+//                                           ],
+//                                         ),
+//                                       ],
+//                                     ),
+//                                   ),
+//                                 ),
+//                               ),
+//                             );
+//                           },
+//                         ),
+//                       )*/
 
 ////////////////////////////////////
 // Padding(

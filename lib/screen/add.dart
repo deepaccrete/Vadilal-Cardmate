@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera_app/db/hive_card.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
+import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -63,9 +64,9 @@ class _AddDetailsState extends State<AddDetails> {
 
 
       await HiveBoxes.addCard(newCard);
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('Card Saved SuccessFully!'))
-      // );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Card Saved SuccessFully!'))
+      );
       _gotohome();
       // dispose();
 
@@ -95,7 +96,7 @@ class _AddDetailsState extends State<AddDetails> {
   }
 
   void _gotohome(){
-    Navigator.push(context,MaterialPageRoute(builder: (_)=> HomeScreen(
+    Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
       // datalist: listdata,
     )));
   }
@@ -214,7 +215,7 @@ class _AddDetailsState extends State<AddDetails> {
                         //     ),
                         //   ),
                         // ),
-                    
+
                         Text(
                           'Full Name',
                           style: GoogleFonts.inter(
@@ -226,7 +227,7 @@ class _AddDetailsState extends State<AddDetails> {
                         CommonTextForm(
                           focusNode: namenode,
                           controller: nameController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.08,
                           hintText: 'XYZ Person',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -242,7 +243,7 @@ class _AddDetailsState extends State<AddDetails> {
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         Text(
                           'Designation',
                           style: GoogleFonts.inter(
@@ -254,7 +255,7 @@ class _AddDetailsState extends State<AddDetails> {
                         CommonTextForm(
                           focusNode: desinationnode,
                           controller: designationController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: 'XYZ ',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -283,7 +284,7 @@ class _AddDetailsState extends State<AddDetails> {
                         CommonTextForm(
                           focusNode: phonenode,
                           controller: phoneController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: '9999999999',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -299,7 +300,7 @@ class _AddDetailsState extends State<AddDetails> {
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         // email
                         Text(
                           'Email',
@@ -312,7 +313,7 @@ class _AddDetailsState extends State<AddDetails> {
                         CommonTextForm(
 focusNode: emailnode,
                           controller: emailController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: 'abc@gmail.com',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -328,7 +329,7 @@ focusNode: emailnode,
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         // Comapny Name
                         Text(
                           'Company Name',
@@ -341,7 +342,7 @@ focusNode: emailnode,
                         CommonTextForm(
                           focusNode: companynamenode,
                           controller: companynameController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: 'XYZ',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -357,7 +358,7 @@ focusNode: emailnode,
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         // Address
                         Text(
                           'Address',
@@ -370,7 +371,7 @@ focusNode: emailnode,
                         CommonTextForm(
                           focusNode: addressnode,
                           controller: addressController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: 'Address',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -387,7 +388,7 @@ focusNode: emailnode,
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         // Company WebSite
                         Text(
                           'Comapany Website',
@@ -400,7 +401,7 @@ focusNode: emailnode,
                         CommonTextForm(
                           focusNode: webnode,
                           controller: webController,
-                          heightTextform: height * 0.06,
+                          // heightTextform: height * 0.06,
                           hintText: 'www.xyz.com',
                           borderc: 10,
                           BorderColor: Colors.grey,
@@ -416,7 +417,7 @@ focusNode: emailnode,
                           },
                         ),
                         SizedBox(height: 10),
-                    
+
                         // Note
                         Text(
                           'Note',
@@ -431,10 +432,10 @@ focusNode: emailnode,
                           contentpadding: 20,
                           controller: noteController,
                           maxline: 5,
-                    
-                          heightTextform: height * 0.1,
+
+                          heightTextform: height * 0.2,
                           hintText: 'Notes',
-                    
+
                           borderc: 10,
                           BorderColor: Colors.grey,
                           icon: Icon(Icons.note_alt_outlined),
