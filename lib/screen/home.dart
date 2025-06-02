@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   color: Colors.grey,
                                                 ),
                                                 Text(
-                                               '23 May 2025',
+                                               card.createdAt!.substring(0,10),
                                                   style: GoogleFonts.inter(
                                                     fontWeight: FontWeight.w700,
                                                     fontSize: 12,

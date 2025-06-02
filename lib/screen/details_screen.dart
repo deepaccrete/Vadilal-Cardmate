@@ -1,15 +1,18 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:math';
 
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/editdetails.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:hive/hive.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 import '../db/hive_card.dart';
 
@@ -18,7 +21,8 @@ class DetailsScreen extends StatefulWidget {
   DataCard dataCard;
 
   // final int index;
-  DetailsScreen({super.key,
+  DetailsScreen({
+    super.key,
     required this.dataCard,
     // required this.cardDetails,
     // required this.index
@@ -31,7 +35,6 @@ class DetailsScreen extends StatefulWidget {
 List<CardDetails> _cards = [];
 
 class _DetailsScreenState extends State<DetailsScreen> {
-
   Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
@@ -43,336 +46,538 @@ class _DetailsScreenState extends State<DetailsScreen> {
     await HiveBoxes.deleteCard(id);
   }
 
+
+  int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
-
-    final width = MediaQuery
-        .of(context)
-        .size
-        .width * 1;
-    final height = MediaQuery
-        .of(context)
-        .size
-        .height * 1;
+    final width = MediaQuery.of(context).size.width * 1;
+    final height = MediaQuery.of(context).size.height * 1;
 
     List<Uint8List> images = [];
-    Uint8List decodeBase64Image(String base64String) {
-      final cleanBase64 = base64String.split(',').last;
-      return base64Decode(cleanBase64);
+    Uint8List? decodeBase64Image(String base64String) {
+      try {
+        print('Attempting to decode base64 string...');
+
+        if (base64String.isEmpty) {
+          print('Error: base64 string is empty');
+          return null;
+        }
+
+        // Print the first part of the string to see what format we're dealing with
+        print(
+          'Original string starts with: ${base64String.substring(0, min(50, base64String.length))}',
+        );
+
+        String cleanBase64 = base64String;
+
+        // If the string starts with 'data:', extract the base64 part
+        if (cleanBase64.startsWith('data:')) {
+          int commaIndex = cleanBase64.indexOf(',');
+          if (commaIndex != -1) {
+            cleanBase64 = cleanBase64.substring(commaIndex + 1);
+            print('Removed data: prefix directly from string');
+          }
+        }
+
+        // Remove any whitespace
+        cleanBase64 = cleanBase64.replaceAll(RegExp(r'[\s\n]'), '');
+
+        // Add padding if needed
+        int paddingLength = cleanBase64.length % 4;
+        if (paddingLength > 0) {
+          cleanBase64 += '=' * (4 - paddingLength);
+        }
+
+        try {
+          // First decode attempt
+          var bytes = base64Decode(cleanBase64);
+          print('First decode successful, got ${bytes.length} bytes');
+
+          // Check if the result is another base64 string
+          String decodedString = String.fromCharCodes(bytes);
+          if (decodedString.contains('base64,')) {
+            print('Found another base64 string, decoding again...');
+            String secondBase64 = decodedString.split('base64,').last;
+            // Clean up the second base64 string
+            secondBase64 = secondBase64.replaceAll(RegExp(r'[\s\n]'), '');
+            paddingLength = secondBase64.length % 4;
+            if (paddingLength > 0) {
+              secondBase64 += '=' * (4 - paddingLength);
+            }
+            bytes = base64Decode(secondBase64);
+            print('Second decode successful, got ${bytes.length} bytes');
+          }
+
+          // Verify this is actually an image by checking for common image headers
+          if (bytes.length > 8) {
+            // Check for JPEG header (FF D8)
+            if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
+              print('Detected JPEG image format');
+              return bytes;
+            }
+            // Check for PNG header (89 50 4E 47)
+            if (bytes[0] == 0x89 &&
+                bytes[1] == 0x50 &&
+                bytes[2] == 0x4E &&
+                bytes[3] == 0x47) {
+              print('Detected PNG image format');
+              return bytes;
+            }
+            // Check for GIF header (47 49 46)
+            if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+              print('Detected GIF image format');
+              return bytes;
+            }
+
+            print(
+              'Warning: No valid image header detected. First 8 bytes: [${bytes.take(8).map((b) => '0x${b.toRadixString(16).padLeft(2, '0')}').join(', ')}]',
+            );
+          }
+
+          return bytes;
+        } catch (e) {
+          print('Base64 decoding error: $e');
+          return null;
+        }
+      } catch (e) {
+        print('Error in decodeBase64Image: $e');
+        return null;
+      }
     }
 
+    print('\nProcessing front image...');
     if (widget.dataCard.cardFrontImageBase64 != null &&
-        widget.dataCard.cardFrontImageBase64!.isNotEmpty &&
-        widget.dataCard.cardFrontImageBase64!.startsWith('data:image/')) {
-      images.add(decodeBase64Image(widget.dataCard.cardFrontImageBase64!));
+        widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
+      final frontImage = decodeBase64Image(
+        widget.dataCard.cardFrontImageBase64!,
+      );
+      if (frontImage != null) {
+        images.add(frontImage);
+        print('Successfully added front image');
+      } else {
+        print('Failed to decode front image');
+      }
+    } else {
+      print('No front image data available');
     }
 
+    print('\nProcessing back image...');
     if (widget.dataCard.cardBackImageBase64 != null &&
-        widget.dataCard.cardBackImageBase64!.isNotEmpty &&
-        widget.dataCard.cardBackImageBase64!.startsWith('data:image/')) {
-      images.add(decodeBase64Image(widget.dataCard.cardBackImageBase64!));
+        widget.dataCard.cardBackImageBase64!.isNotEmpty) {
+      final backImage = decodeBase64Image(widget.dataCard.cardBackImageBase64!);
+      if (backImage != null) {
+        images.add(backImage);
+        print('Successfully added back image');
+      } else {
+        print('Failed to decode back image');
+      }
+    } else {
+      print('No back image data available');
     }
-    print('Front starts with: ${widget.dataCard.cardFrontImageBase64?.substring(0, 30)}');
-    print('Back starts with: ${widget.dataCard.cardBackImageBase64?.substring(0, 30)}');
 
-    print('Front image length: ${widget.dataCard.cardFrontImageBase64?.length}');
-    print('Back image length: ${widget.dataCard.cardBackImageBase64?.length}');
+    print('\nFinal results:');
+    print('Total images decoded: ${images.length}');
 
     return Scaffold(
+      backgroundColor: screenBGColor,
+      appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.black.withValues(alpha: 1),
+        elevation: 10,
         backgroundColor: screenBGColor,
-        appBar: AppBar(
-          surfaceTintColor: Colors.transparent,
-          // <- This disables tinting
-          shadowColor: Colors.black.withValues(alpha: 1),
-          // manually define shadow
-          elevation: 10,
-          backgroundColor: screenBGColor,
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back),
-          ),
-          title: Text(
-            // widget.!.fullname!,
-            widget.dataCard.companyName.toString(),
-            style: GoogleFonts.raleway(
-                fontSize: 14, fontWeight: FontWeight.w700),
-          ),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
         ),
-
-        body: SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+        title: Text(
+          widget.dataCard.companyName.toString(),
+          style: GoogleFonts.raleway(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
               Center(
-              child: Container(
-              alignment: Alignment.center,
-                color: Colors.grey.shade300,
-                height: height * 0.2,
-                width: width * 0.65,
-                child: images.isNotEmpty?
-                CarouselSlider(
-                  options: CarouselOptions(
-                    height: 200.0,
-                    enlargeCenterPage: true,
-                    enableInfiniteScroll: false,
-                    autoPlay: false,
-                  ),
-                  items: images.map((imgBytes) {
-                    return Builder(
-                      builder: (BuildContext context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.symmetric(horizontal: 5.0),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.memory(
-                              imgBytes, // ✅ Corrected: use actual image bytes
-                              fit: BoxFit.contain,
+                child: Container(
+                  alignment: Alignment.center,
+                  // color: Colors.grey.shade300,
+                  height: height * 0.4,
+                  // color:Colors.red,
+                  width: width * 0.85,
+                  child:
+                      images.isNotEmpty
+                          ? CarouselSlider(
+                        carouselController: CarouselSliderController(),
+                            options: CarouselOptions(
+                              onPageChanged: (index, reason){
+                                setState(() {
+                                  _currentIndex = index;
+                                });
+                              },
+                              height: height * 0.4,
+                              enlargeCenterPage: true,
+                              enableInfiniteScroll: false,
+                              autoPlay: false,
+                              viewportFraction: 0.9,
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
-                )
-                    :
-                Icon(Icons.image, color: Colors.grey),
-              )
+                            items:
+                                images.map((imgBytes) {
+                                  return Builder(
+                                    builder: (BuildContext context) {
+                                      return Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 5.0,
+                                        ),
+                                        // decoration: BoxDecoration(
+                                        //   color: Colors.grey[200],
+                                        //   borderRadius: BorderRadius.circular(
+                                        //     10,
+                                        //   ),
+                                        // ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child: InteractiveViewer(
+                                            minScale: 0.5,
+                                            maxScale: 5.0,
+                                            child: Image.memory(
+                                              imgBytes,
+                                              fit: BoxFit.contain,),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }).toList(),
+                          )
+                          : Icon(Icons.image, color: Colors.grey),
+                ),
               ),
-            SizedBox(height: 20),
+         // DotIndicator(pageController: pageController, pages: items),
 
-            Container(
-              // color: Colors.red,
-              width: width * 0.8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Add button
-                  Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.person_add_alt_outlined,
-                          color: Colors.green,
-                        ),
+              if(images.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: DotsIndicator(dotsCount: images.length,
+                  position: _currentIndex.toDouble(),
+                    decorator: DotsDecorator(
+                      color: Colors.grey,
+                      activeColor: Colors.blueAccent,
+                      size: Size.square(9.0),
+                      // activeSize: Size(12.0, 9.0),
+                      activeShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0),
                       ),
-                      Text(
-                        'Add',
-                        style: GoogleFonts.raleway(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 16,
-                          color: HexColor('#639766'),
-                        ),
-                      ),
-                    ],
+                      spacing: EdgeInsets.all(4.0),
+                    ),
+                    // onTap: (postion){
+                    //
+                    // },
                   ),
+                ),
+              SizedBox(height: 20),
 
-                  // Share button
-                  Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.share, color: HexColor('#3380B6')),
-                      ),
-                      Text(
-                        'Share',
-                        style: GoogleFonts.raleway(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 16,
-                          color: HexColor('#3380B6'),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Edit button
-                  InkWell(
-                    onTap: () async {
-                      // final result =  await
-                      // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
-                      //     index:widget.index)));
-                      // if(result == true){
-                      // Navigator.pop(context , true);
-                      // }
-                    },
-                    child: Column(
+              // buttons
+              Container(
+                // color: Colors.red,
+                width: width * 0.8,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Add button
+                    Column(
                       children: [
                         Container(
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade500,
+                            color: Colors.green.shade100,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.edit_outlined,
-                            color: HexColor('#000000'),
+                            Icons.person_add_alt_outlined,
+                            color: Colors.green,
                           ),
                         ),
                         Text(
-                          'Edit',
+                          'Add',
                           style: GoogleFonts.raleway(
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
-                            color: HexColor('#00000'),
+                            color: HexColor('#639766'),
                           ),
                         ),
                       ],
                     ),
-                  ),
 
-                  // Delete button
-                  InkWell(
-                    onTap: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) =>
-                            AlertDialog(
-                              title: Text('Delete Card'),
-                              content: Text(
-                                  'Are you sure you want to delete this card?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: Text('Delete',
-                                      style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                      );
-
-                      // if (confirm == true) {
-                      //   final box = await Hive.openBox<CardDetails>('cardbox');
-                      //   await box.deleteAt(widget.index); // Delete using index
-                      //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
-                      // }
-                    },
-
-                    child: Column(
+                    // Share button
+                    Column(
                       children: [
                         Container(
                           width: 50,
                           height: 50,
                           decoration: BoxDecoration(
-                            color: Colors.red.shade100,
+                            color: Colors.blue.shade100,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: HexColor('903034'),
-                          ),
+                          child: Icon(Icons.share, color: HexColor('#3380B6')),
                         ),
                         Text(
-                          'Delete',
+                          'Share',
                           style: GoogleFonts.raleway(
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
-                            color: HexColor('903034'),
+                            color: HexColor('#3380B6'),
                           ),
                         ),
                       ],
+                    ),
+
+                    // Edit button
+                    InkWell(
+                      onTap: () async {
+                        // final result =  await
+                        // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
+                        //     index:widget.index)));
+                        // if(result == true){
+                        // Navigator.pop(context , true);
+                        // }
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade500,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.edit_outlined,
+                              color: HexColor('#000000'),
+                            ),
+                          ),
+                          Text(
+                            'Edit',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#00000'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Delete button
+                    InkWell(
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text('Delete Card'),
+                                content: Text(
+                                  'Are you sure you want to delete this card?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(false),
+                                    child: Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.of(context).pop(true),
+                                    child: Text(
+                                      'Delete',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        );
+
+                        // if (confirm == true) {
+                        //   final box = await Hive.openBox<CardDetails>('cardbox');
+                        //   await box.deleteAt(widget.index); // Delete using index
+                        //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
+                        // }
+                      },
+
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: HexColor('903034'),
+                            ),
+                          ),
+                          Text(
+                            'Delete',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('903034'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 20),
+              // Card Details And Genral
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Card Details',
+                    style: GoogleFonts.raleway(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+
+                  Container(
+                    padding: EdgeInsets.all(5),
+                    // width: 100,
+                    decoration: BoxDecoration(
+                      color: HexColor('#386BF6'),
+                      borderRadius: BorderRadius.circular(30),
+                      // shape: BoxShape.circle
+                    ),
+                    child: Text(
+                      'General',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 10),
 
-            SizedBox(height: 20),
-            // Card Details And Genral
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Card Details',
-                  style: GoogleFonts.raleway(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                  ),
-                ),
+              
 
-                Container(
-                  padding: EdgeInsets.all(5),
-                  // width: 100,
-                  decoration: BoxDecoration(
-                    color: HexColor('#386BF6'),
-                    borderRadius: BorderRadius.circular(30),
-                    // shape: BoxShape.circle
-                  ),
-                  child: Text(
-                    'General',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+              
+              
+              
+              if (widget.dataCard.personDetails != null &&
+                  widget.dataCard.personDetails!.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'People:',
+                      style: GoogleFonts.raleway(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-
-                  if (widget.dataCard.personDetails != null && widget.dataCard.personDetails!.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'People:',
-                          style: GoogleFonts.raleway(fontSize: 14, fontWeight: FontWeight.bold),
+                    SizedBox(height: 8),
+                    ...widget.dataCard.personDetails!.map(
+                      (person) =>
+                          Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        padding: const EdgeInsets.all(12.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade300),
                         ),
-                        SizedBox(height: 8),
-                        ...widget.dataCard.personDetails!.map((person) => Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 12.0),
-                          padding: const EdgeInsets.all(12.0),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Column(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("👤 Name: ${person.name ?? 'N/A'}"),
+                            Text("📞 Phone: ${person.phoneNumber ?? 'N/A'}"),
+                            Text("📧 Email: ${person.email ?? 'N/A'}"),
+                            Text("💼 Position: ${person.position ?? 'N/A'}"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              SizedBox(height: 20,),
+              Container(
+                // width: width,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Company Details',
+                      style: GoogleFonts.raleway(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),),
+
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12.0),
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if(widget.dataCard.companyEmail!=null && widget.dataCard.companyEmail!.isNotEmpty)
+                            Text("👤 Email: ${widget.dataCard.companyEmail ?? 'N/A'}"),
+
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("👤 Name: ${person.name ?? 'N/A'}"),
-                              Text("📞 Phone: ${person.phoneNumber ?? 'N/A'}"),
-                              Text("📧 Email: ${person.email ?? 'N/A'}"),
-                              Text("💼 Position: ${person.position ?? 'N/A'}"),
-                            ],
+                            children: widget.dataCard.companyPhoneNumber != null
+                                ? widget.dataCard.companyPhoneNumber!
+                                .split(',')
+                                .map((phone) => Text(
+                              "📞 Phone: ${phone.trim()}",
+                              style: GoogleFonts.poppins(),
+                            ))
+                                .toList()
+                                : [Text("📞 Phone: N/A", style: GoogleFonts.poppins())],
                           ),
-                        )),
-                      ],
+
+                          if(widget.dataCard.companyAddress!=null && widget.dataCard.companyAddress!.isNotEmpty)
+                            Text("📧 Address : ${widget.dataCard!.companyAddress?.join(',') ?? 'N/A'}",maxLines: 4,),
+                          if(widget.dataCard.companySWorkDetails!=null && widget.dataCard.companySWorkDetails!.isNotEmpty)
+                            Text("📧 Company Work : ${widget.dataCard!.companySWorkDetails ?? 'N/A'}",),
+
+                          // Text("💼 Position: ${person.position ?? 'N/A'}"),
+                        ],
+                      ),
                     ),
 
+                  ],
+                ),
+              ),
 
-                  // Card
-                  /*  Container(
+              // Card
+              /*  Container(
                 // color: Colors.red,
                 child: Card(
                   elevation: 5,
@@ -593,11 +798,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   ),
                 ),
               ),*/
-
-                ],
-    ),
-    ),
-    ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

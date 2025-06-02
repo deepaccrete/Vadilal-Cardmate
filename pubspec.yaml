@@ -53,7 +53,7 @@ dependencies:
   nb_utils: ^7.1.4
   image_cropper: ^9.1.0
   connectivity_plus: ^6.1.4
-
+  dots_indicator: ^4.0.1
 
   #database
   hive: ^2.2.3
