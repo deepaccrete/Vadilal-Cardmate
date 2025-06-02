@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:math';
 import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
@@ -33,26 +36,114 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isCardLoading = true;
   String? errormessage;
 
-  Future<void> FetchCard()async {
-    try{
+  Uint8List? decodeBase64Image(String base64String) {
+    try {
+      print('Attempting to decode base64 string...');
+
+      if (base64String.isEmpty) {
+        print('Error: base64 string is empty');
+        return null;
+      }
+
+      // Print the first part of the string to see what format we're dealing with
+      print(
+        'Original string starts with: ${base64String.substring(0, min(50, base64String.length))}',
+      );
+
+      String cleanBase64 = base64String;
+
+      // If the string starts with 'data:', extract the base64 part
+      if (cleanBase64.startsWith('data:')) {
+        int commaIndex = cleanBase64.indexOf(',');
+        if (commaIndex != -1) {
+          cleanBase64 = cleanBase64.substring(commaIndex + 1);
+          print('Removed data: prefix directly from string');
+        }
+      }
+
+      // Remove any whitespace
+      cleanBase64 = cleanBase64.replaceAll(RegExp(r'[\s\n]'), '');
+      // Add padding if needed
+      int paddingLength = cleanBase64.length % 4;
+      if (paddingLength > 0) {
+        cleanBase64 += '=' * (4 - paddingLength);
+      }
+
+      try {
+        // First decode attempt
+        var bytes = base64Decode(cleanBase64);
+        print('First decode successful, got ${bytes.length} bytes');
+
+        // Check if the result is another base64 string
+        String decodedString = String.fromCharCodes(bytes);
+        if (decodedString.contains('base64,')) {
+          print('Found another base64 string, decoding again...');
+          String secondBase64 = decodedString.split('base64,').last;
+          // Clean up the second base64 string
+          secondBase64 = secondBase64.replaceAll(RegExp(r'[\s\n]'), '');
+          paddingLength = secondBase64.length % 4;
+          if (paddingLength > 0) {
+            secondBase64 += '=' * (4 - paddingLength);
+          }
+          bytes = base64Decode(secondBase64);
+          print('Second decode successful, got ${bytes.length} bytes');
+        }
+
+        // Verify this is actually an image by checking for common image headers
+        if (bytes.length > 8) {
+          // Check for JPEG header (FF D8)
+          if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
+            print('Detected JPEG image format');
+            return bytes;
+          }
+          // Check for PNG header (89 50 4E 47)
+          if (bytes[0] == 0x89 &&
+              bytes[1] == 0x50 &&
+              bytes[2] == 0x4E &&
+              bytes[3] == 0x47) {
+            print('Detected PNG image format');
+            return bytes;
+          }
+          // Check for GIF header (47 49 46)
+          if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+            print('Detected GIF image format');
+            return bytes;
+          }
+
+          print(
+            'Warning: No valid image header detected. First 8 bytes: [${bytes.take(8).map((b) => '0x${b.toRadixString(16).padLeft(2, '0')}').join(', ')}]',
+          );
+        }
+
+        return bytes;
+      } catch (e) {
+        print('Base64 decoding error: $e');
+        return null;
+      }
+    } catch (e) {
+      print('Error in decodeBase64Image: $e');
+      return null;
+    }
+  }
+
+  Future<void> FetchCard() async {
+    try {
       CardModel cardModel = await CardApi.getCard();
-      if(cardModel.success == 1 && cardModel.data !=null){
+      if (cardModel.success == 1 && cardModel.data != null) {
         setState(() {
           _cardapi = cardModel.data!;
           isCardLoading = false;
         });
       }
-    }catch(e){
+    } catch (e) {
       setState(() {
         errormessage = "Something Went Wrong ==========>>>>>>>>>>>> $e";
       });
     }
   }
 
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // _loadCard();
     FetchCard();
@@ -74,12 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: screenBGColor,
         body: SingleChildScrollView(
           child: Container(
-            // color: Colors.red,
-            // margin: EdgeInsets.all(10),
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             child: Column(
               children: [
-                // Name
                 Row(
                   children: [
                     Container(
@@ -87,7 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        // color: Colors.red,
                         shape: BoxShape.circle,
                         color: Colors.blue,
                       ),
@@ -108,13 +195,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 Divider(),
-                // Search textform
                 Row(
                   children: [
                     Card(
                       elevation: 10,
                       child: Container(
-                        // height: height * 0.06,
                         width: width * 0.65,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -123,7 +208,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: TextFormField(
                           controller: nameController,
                           decoration: InputDecoration(
-                            // contentPadding: EdgeInsets.all(10),
                             hintText: 'Name, email, tags,etc...',
                             hintStyle: GoogleFonts.poppins(
                               fontSize: 12,
@@ -139,21 +223,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // icons
                     Card(
                       elevation: 10,
                       child: Container(
                         height: height * 0.05,
                         width: width * 0.1,
                         decoration: BoxDecoration(
-                          // boxShadow: [
-                          //   BoxShadow(
-                          //     color: Colors.white,
-                          //     offset: Offset(0.0, 0.0),
-                          //     blurRadius: 0.0,
-                          //     spreadRadius: 0.0,
-                          //   )
-                          // ],
                           color: Colors.white,
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(1),
@@ -168,14 +243,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: height * 0.05,
                         width: width * 0.1,
                         decoration: BoxDecoration(
-                          // boxShadow: [
-                          //   BoxShadow(
-                          //     color: Colors.white,
-                          //     offset: Offset(0.0, 0.0),
-                          //     blurRadius: 0.0,
-                          //     spreadRadius: 0.0,
-                          //   )
-                          // ],
                           color: Colors.white,
                           shape: BoxShape.rectangle,
                           borderRadius: BorderRadius.circular(1),
@@ -186,170 +253,217 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
 
-
-
-
                 Container(
                   color: Colors.white,
                   width: width,
                   height: height * 0.6,
                   child: Column(
                     children: [
-
                       SizedBox(height: 10),
 
                       Expanded(
-                        child: isCardLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : ListView.builder(
-                          itemCount: _cardapi.length,
-                          itemBuilder: (context, index) {
-                            final card = _cardapi[index];
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Card(
-                                elevation: 10,
-                                child: InkWell(
-                                  onTap: () {
+                        child:
+                            isCardLoading
+                                ? Center(child: CircularProgressIndicator())
+                                : ListView.builder(
+                                  itemCount: _cardapi.length,
+                                  itemBuilder: (context, index) {
+                                    final card = _cardapi[index];
+                                    final frontImageBytes =
+                                        card.cardFrontImageBase64 != null &&
+                                                card
+                                                    .cardFrontImageBase64!
+                                                    .isNotEmpty
+                                            ? decodeBase64Image(
+                                              card.cardFrontImageBase64!,
+                                            )
+                                            : null;
 
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Card(
+                                        elevation: 10,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => DetailsScreen(
+                                                      dataCard: card,
+                                                    ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.all(16),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      height: height * 0.1,
+                                                      width: width * 0.2,
+                                                      decoration: BoxDecoration(
+                                                        color: darkcolor,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      child:
+                                                          frontImageBytes !=
+                                                                  null
+                                                              ? ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      8,
+                                                                    ),
+                                                                child: Image.memory(
+                                                                  frontImageBytes,
+                                                                  fit:
+                                                                      BoxFit
+                                                                          .cover,
+                                                                ),
+                                                              )
+                                                              : Icon(
+                                                                Icons.image,
+                                                                color:
+                                                                    Colors
+                                                                        .white,
+                                                                size: 40,
+                                                              ),
+                                                    ),
+                                                    SizedBox(width: 20),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            card.companyName
+                                                                    ?.toString() ??
+                                                                'No data',
+                                                            style:
+                                                                GoogleFonts.raleway(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  fontSize: 14,
+                                                                  color:
+                                                                      Colors
+                                                                          .black,
+                                                                ),
+                                                          ),
+                                                          Text(
+                                                            card.companyAddress!
+                                                                    .join(
+                                                                      ',',
+                                                                    ) ??
+                                                                "No Data",
+                                                            style:
+                                                                GoogleFonts.raleway(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400,
+                                                                  fontSize: 11,
+                                                                  color:
+                                                                      subtext,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Divider(),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.date_range,
+                                                          color: Colors.grey,
+                                                        ),
+                                                        Text(
+                                                          card.createdAt!
+                                                              .substring(0, 10),
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                fontSize: 12,
+                                                                color:
+                                                                    Colors
+                                                                        .grey
+                                                                        .shade700,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
 
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> DetailsScreen(
-                                    dataCard: card,
-                                        // index: index
-                                    )));
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => DetailsScreen(
-                                    //         cardDetails: card,
-                                    //       index: index
-                                    //     ),
-                                    //   ),
-                                    // ).then((result){
-                                    //   if(result == true){
-                                    //     _loadCard();
-                                    //   }
-                                    // });
+                                                    Row(
+                                                      children: [
+                                                        Container(
+                                                          padding:
+                                                              EdgeInsets.all(5),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.blue,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  10,
+                                                                ),
+                                                          ),
+                                                          child: Text(
+                                                            'General',
+                                                            style:
+                                                                GoogleFonts.poppins(
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  fontSize: 10,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        Icon(
+                                                          Icons
+                                                              .more_vert_outlined,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
-                                  child: Container(
-                                    padding: EdgeInsets.all(16),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              height: height * 0.1,
-                                              width: width * 0.2,
-                                              decoration: BoxDecoration(
-                                                color: darkcolor,
-                                              ),
-                                              child: Icon(Icons.image, color: Colors.white, size: 40),
-                                            ),
-                                            SizedBox(width: 20),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    card.companyName?.toString() ?? 'No data',
-                                                    style: GoogleFonts.raleway(
-                                                      fontWeight: FontWeight.w700,
-                                                      fontSize: 16,
-                                                      color: Colors.black,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    card.companyAddress?.toString() ?? "No Data",
-                                                    style: GoogleFonts.raleway(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontSize: 11,
-                                                      color: subtext,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Divider(),
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.date_range,
-                                                  color: Colors.grey,
-                                                ),
-                                                Text(
-                                               card.createdAt!.substring(0,10),
-                                                  style: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 12,
-                                                    color: Colors.grey.shade700,
-                                                  ),
-                                                ),
-
-                                              ],
-                                            ),
-
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.all(5),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue,
-                                                    borderRadius:
-                                                    BorderRadius.circular(10),
-                                                  ),
-                                                  child: Text(
-                                                    'General',
-                                                    style: GoogleFonts.poppins(
-                                                        color: Colors.white,
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.w600
-                                                    ),
-                                                  ),
-                                                ),
-                                                Icon(Icons.more_vert_outlined),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-
+                      ),
                     ],
                   ),
                 ),
-
-
               ],
             ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: ()async {
+          onPressed: () async {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => AddDetails()),
             );
             _loadCard();
-
-            // showModalBottomSheet(context: context, builder: (BuildContext context){
-            //  return Container(
-            //   height: height * 0.8,
-            //    width: double.infinity,
-            //  ) ;
-            // });
           },
           child: Icon(Icons.add, color: Colors.white),
           backgroundColor: Colors.blue,
