@@ -46,7 +46,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     await HiveBoxes.deleteCard(id);
   }
 
-
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -216,9 +215,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   child:
                       images.isNotEmpty
                           ? CarouselSlider(
-                        carouselController: CarouselSliderController(),
+                            carouselController: CarouselSliderController(),
                             options: CarouselOptions(
-                              onPageChanged: (index, reason){
+                              onPageChanged: (index, reason) {
                                 setState(() {
                                   _currentIndex = index;
                                 });
@@ -254,7 +253,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                             maxScale: 5.0,
                                             child: Image.memory(
                                               imgBytes,
-                                              fit: BoxFit.contain,),
+                                              fit: BoxFit.contain,
+                                            ),
                                           ),
                                         ),
                                       );
@@ -265,13 +265,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           : Icon(Icons.image, color: Colors.grey),
                 ),
               ),
-         // DotIndicator(pageController: pageController, pages: items),
 
-              if(images.isNotEmpty)
+              // DotIndicator(pageController: pageController, pages: items),
+              if (images.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
-                  child: DotsIndicator(dotsCount: images.length,
-                  position: _currentIndex.toDouble(),
+                  child: DotsIndicator(
+                    dotsCount: images.length,
+                    position: _currentIndex.toDouble(),
                     decorator: DotsDecorator(
                       color: Colors.grey,
                       activeColor: Colors.blueAccent,
@@ -480,98 +481,498 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
               SizedBox(height: 10),
 
-              
-
-              
-              
-              
+              // People Section
               if (widget.dataCard.personDetails != null &&
                   widget.dataCard.personDetails!.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'People:',
-                      style: GoogleFonts.raleway(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    ...widget.dataCard.personDetails!.map(
-                      (person) =>
-                          Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12.0),
-                        padding: const EdgeInsets.all(12.0),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("👤 Name: ${person.name ?? 'N/A'}"),
-                            Text("📞 Phone: ${person.phoneNumber ?? 'N/A'}"),
-                            Text("📧 Email: ${person.email ?? 'N/A'}"),
-                            Text("💼 Position: ${person.position ?? 'N/A'}"),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 20,
+                                  color: Colors.blue[700],
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'People',
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '${widget.dataCard.personDetails!.length} contacts',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 12),
+                      ...widget.dataCard.personDetails!.map(
+                        (person) => Container(
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Stack(
+                                        children: [
+                                          Container(
+                                            width: 48,
+                                            height: 48,
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.withOpacity(
+                                                0.1,
+                                              ),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.blue.withOpacity(
+                                                  0.2,
+                                                ),
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                person.name?.isNotEmpty == true
+                                                    ? person.name![0]
+                                                        .toUpperCase()
+                                                    : '?',
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.blue[700],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (person.position != null)
+                                            Positioned(
+                                              right: 0,
+                                              bottom: 0,
+                                              child: Container(
+                                                padding: EdgeInsets.all(4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: Colors.grey[200]!,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: Icon(
+                                                  Icons.work_outline,
+                                                  size: 12,
+                                                  color: Colors.blue[700],
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              person.name ?? 'N/A',
+                                              style: GoogleFonts.raleway(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey[800],
+                                              ),
+                                            ),
+                                            if (person.position != null)
+                                              Container(
+                                                margin: EdgeInsets.only(top: 4),
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue
+                                                      .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  person.position!,
+                                                  style: GoogleFonts.raleway(
+                                                    fontSize: 12,
+                                                    color: Colors.blue[700],
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.more_vert,
+                                          color: Colors.grey[600],
+                                        ),
+                                        onPressed: () {
+                                          // Show options menu
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  if (person.phoneNumber != null ||
+                                      person.email != null)
+                                    Container(
+                                      margin: EdgeInsets.only(top: 16),
+                                      padding: EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[50],
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          if (person.phoneNumber != null)
+                                            ListTile(
+                                              onTap: () {
+                                                // Handle phone tap
+                                              },
+                                              contentPadding: EdgeInsets.zero,
+                                              leading: Container(
+                                                width: 32,
+                                                height: 32,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.green
+                                                      .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Icon(
+                                                  Icons.phone_outlined,
+                                                  color: Colors.green[700],
+                                                  size: 18,
+                                                ),
+                                              ),
+                                              title: Text(
+                                                person.phoneNumber!,
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[800],
+                                                ),
+                                              ),
+                                            ),
+                                          if (person.email != null)
+                                            ListTile(
+                                              onTap: () {
+                                                // Handle email tap
+                                              },
+                                              contentPadding: EdgeInsets.zero,
+                                              leading: Container(
+                                                width: 32,
+                                                height: 32,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red.withOpacity(
+                                                    0.1,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Icon(
+                                                  Icons.email_outlined,
+                                                  color: Colors.red[700],
+                                                  size: 18,
+                                                ),
+                                              ),
+                                              title: Text(
+                                                person.email!,
+                                                style: GoogleFonts.raleway(
+                                                  fontSize: 14,
+                                                  color: Colors.grey[800],
+                                                ),
+                                              ),
+                                              trailing: IconButton(
+                                                icon: Icon(
+                                                  Icons.open_in_new,
+                                                  color: Colors.grey[600],
+                                                  size: 20,
+                                                ),
+                                                onPressed: () {
+                                                  // Handle email open
+                                                },
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              SizedBox(height: 20,),
+
+              // Company Section
               Container(
-                // width: width,
+                margin: EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Company Details',
-                      style: GoogleFonts.raleway(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),),
-
                     Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      padding: const EdgeInsets.all(12.0),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if(widget.dataCard.companyEmail!=null && widget.dataCard.companyEmail!.isNotEmpty)
-                            Text("👤 Email: ${widget.dataCard.companyEmail ?? 'N/A'}"),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: widget.dataCard.companyPhoneNumber != null
-                                ? widget.dataCard.companyPhoneNumber!
-                                .split(',')
-                                .map((phone) => Text(
-                              "📞 Phone: ${phone.trim()}",
-                              style: GoogleFonts.poppins(),
-                            ))
-                                .toList()
-                                : [Text("📞 Phone: N/A", style: GoogleFonts.poppins())],
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.business_outlined,
+                                size: 20,
+                                color: Colors.indigo[700],
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Company Details',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800],
+                                ),
+                              ),
+                            ],
                           ),
-
-                          if(widget.dataCard.companyAddress!=null && widget.dataCard.companyAddress!.isNotEmpty)
-                            Text("📧 Address : ${widget.dataCard!.companyAddress?.join(',') ?? 'N/A'}",maxLines: 4,),
-                          if(widget.dataCard.companySWorkDetails!=null && widget.dataCard.companySWorkDetails!.isNotEmpty)
-                            Text("📧 Company Work : ${widget.dataCard!.companySWorkDetails ?? 'N/A'}",),
-
-                          // Text("💼 Position: ${person.position ?? 'N/A'}"),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Business',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.indigo[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                    SizedBox(height: 12),
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          if (widget.dataCard.companyEmail != null &&
+                              widget.dataCard.companyEmail!.isNotEmpty)
+                            ListTile(
+                              onTap: () {
+                                // Handle company email tap
+                              },
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.email_outlined,
+                                  color: Colors.blue[700],
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                'Email',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.companyEmail!,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
 
+                          if (widget.dataCard.companyPhoneNumber != null && widget.dataCard.companyPhoneNumber!.isNotEmpty)
+                            ...widget.dataCard.companyPhoneNumber!
+                                .split(',')
+                                .map(
+                                  (phone) => ListTile(
+                                    onTap: () {
+                                      // Handle phone tap
+                                    },
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons.phone_outlined,
+                                        color: Colors.green[700],
+                                        size: 20,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      'Phone',
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      phone.trim(),
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 14,
+                                        color: Colors.grey[800],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+
+                          if (widget.dataCard.companyAddress != null &&
+                              widget.dataCard.companyAddress!.isNotEmpty)
+                            ListTile(
+                              onTap: () {
+                                // Handle address tap
+                              },
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.location_on_outlined,
+                                  color: Colors.orange[700],
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                'Address',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.companyAddress!.join(', '),
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+
+                          if (widget.dataCard.companySWorkDetails != null &&
+                              widget.dataCard.companySWorkDetails!.isNotEmpty)
+                            ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.work_outline,
+                                  color: Colors.purple[700],
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                'Company Work',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.companySWorkDetails!,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
