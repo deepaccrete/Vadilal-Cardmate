@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' as io;
 import 'dart:typed_data';
 import 'dart:math';
 import 'package:camera_app/api/CardApi.dart';
@@ -8,10 +9,21 @@ import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
+import 'package:excel/excel.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:nb_utils/nb_utils.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+
+import 'package:universal_html/html.dart' as web;
+// web
+
 
 class HomeScreen extends StatefulWidget {
   final String? token;
@@ -23,14 +35,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  TextEditingController nameController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
 
   final outborder = OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.transparent),
     borderRadius: BorderRadius.circular(10),
   );
+  Map<String, dynamic> dataCardToExportableMap(DataCard card) {
+    return {
+      'Card ID': card.cardID?.toString() ?? '',
+      'Company Name': card.companyName ?? '',
+      'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
+      'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
+      'Person Phone ': card.personDetails?.map((p)=> p.phoneNumber).join(',')?? '',
+      'Company Phone': card.companyPhoneNumber ?? '',
+      'Company Address': card.companyAddress?.join(', ') ?? '',
+      'Company Email': card.companyEmail ?? '',
+      'Web Address': card.webAddress ?? '',
+      'Work Details': card.companySWorkDetails ?? '',
+      'GSTIN': card.gSTIN ?? '',
+      'Created By': card.createdBy?.toString() ?? '',
+      'Created At': card.createdAt ?? '',
+    };
+  }
 
-  List<CardDetails> _cards = [];
+  // List<CardDetails> _cards = [];
   List<DataCard> _cardapi = [];
 
   bool isCardLoading = true;
@@ -142,6 +171,54 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+  Future<void> exportDataToExcel(List<Map<String, dynamic>> data) async {
+    try {
+      var excel = Excel.createExcel();
+      Sheet sheet = excel['Sheet1'];
+
+      if (data.isNotEmpty) {
+        List<String> headers = data[0].keys.toList();
+        sheet.appendRow(headers);
+
+        for (var row in data) {
+          sheet.appendRow(headers.map((key) => row[key].toString()).toList());
+        }
+
+        final excelBytes = excel.encode();
+
+        if (kIsWeb) {
+          // Convert to blob and trigger download using package:web
+          final blob = web.Blob([excelBytes!], 'application/vnd.ms-excel');
+          final url = web.Url.createObjectUrlFromBlob(blob);
+          final anchor = web.AnchorElement(href: url)
+            ..download = "exported_data.xlsx"
+            ..click();
+          web.Url.revokeObjectUrl(url);
+          return;
+        }
+
+        // Android / iOS export
+        if (io.Platform.isAndroid || io.Platform.isIOS) {
+          var status = await Permission.storage.request();
+          if (!status.isGranted) {
+            print('Permission denied');
+            return;
+          }
+
+          final dir = await getExternalStorageDirectory();
+          final file = io.File('${dir!.path}/exported_data.xlsx');
+          file.createSync(recursive: true);
+          file.writeAsBytesSync(excelBytes!);
+          print('Excel saved at: ${file.path}');
+        }
+      } else {
+        print('No data to export');
+      }
+    } catch (e) {
+      print('Export failed: $e');
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -149,22 +226,39 @@ class _HomeScreenState extends State<HomeScreen> {
     FetchCard();
   }
 
-  Future<void> _loadCard() async {
+  /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
       _cards = box.values.toList();
     });
   }
-
+*/
   @override
   Widget build(BuildContext context) {
+    List<DataCard> fillterCard = [];
+    if (searchController.text.toString().isEmpty) {
+      fillterCard = _cardapi;
+    } else {
+      fillterCard =
+          _cardapi
+              .where(
+                (_element) => (_element.companyName!.toLowerCase().contains(
+                  searchController.text.toLowerCase(),
+                )),
+              )
+              .toList();
+    }
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
+    // List<Map<String, dynamic>> exportableData = _cardapi.map((card) => card).toList();
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: screenBGColor,
         body: SingleChildScrollView(
           child: Container(
+            // color: Colors.red,
+            // height: height,
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             child: Column(
               children: [
@@ -206,7 +300,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: TextFormField(
-                          controller: nameController,
+                          onChanged: (v) {
+                            setState(() {});
+                          },
+                          controller: searchController,
                           decoration: InputDecoration(
                             hintText: 'Name, email, tags,etc...',
                             hintStyle: GoogleFonts.poppins(
@@ -223,17 +320,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    Card(
-                      elevation: 10,
-                      child: Container(
-                        height: height * 0.05,
-                        width: width * 0.1,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(1),
+                    InkWell(
+                      onTap: () {
+                        List<Map<String, dynamic>> exportableData =
+                        _cardapi.map((card) => dataCardToExportableMap(card)).toList();
+
+                        exportDataToExcel(exportableData);
+                      },
+                      child: Card(
+                        elevation: 10,
+                        child: Container(
+                          height: height * 0.05,
+                          width: width * 0.1,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                          child: Image.asset('assets/images/csvicon.png'),
                         ),
-                        child: Image.asset('assets/images/csvicon.png'),
                       ),
                     ),
                     SizedBox(width: 5),
@@ -254,9 +359,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 Container(
-                  color: Colors.white,
+                  // color: Colors.blue,  // Removing blue background
                   width: width,
-                  height: height * 0.6,
+                  height:
+                      height * 0.75, // Adjusted height to leave space for FAB
                   child: Column(
                     children: [
                       SizedBox(height: 10),
@@ -266,9 +372,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             isCardLoading
                                 ? Center(child: CircularProgressIndicator())
                                 : ListView.builder(
-                                  itemCount: _cardapi.length,
+                                  // itemCount: _cardapi.length,
+                                  itemCount: fillterCard.length,
                                   itemBuilder: (context, index) {
-                                    final card = _cardapi[index];
+                                    // final card = _cardapi[index];
+                                    final card = fillterCard[index];
                                     final frontImageBytes =
                                         card.cardFrontImageBase64 != null &&
                                                 card
@@ -463,7 +571,7 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(builder: (context) => AddDetails()),
             );
-            _loadCard();
+            // _loadCard();
           },
           child: Icon(Icons.add, color: Colors.white),
           backgroundColor: Colors.blue,
@@ -471,6 +579,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+  // card_list_screen.dart or export_helper.dart
+
+
+
 }
 
 // list

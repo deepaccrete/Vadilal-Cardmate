@@ -120,104 +120,106 @@ class _BottomnavState extends State<Bottomnav> {
 }
 
 
-//
-// import 'package:camera_app/constant/colors.dart';
-// import 'package:camera_app/screen/camera_screen.dart';
-// import 'package:camera_app/screen/cart.dart';
-// import 'package:camera_app/screen/home.dart';
-// import 'package:camera_app/screen/profile.dart';
-// import 'package:camera_app/screen/search.dart';
-// import 'package:flutter/material.dart';
-//
-// class Bottomnav extends StatefulWidget {
-//   const Bottomnav({super.key});
-//
-//   @override
-//   State<Bottomnav> createState() => _BottomnavState();
-// }
-//
-// class _BottomnavState extends State<Bottomnav> {
-//   int _selectedIndex = 0;
-//
-//   static final List<Widget> _widgetOption = [
-//     HomeScreen(),
-//     SearchScreen(),
-//     CameraScreen(),
-//     CartScreen(),
-//     ProfileScreen()
-//   ];
-//
-//   void _onTap(int index) {
-//     setState(() {
-//       _selectedIndex = index;
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: IndexedStack(
-//         index: _selectedIndex,
-//         children: _widgetOption,
-//       ),
-//       floatingActionButton: GestureDetector(
-//         onTap: () {
-//           _onTap(2); // Camera screen index
-//         },
-//         child: Container(
-//           height: 70,
-//           width: 70,
-//           decoration: BoxDecoration(
-//             color: Colors.indigo[900],
-//             shape: BoxShape.circle,
-//             border: Border.all(color: Colors.indigo[100]!, width: 5),
-//           ),
-//           child: const Icon(Icons.credit_card, color: Colors.white, size: 30),
-//         ),
-//       ),
-//       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-//       bottomNavigationBar: BottomAppBar(
-//         shape: const CircularNotchedRectangle(),
-//         notchMargin: 6,
-//         child: SizedBox(
-//           height: 60,
-//           child: Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceAround,
-//             children: [
-//               buildTabItem(icon: Icons.home_filled, index: 0, label: 'Home'),
-//               buildTabItem(icon: Icons.search, index: 1, label: 'Search'),
-//               const SizedBox(width: 40), // space for FAB
-//               buildTabItem(icon: Icons.shopping_cart_outlined, index: 3, label: 'Cart'),
-//               buildTabItem(icon: Icons.person_outline, index: 4, label: 'Profile'),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget buildTabItem({
-//     required IconData icon,
-//     required int index,
-//     required String label,
-//   }) {
-//     final isSelected = _selectedIndex == index;
-//     return GestureDetector(
-//       onTap: () => _onTap(index),
-//       child: Column(
-//         mainAxisSize: MainAxisSize.min,
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(icon, color: isSelected ? Colors.indigo[900] : Colors.black45),
-//           Text(
-//             label,
-//             style: TextStyle(
-//               color: isSelected ? Colors.indigo[900] : Colors.black45,
-//               fontSize: 12,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+/*
+
+import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/screen/camera_screen.dart';
+import 'package:camera_app/screen/cart.dart';
+import 'package:camera_app/screen/home.dart';
+import 'package:camera_app/screen/profile.dart';
+import 'package:camera_app/screen/search.dart';
+import 'package:flutter/material.dart';
+
+class Bottomnav extends StatefulWidget {
+  const Bottomnav({super.key});
+
+  @override
+  State<Bottomnav> createState() => _BottomnavState();
+}
+
+class _BottomnavState extends State<Bottomnav> {
+  int _selectedIndex = 0;
+
+  static final List<Widget> _widgetOption = [
+    HomeScreen(),
+    SearchScreen(),
+    CameraScreen(),
+    CartScreen(),
+    ProfileScreen()
+  ];
+
+  void _onTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _widgetOption,
+      ),
+      floatingActionButton: GestureDetector(
+        onTap: () {
+          _onTap(2); // Camera screen index
+        },
+        child: Container(
+          height: 70,
+          width: 70,
+          decoration: BoxDecoration(
+            color: Colors.indigo[900],
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.indigo[100]!, width: 5),
+          ),
+          child: const Icon(Icons.credit_card, color: Colors.white, size: 30),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              buildTabItem(icon: Icons.home_filled, index: 0, label: 'Home'),
+              buildTabItem(icon: Icons.search, index: 1, label: 'Search'),
+              const SizedBox(width: 40), // space for FAB
+              buildTabItem(icon: Icons.shopping_cart_outlined, index: 3, label: 'Cart'),
+              buildTabItem(icon: Icons.person_outline, index: 4, label: 'Profile'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTabItem({
+    required IconData icon,
+    required int index,
+    required String label,
+  }) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => _onTap(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: isSelected ? Colors.indigo[900] : Colors.black45),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.indigo[900] : Colors.black45,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+*/
