@@ -20,7 +20,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   FocusNode emaiilFocus = FocusNode();
@@ -63,45 +62,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 10,vertical: 20),
+          width: width,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
             children: [
               Container(
                 // alignment: Alignment.bottomCenter,
-                height: height * 0.1,
+                // height: height * 0.16,
                 width: width * 0.5,
                 decoration: BoxDecoration(
                   // color: Colors.red
                 ),
-                child:Image.asset('assets/images/logov.png',fit: BoxFit.fill,),
+                child: Image.asset('assets/images/logov.png', fit: BoxFit.fill),
               ),
-              SizedBox(height: 10,),
+              SizedBox(height: 10),
               Container(
-                height: height * 0.16,
-                width: width,
+                height: height * 0.2,
+                // width: width,
                 decoration: BoxDecoration(
                   // color: Colors.red
                 ),
-                child:Image.asset('assets/images/Sign up (1).png'),
+                child: Image.asset('assets/images/Sign up_1 (1).png'),
               ),
 
-              SizedBox(height: 50,),
+              SizedBox(height: height * 0.02),
 
               Container(
                 // color: Colors.red,
-                child: Text('Login to Your Account',textScaler: TextScaler.linear(1.2),style: GoogleFonts.openSans(color: Colors.white,fontSize: 20),),
+                child: Text(
+                  'Login to Your Account',
+                  textScaler: TextScaler.linear(1.2),
+                  style: GoogleFonts.roboto(color: Colors.white, fontSize: 20),
+                ),
               ),
-              SizedBox(height: 25,),
-
-
+              SizedBox(height: height * 0.02),
               Form(
                 key: _formkey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-                    Text('Email Address',style: GoogleFonts.openSans(color: Colors.white),),
-                    SizedBox(height: 10,),
+                    Text(
+                      'Email Address',
+                      style: GoogleFonts.openSans(color: Colors.white),
+                    ),
+                    SizedBox(height: 10),
                     Container(
                       // color: Colors.red,
                       // height: height * 0.1,
@@ -111,98 +115,108 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: false,
                         focusNode: emaiilFocus,
                         onFieldSubmitted: (value) {
-                          FocusScope.of(
-                            context,
-                          ).requestFocus(passwordFocus);
+                          FocusScope.of(context).requestFocus(passwordFocus);
                         },
                         validator: validateEmail,
                         decoration: InputDecoration(
-                contentPadding: EdgeInsets.symmetric(vertical: 15,horizontal: 15),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 15,
+                          ),
                           filled: true,
                           hintText: 'Enter Email',
                           fillColor: Colors.white,
-                         enabledBorder: outborder,
+                          enabledBorder: outborder,
                           disabledBorder: outborder,
                           focusedBorder: outborder,
                           errorBorder: outborder,
-                          focusedErrorBorder: outborder
-                          )
+                          focusedErrorBorder: outborder,
                         ),
                       ),
+                    ),
 
-                    SizedBox(height: 10,),
-                    Text('Password',style: GoogleFonts.openSans(color: Colors.white),),
-                    SizedBox(height: 10,),
+                    SizedBox(height: 10),
+                    Text(
+                      'Password',
+                      style: GoogleFonts.openSans(color: Colors.white),
+                    ),
+                    SizedBox(height: 10),
                     ValueListenableBuilder(
-
                       valueListenable: obsecurepass,
-                      builder: (BuildContext context, value,child) {
-                      return  Container(
-                        // color: Colors.red,
-                        // height: height * 0.1,
-                        width: width * 0.8,
-                        child: TextFormField(
-                          focusNode: passwordFocus,
-                          controller: passwordController,
-                          obscureText: obsecurepass.value,
-                          validator: (value) {
-                            if (value == null ||
-                                value.isEmpty ||
-                                value.length < 4) {
-                              return "Please Enter Password";
-                              // :"Please enter "
-                            }
-                          },
+                      builder: (BuildContext context, value, child) {
+                        return Container(
+                          // color: Colors.red,
+                          // height: height * 0.1,
+                          width: width * 0.8,
+                          child: TextFormField(
+                            focusNode: passwordFocus,
+                            controller: passwordController,
+                            obscureText: obsecurepass.value,
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value.length < 4) {
+                                return "Please Enter Password";
+                                // :"Please enter "
+                              }
+                            },
 
-                          decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(vertical:15,horizontal: 15),
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 15,
+                                horizontal: 15,
+                              ),
                               hintText: 'Enter password',
                               suffixIcon: GestureDetector(
                                 onTap: () {
                                   obsecurepass.value = !obsecurepass.value;
                                 },
                                 child:
-                                obsecurepass.value == true
-                                    ? Icon(Icons.visibility)
-                                    : Icon(Icons.visibility_off),
+                                    obsecurepass.value == true
+                                        ? Icon(Icons.visibility)
+                                        : Icon(Icons.visibility_off),
                               ),
-                            filled: true,
-                            fillColor: Colors.white,
+                              filled: true,
+                              fillColor: Colors.white,
                               enabledBorder: outborder,
                               disabledBorder: outborder,
                               focusedBorder: outborder,
                               errorBorder: outborder,
-                              focusedErrorBorder: outborder
+                              focusedErrorBorder: outborder,
+                            ),
                           ),
-                        ),
-                      );
-                      }
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 25,),
-
+              SizedBox(height: 25),
 
               CommonButton(
                 width: width * 0.8,
-                  bgcolor: Colors.indigoAccent,
-                  onTap: () {
-                    loginReq();
-                  },
-
-                  child:Text('Login',style: GoogleFonts.openSans(color: Colors.white,fontSize: 20),)),
-
-              SizedBox(height: 10,),
-
-              Text('Forget User / Password',style: GoogleFonts.openSans(fontSize: 18,color: Colors.grey),)
+                height: 50,
+                bgcolor: Colors.indigoAccent,
+                onTap: () {
+                  loginReq();
+                },
+                child: Text(
+                  'Login',
+                  style: GoogleFonts.openSans(
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              // Text('Forget User / Password', style: GoogleFonts.openSans(fontSize: 18, color: Colors.grey)),
             ],
           ),
         ),
       ),
-
     );
   }
+
   loginReq() async {
     if (_formkey.currentState!.validate()) {
       try {
@@ -241,5 +255,4 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
 }

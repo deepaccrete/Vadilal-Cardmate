@@ -2,6 +2,7 @@ import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/screen/camera_screen.dart';
 import 'package:camera_app/screen/cart.dart';
 import 'package:camera_app/screen/home.dart';
+import 'package:camera_app/screen/login1.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';
 import 'package:circle_nav_bar/circle_nav_bar.dart';
@@ -25,7 +26,7 @@ class _BottomnavState extends State<Bottomnav> {
   ];
 
 
-  Widget _getSelectedScreen(int index){
+  Widget _getSelectedScreen(int index) {
     switch (index) {
       case 0:
           return HomeScreen();
@@ -42,7 +43,7 @@ class _BottomnavState extends State<Bottomnav> {
     }
   }
 
-  void _onTap(int index){
+  void _onTap(int index) {
     setState(() {
       _SelectedIndex = index;
     });
@@ -53,34 +54,37 @@ class _BottomnavState extends State<Bottomnav> {
     bool showBottomNav = _SelectedIndex != 1; // hide on index 1
 
     return Scaffold(
-      extendBody: showBottomNav, // Optional: for proper rendering with notch shadows
+      extendBody: _SelectedIndex == 1 ? false : true,
       body: _getSelectedScreen(_SelectedIndex),
-      bottomNavigationBar: showBottomNav
-          ? CircleNavBar(
-        activeIcons: [
-          Icon(Icons.home, color: Colors.white),
-          Icon(Icons.camera, color: Colors.white),
-          Icon(Icons.logout, color: Colors.white),
-        ],
+
+      // IndexedStack(
+      // index: _SelectedIndex,
+      // children: _WidgetOption,
+      // ), //   onTap: (){
+      //     _onTap(2);
+      //   },
+      //   child: Container(
+      //     height: 70,
+      //     width: 70,
+      //     decoration: BoxDecoration(
+      //       color: Colors.indigo[900],
+      //       shape: BoxShape.circle,
+      //       border:
+      //     ),
+      //   ),
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        //=------------------------------------------------------------------
+      bottomNavigationBar:CircleNavBar(
+          activeIcons:[
+            Icon(Icons.home, color: Colors.white),
+            Icon(Icons.camera, color: Colors.white),
+            Icon(Icons.logout, color: Colors.white),
+          ],
         inactiveIcons: const [
-          Column(
-            children: [
-              Icon(Icons.home, color: Color(0xff042E64)),
-              Text("Home"),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(Icons.camera, color: Color(0xff042E64)),
-              Text("Capture Card"),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(Icons.logout, color: Color(0xff042E64)),
-              Text("Logout"),
-            ],
-          ),
+          Column(children: [Icon(Icons.home, color: Color(0xff042E64)), Text("Home")]),
+          Column(children: [Icon(Icons.camera, color: Color(0xff042E64)), Text("Capture Card")]),
+          Column(children: [Icon(Icons.logout, color: Color(0xff042E64)), Text("Logout")]),
         ],
         color: Colors.white,
         height: 60,
@@ -89,16 +93,18 @@ class _BottomnavState extends State<Bottomnav> {
         activeIndex: _SelectedIndex,
         onTap: (index) {
           print("-----------------------------------$index");
-      if(index == 1){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen()));
-      }
-         else if (index == 2) {
+          if (index == 2) {
+            setState(() {
+              _SelectedIndex=index;
+            });
             showConfirmDialogCustom(
               context,
               title: "Do you want to logout from the app?",
               dialogType: DialogType.CONFIRMATION,
               centerImage: 'URL',
-              onAccept: (p0) {},
+              onAccept: (p0) {
+                LoginScreen().launch(context, isNewTask: true);
+              },
             );
           } else {
             _onTap(index);
@@ -114,7 +120,42 @@ class _BottomnavState extends State<Bottomnav> {
         shadowColor: Color(0xff042E64),
         elevation: 10,
       )
-          : null, // <--- Hide the bottom nav here
+        //---------------------------------------------------------------------------------------------------------
+      // BottomNavigationBar(
+      // selectedLabelStyle: TextStyle(color: Colors.black),
+      //     backgroundColor: Colors.black,
+      //     currentIndex: _SelectedIndex,
+      //     onTap: _onTap,
+      //     items: [
+      //       BottomNavigationBarItem(
+      //           icon: Icon(Icons.home_filled,color: Colors.black,),
+      //         activeIcon: Icon(Icons.home_filled,color: Colors.blue,),
+      //         label: 'Home',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.search,color: Colors.black,),
+      //         activeIcon: Icon(Icons.search,color:  Colors.blue,),
+      //         label: 'Search',
+      //         backgroundColor: Colors.white
+      //       ),BottomNavigationBarItem(
+      //         icon: Icon(Icons.camera_alt_outlined,color: Colors.black,),
+      //         activeIcon: Icon(Icons.camera,color:  Colors.blue,),
+      //         label: 'Camera',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.shopping_cart_outlined,color: Colors.black,),
+      //         activeIcon: Icon(Icons.shopping_cart_outlined,color:  Colors.blue,),
+      //         label: 'Cart',
+      //         backgroundColor: Colors.white
+      //       ), BottomNavigationBarItem(
+      //           icon: Icon(Icons.person_outline,color: Colors.black,),
+      //         activeIcon: Icon(Icons.person_outline,color:  Colors.blue,),
+      //         label: 'profile',
+      //         backgroundColor: Colors.white
+      //       ),
+      //
+      //     ]
+      // ),
     );
   }
 }
