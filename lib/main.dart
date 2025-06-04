@@ -1,5 +1,6 @@
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/model/dbModel/imagemodel.dart';
+import 'package:camera_app/screen/home.dart';
 
 import 'package:camera_app/screen/splash.dart';
 import 'package:camera_app/store/appStore.dart';
@@ -36,7 +37,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // home:GroupAndTags()
-    // home:Bottomnav(),
+    // home:HomeScreen()
     home: SplashScreen()
     );
   }

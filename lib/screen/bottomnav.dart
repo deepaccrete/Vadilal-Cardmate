@@ -57,6 +57,8 @@ class _BottomnavState extends State<Bottomnav> {
       body: _getSelectedScreen(_SelectedIndex),
       bottomNavigationBar: showBottomNav
           ? CircleNavBar(
+
+
         activeIcons: [
           Icon(Icons.home, color: Colors.white),
           Icon(Icons.camera, color: Colors.white),
@@ -114,7 +116,8 @@ class _BottomnavState extends State<Bottomnav> {
         shadowColor: Color(0xff042E64),
         elevation: 10,
       )
-          : null, // <--- Hide the bottom nav here
+          : null,// <--- Hide the bottom nav here
+      // backgroundColor: Colors.white.withAlpha(100),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/screen/home.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -227,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Bottomnav()),
+            MaterialPageRoute(builder: (context) => HomeScreen()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

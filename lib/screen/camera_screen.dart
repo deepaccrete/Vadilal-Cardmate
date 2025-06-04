@@ -5,7 +5,9 @@ import 'package:camera/camera.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/db/hive_pimage.dart';
 import 'package:camera_app/model/dbModel/imagemodel.dart';
+import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/dualimage.dart';
+import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -108,23 +110,23 @@ bool istwoside = false;
     }
   }*/
 
-  Future<File?> cropImage(File imageFile , BuildContext context)async{
-    final croppedFile = await ImageCropper().cropImage(sourcePath: imageFile.path,
-    uiSettings: [
-      AndroidUiSettings(
-        toolbarTitle: 'Crop Image',
-        toolbarColor: primarycolor,
-        toolbarWidgetColor: Colors.white,
-        aspectRatioPresets: [
-          CropAspectRatioPreset.original,
-          CropAspectRatioPreset.square,
-          CropAspectRatioPreset.ratio3x2,
-        ]
-      ),
-      WebUiSettings(context: context),
-    ]
+  Future<File?> cropImage(File imageFile, BuildContext context) async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      aspectRatio: const CropAspectRatio(ratioX: 2, ratioY: 3), // 👈 custom ratio
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: primarycolor,
+          toolbarWidgetColor: Colors.white,
+          // Only show default presets if needed
+          // aspectRatioPresets: [CropAspectRatioPreset.original],
+          lockAspectRatio: false, // Set to true if you want to force 2:3
+        ),
+        WebUiSettings(context: context),
+      ],
     );
-    return croppedFile != null ? File(croppedFile.path):null;
+    return croppedFile != null ? File(croppedFile.path) : null;
   }
 
 // @override
@@ -596,9 +598,9 @@ if(await hasInternet()){
       final XFile file = await controller!.takePicture();
       await file.saveTo(originalPath);
 
-      setState(() {
-        isProcessing = true;
-      });
+      // setState(() {
+      //   isProcessing = true;
+      // });
 
       // Crop image
       final croppedFile = await cropImage(File(originalPath), context);
@@ -640,12 +642,16 @@ if(await hasInternet()){
         }
 
         if (uploaded) {
-          final ok = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
-            ),
-          ) ?? false;
+          final ok = await
+
+          // Navigator.push<bool>(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
+          //   ),
+          // ) ?? false;
+
+          Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
 
           if (ok) Navigator.pop(context, {'front': path});
         } else {
@@ -735,6 +741,7 @@ if(await hasInternet()){
 
 
   void startSyncListener() {
+
     Connectivity().onConnectivityChanged.listen((result) {
       if (result != ConnectivityResult.none) {
         syncPendingImages();
@@ -935,4 +942,11 @@ if(await hasInternet()){
 
 
 
+}
+class CropAspectRatioPresetCustom implements CropAspectRatioPresetData {
+  @override
+  (int, int)? get data => (2, 3);
+
+  @override
+  String get name => '2x3 (customized)';
 }

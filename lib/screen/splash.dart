@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:camera_app/model/LoginModel.dart';
 import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/camera_screen.dart';
+import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/login.dart';
 import 'package:camera_app/screen/login1.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Timer(Duration(seconds: 3), () {
       if (appStore.isLoggedIn) {
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()),(route) => false,);
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()),(route) => false,);
       }else{
         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
       }
