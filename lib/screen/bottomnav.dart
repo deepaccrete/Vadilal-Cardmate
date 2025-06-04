@@ -16,33 +16,32 @@ class Bottomnav extends StatefulWidget {
 class _BottomnavState extends State<Bottomnav> {
   int _SelectedIndex = 0;
 
-  static final List<Widget> _WidgetOption =[
+  static final List<Widget> _WidgetOption = [
     HomeScreen(),
     SearchScreen(),
     // CameraScreen(),
     CartScreen(),
-    ProfileScreen()
+    ProfileScreen(),
   ];
 
-
-  Widget _getSelectedScreen(int index){
+  Widget _getSelectedScreen(int index) {
     switch (index) {
       case 0:
-          return HomeScreen();
+        return HomeScreen();
       // case 1:
       //     return  CameraScreen();
       case 1:
-          return SearchScreen();
+        return SearchScreen();
       case 2:
-          return CartScreen();
+        return CartScreen();
       case 3:
-          return ProfileScreen();
+        return ProfileScreen();
       default:
         return HomeScreen();
     }
   }
 
-  void _onTap(int index){
+  void _onTap(int index) {
     setState(() {
       _SelectedIndex = index;
     });
@@ -53,75 +52,83 @@ class _BottomnavState extends State<Bottomnav> {
     bool showBottomNav = _SelectedIndex != 1; // hide on index 1
 
     return Scaffold(
-      extendBody: showBottomNav, // Optional: for proper rendering with notch shadows
+      extendBody: true,
       body: _getSelectedScreen(_SelectedIndex),
-      bottomNavigationBar: showBottomNav
-          ? CircleNavBar(
-
-
-        activeIcons: [
-          Icon(Icons.home, color: Colors.white),
-          Icon(Icons.camera, color: Colors.white),
-          Icon(Icons.logout, color: Colors.white),
-        ],
-        inactiveIcons: const [
-          Column(
-            children: [
-              Icon(Icons.home, color: Color(0xff042E64)),
-              Text("Home"),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(Icons.camera, color: Color(0xff042E64)),
-              Text("Capture Card"),
-            ],
-          ),
-          Column(
-            children: [
-              Icon(Icons.logout, color: Color(0xff042E64)),
-              Text("Logout"),
-            ],
-          ),
-        ],
-        color: Colors.white,
-        height: 60,
-        circleWidth: 60,
-        circleColor: Color(0xff042E64),
-        activeIndex: _SelectedIndex,
-        onTap: (index) {
-          print("-----------------------------------$index");
-      if(index == 1){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen()));
-      }
-         else if (index == 2) {
-            showConfirmDialogCustom(
-              context,
-              title: "Do you want to logout from the app?",
-              dialogType: DialogType.CONFIRMATION,
-              centerImage: 'URL',
-              onAccept: (p0) {},
-            );
-          } else {
-            _onTap(index);
-          }
-        },
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-        cornerRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-          bottomRight: Radius.circular(24),
-          bottomLeft: Radius.circular(24),
-        ),
-        shadowColor: Color(0xff042E64),
-        elevation: 10,
-      )
-          : null,// <--- Hide the bottom nav here
-      // backgroundColor: Colors.white.withAlpha(100),
+      bottomNavigationBar:
+          showBottomNav
+              ? Container(
+                margin: EdgeInsets.only(
+                  bottom: 10,
+                ), // Add margin to lift the nav bar up
+                child: CircleNavBar(
+                  activeIcons: [
+                    Icon(Icons.home, color: Colors.white),
+                    Icon(Icons.camera, color: Colors.white),
+                    Icon(Icons.logout, color: Colors.white),
+                  ],
+                  inactiveIcons: const [
+                    Column(
+                      children: [
+                        Icon(Icons.home, color: Color(0xff042E64)),
+                        Text("Home"),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Icon(Icons.camera, color: Color(0xff042E64)),
+                        Text("Capture Card"),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Icon(Icons.logout, color: Color(0xff042E64)),
+                        Text("Logout"),
+                      ],
+                    ),
+                  ],
+                  color: Colors.white,
+                  height: 60,
+                  circleWidth: 60,
+                  circleColor: Color(0xff042E64),
+                  activeIndex: _SelectedIndex,
+                  onTap: (index) {
+                    print("-----------------------------------$index");
+                    if (index == 1) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CameraScreen()),
+                      );
+                    } else if (index == 2) {
+                      showConfirmDialogCustom(
+                        context,
+                        title: "Do you want to logout from the app?",
+                        dialogType: DialogType.CONFIRMATION,
+                        centerImage: 'URL',
+                        onAccept: (p0) {},
+                      );
+                    } else {
+                      _onTap(index);
+                    }
+                  },
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: 0,
+                  ),
+                  cornerRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                  shadowColor: Color(0xff042E64),
+                  elevation: 10,
+                ),
+              )
+              : null,
     );
   }
 }
-
 
 /*
 

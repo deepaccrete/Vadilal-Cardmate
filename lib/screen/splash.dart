@@ -3,9 +3,6 @@ import 'dart:convert';
 
 import 'package:camera_app/model/LoginModel.dart';
 import 'package:camera_app/screen/bottomnav.dart';
-import 'package:camera_app/screen/camera_screen.dart';
-import 'package:camera_app/screen/home.dart';
-import 'package:camera_app/screen/login.dart';
 import 'package:camera_app/screen/login1.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,9 +26,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Timer(Duration(seconds: 3), () {
       if (appStore.isLoggedIn) {
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeScreen()),(route) => false,);
-      }else{
-        Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Bottomnav()),
+          (route) => false,
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
       }
     });
   }
@@ -44,8 +48,10 @@ class _SplashScreenState extends State<SplashScreen> {
     appStore.setIsLogin(isLogin ?? false);
 
     if (isLogin == true) {
-      appStore.setUserToken(prefs.getString(TOKEN)??"");
-      Map<String, dynamic> userDetailsString = jsonDecode(prefs.getString(USER_DETAIL)!);
+      appStore.setUserToken(prefs.getString(TOKEN) ?? "");
+      Map<String, dynamic> userDetailsString = jsonDecode(
+        prefs.getString(USER_DETAIL)!,
+      );
       UserData userDetails = UserData.fromJson(userDetailsString);
       appStore.setUser(userDetails);
     }

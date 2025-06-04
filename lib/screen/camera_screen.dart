@@ -5,9 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/db/hive_pimage.dart';
 import 'package:camera_app/model/dbModel/imagemodel.dart';
-import 'package:camera_app/screen/bottomnav.dart';
 import 'package:camera_app/screen/dualimage.dart';
-import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,6 +19,8 @@ import '../api/ImageUploadApi.dart';
 import '../widget/cameraoverlay.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
+import 'bottomnav.dart';
 
 // Future<String> _recognizationInIsolate(String jpegpath) async {
 //   final input = InputImage.fromFilePath(jpegpath);
@@ -607,7 +607,7 @@ if(await hasInternet()){
       if (croppedFile == null) {
         setState(() {
           isCapturing = false;
-          isProcessing = false;
+          // isProcessing = false;
         });
         return;
       }
@@ -615,15 +615,18 @@ if(await hasInternet()){
       final String path = croppedFile.path;
 
       // OCR
-      final inputImage = InputImage.fromFilePath(path);
-      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      // final inputImage = InputImage.fromFilePath(path);
+      // final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      //
+      // setState(() {
+      //   isProcessing = false;
+      // });
+      //
+      // final String fulltext = recognizedText.text;
+      // print('OCR found: $fulltext');
 
-      setState(() {
-        isProcessing = false;
-      });
 
-      final String fulltext = recognizedText.text;
-      print('OCR found: $fulltext');
+      //=====>single side-----------//
 
       if (captureMode == 'single') {
         bool uploaded = false;
@@ -641,24 +644,37 @@ if(await hasInternet()){
           );
         }
 
-        if (uploaded) {
-          final ok = await
+        // if (uploaded) {
+        //   final ok = await Navigator.push<bool>(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
+        //     ),
+        //   ) ?? false;
+        //
+        //   if (ok) Navigator.pop(context, {'front': path});
+        // } else {
+        //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image saved for later upload')));
+        // }
 
-          // Navigator.push<bool>(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (_) => ImagePreview(imagePath: path, initialText: fulltext),
-          //   ),
-          // ) ?? false;
+        // Navigate home
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => Bottomnav()),
+              (route) => false,
+        );
 
-          Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
-
-          if (ok) Navigator.pop(context, {'front': path});
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image saved for later upload')));
-        }
-
+        // Show snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(uploaded ? 'Image uploaded successfully' : 'Image saved for later upload'),
+          ),
+        );
       }
+
+
+
+
       else {
 
         // Two-side mode
@@ -697,32 +713,52 @@ if(await hasInternet()){
             );
           }
 
-          if (uploaded) {
-            final ok = await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder: (_) => Dualimage(
-                  frontImage: frontImagePath!,
-                  backImage: backImagePath!,
-                ),
-              ),
-            ) ?? false;
-            istwoside = false;
-            if (ok) {
-              Navigator.pop(context, {
-                'front': frontImagePath!,
-                'back': backImagePath!,
-              });
-              istwoside = false;
-            } else {
-              frontImagePath = backImagePath = null;
-            }
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Images saved for later upload')));
-            frontImagePath = backImagePath = null;
-            istwoside = false;
-          }
+          // if (uploaded) {
+          //   final ok = await Navigator.push<bool>(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (_) => Dualimage(
+          //         frontImage: frontImagePath!,
+          //         backImage: backImagePath!,
+          //       ),
+          //     ),
+          //   ) ?? false;
+          //   istwoside = false;
+          //   if (ok) {
+          //     Navigator.pop(context, {
+          //       'front': frontImagePath!,
+          //       'back': backImagePath!,
+          //     });
+          //     istwoside = false;
+          //   } else {
+          //     frontImagePath = backImagePath = null;
+          //   }
+          // } else {
+          //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Images saved for later upload')));
+          //   frontImagePath = backImagePath = null;
+          //   istwoside = false;
+          // }
+// Navigate home
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => Bottomnav()),
+                (route) => false,
+          );
 
+          // Show snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                uploaded
+                    ? 'Both images uploaded successfully'
+                    : 'Images saved for later upload',
+              ),
+            ),
+          );
+          // Reset paths
+          frontImagePath = null;
+          backImagePath = null;
+          istwoside = false;
         }
       }
     } catch (e) {
@@ -741,7 +777,6 @@ if(await hasInternet()){
 
 
   void startSyncListener() {
-
     Connectivity().onConnectivityChanged.listen((result) {
       if (result != ConnectivityResult.none) {
         syncPendingImages();
@@ -913,21 +948,21 @@ if(await hasInternet()){
                       Padding(
                         padding: const EdgeInsets.only(bottom: 20,right: 5,left: 5),
 
-                        child: Container(
-                          child: Column(
-                            children: [
-                              Icon(Icons.rotate_right, color: Colors.lightBlue),
-                              Text(
-                                'Rotate',
-                                style: GoogleFonts.inter(
-                                  color: Colors.lightBlue,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // child: Container(
+                        //   child: Column(
+                        //     children: [
+                        //       Icon(Icons.rotate_right, color: Colors.lightBlue),
+                        //       Text(
+                        //         'Rotate',
+                        //         style: GoogleFonts.inter(
+                        //           color: Colors.lightBlue,
+                        //           fontSize: 12,
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ),
                     ],
                   ),

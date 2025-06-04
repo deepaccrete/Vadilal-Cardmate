@@ -262,11 +262,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // List<Map<String, dynamic>> exportableData = _cardapi.map((card) => card).toList();
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      // resizeToAvoidBottomInset: false,
       backgroundColor: screenBGColor,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 25),
         child: Column(
           children: [
             Row(
@@ -373,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : ListView.builder(
                         padding: EdgeInsets.only(
                           bottom: 80,
-                        ), // Add padding at bottom for FAB
+                        ), // Reduced padding to match new nav bar position
                         itemCount: fillterCard.length,
                         itemBuilder: (context, index) {
                           final card = fillterCard[index];
@@ -523,15 +523,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddDetails()),
-          );
-        },
-        child: Icon(Icons.add, color: Colors.white),
-        backgroundColor: Colors.blue,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: 80,
+        ), // Adjusted padding to match new nav bar position
+        child: FloatingActionButton(
+          onPressed: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddDetails()),
+            );
+          },
+          child: Icon(Icons.add, color: Colors.white),
+          backgroundColor: Colors.blue,
+        ),
       ),
     );
   }
