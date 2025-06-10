@@ -57,9 +57,7 @@ class _BottomnavState extends State<Bottomnav> {
       bottomNavigationBar:
           showBottomNav
               ? Container(
-                margin: EdgeInsets.only(
-                  bottom: 10,
-                ), // Add margin to lift the nav bar up
+                margin: EdgeInsets.only(bottom: 10), // Add margin to lift the nav bar up
                 child: CircleNavBar(
                   activeIcons: [
                     Icon(Icons.home, color: Colors.white),
@@ -67,24 +65,9 @@ class _BottomnavState extends State<Bottomnav> {
                     Icon(Icons.logout, color: Colors.white),
                   ],
                   inactiveIcons: const [
-                    Column(
-                      children: [
-                        Icon(Icons.home, color: Color(0xff042E64)),
-                        Text("Home"),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Icon(Icons.camera, color: Color(0xff042E64)),
-                        Text("Capture Card"),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Icon(Icons.logout, color: Color(0xff042E64)),
-                        Text("Logout"),
-                      ],
-                    ),
+                    Column(children: [Icon(Icons.home, color: Color(0xff042E64)), Text("Home")]),
+                    Column(children: [Icon(Icons.camera, color: Color(0xff042E64)), Text("Capture Card")]),
+                    Column(children: [Icon(Icons.logout, color: Color(0xff042E64)), Text("Logout")]),
                   ],
                   color: Colors.white,
                   height: 60,
@@ -94,10 +77,7 @@ class _BottomnavState extends State<Bottomnav> {
                   onTap: (index) {
                     print("-----------------------------------$index");
                     if (index == 1) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CameraScreen()),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => CameraScreen()));
                     } else if (index == 2) {
                       showConfirmDialogCustom(
                         context,
@@ -110,11 +90,7 @@ class _BottomnavState extends State<Bottomnav> {
                       _onTap(index);
                     }
                   },
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: 0,
-                  ),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 0),
                   cornerRadius: const BorderRadius.only(
                     topLeft: Radius.circular(8),
                     topRight: Radius.circular(8),

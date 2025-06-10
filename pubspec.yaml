@@ -63,6 +63,9 @@ dependencies:
   hive_flutter: ^1.1.0
   uuid: ^4.3.3 # <- for GUID/UUID generation
   carousel_slider: ^5.0.0
+  #animation
+  flutter_animate: ^4.2.0
+  flutter_staggered_animations: ^1.1.1
 
 
 dev_dependencies:
