@@ -12,12 +12,14 @@ import 'package:camera_app/screen/details_screen.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
@@ -172,51 +174,86 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  Future<void> exportDataToExcel(List<Map<String, dynamic>> data) async {
+
+  Future<void> exportDataToExcel(BuildContext context, List<Map<String, dynamic>> data) async {
     try {
+      if (data.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No data to export')),
+        );
+        return;
+      }
+
+      final fileName = "exported_data.xlsx";
+
+      // --- Excel Generation (NOW ON MAIN THREAD - as compute failed persistently) ---
+      // This part will run on the UI thread and may cause frame drops for large datasets.
       var excel = Excel.createExcel();
       Sheet sheet = excel['Sheet1'];
 
-      if (data.isNotEmpty) {
-        List<String> headers = data[0].keys.toList();
-        sheet.appendRow(headers);
+      List<String> headers = data[0].keys.toList();
+      sheet.appendRow(headers);
 
-        for (var row in data) {
-          sheet.appendRow(headers.map((key) => row[key].toString()).toList());
-        }
-
-        final excelBytes = excel.encode();
-
-        if (kIsWeb) {
-          // Convert to blob and trigger download using package:web
-          final blob = web.Blob([excelBytes!], 'application/vnd.ms-excel');
-          final url = web.Url.createObjectUrlFromBlob(blob);
-          final anchor = web.AnchorElement(href: url)
-            ..download = "exported_data.xlsx"
-            ..click();
-          web.Url.revokeObjectUrl(url);
-          return;
-        }
-
-        // Android / iOS export
-        if (io.Platform.isAndroid || io.Platform.isIOS) {
-          var status = await Permission.storage.request();
-          if (!status.isGranted) {
-            print('Permission denied');
-            return;
-          }
-
-          final dir = await getExternalStorageDirectory();
-          final file = io.File('${dir!.path}/exported_data.xlsx');
-          file.createSync(recursive: true);
-          file.writeAsBytesSync(excelBytes!);
-          print('Excel saved at: ${file.path}');
-        }
-      } else {
-        print('No data to export');
+      for (var row in data) {
+        sheet.appendRow(headers.map((key) => row[key].toString()).toList());
       }
+
+      final List<int>? excelBytesList = excel.encode();
+      if (excelBytesList == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to encode Excel data.')),
+        );
+        return;
+      }
+      final Uint8List excelBytes = Uint8List.fromList(excelBytesList);
+
+
+      // --- Web Platform Handling ---
+      if (kIsWeb) {
+        final blob = web.Blob([excelBytes], 'application/vnd.ms-excel');
+        final url = web.Url.createObjectUrlFromBlob(blob);
+        final anchor = web.AnchorElement(href: url)
+          ..download = fileName
+          ..click();
+        web.Url.revokeObjectUrl(url);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Excel file downloaded for web.')),
+        );
+        return;
+      }
+
+      // --- Mobile Platforms Handling (Android & iOS) ---
+
+      // Save the bytes to a temporary file
+      final tempDir = await getTemporaryDirectory();
+      final tempFilePath = '${tempDir.path}/$fileName';
+      final tempFile = io.File(tempFilePath);
+      await tempFile.writeAsBytes(excelBytes);
+      print('Excel bytes temporarily saved to: ${tempFile.path}');
+
+      // Now, use share_plus to let the user save or share the file
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Excel file generated. Opening share dialog...')),
+      );
+
+      // Pass the temporary file path to share_plus
+      await Share.shareXFiles([XFile(tempFile.path)], text: 'Here is your exported data!');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Excel file shared successfully!')),
+      );
+
+      // Clean up the temporary file after sharing (it's copied by the OS)
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+        print('Temporary Excel file deleted: ${tempFile.path}');
+      }
+
     } catch (e) {
       print('Export failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
     }
   }
   @override
