@@ -8,6 +8,8 @@ import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 
+import 'login1.dart';
+
 class Bottomnav extends StatefulWidget {
   @override
   State<Bottomnav> createState() => _BottomnavState();
@@ -47,6 +49,33 @@ class _BottomnavState extends State<Bottomnav> {
     });
   }
 
+  Widget buildCenterButton(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double buttonSize = width * 0.18; // 18% of screen width
+    double borderWidth = buttonSize * 0.08;
+
+    return Container(
+      height: buttonSize,
+      width: buttonSize,
+      margin: EdgeInsets.only(top: 10),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFF062A63), // Dark blue center
+        border: Border.all(
+          color: Color(0xFFB8C6F8), // Light blue outer glow
+          width: borderWidth,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.qr_code,
+          color: Colors.white,
+          size: buttonSize * 0.4,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool showBottomNav = _SelectedIndex != 1; // hide on index 1
@@ -56,52 +85,71 @@ class _BottomnavState extends State<Bottomnav> {
       body: _getSelectedScreen(_SelectedIndex),
       bottomNavigationBar:
           showBottomNav
-              ? Container(
-                margin: EdgeInsets.only(bottom: 10), // Add margin to lift the nav bar up
-                child: CircleNavBar(
-                  activeIcons: [
-                    Icon(Icons.home, color: Colors.white),
-                    Icon(Icons.camera, color: Colors.white),
-                    Icon(Icons.logout, color: Colors.white),
-                  ],
-                  inactiveIcons: const [
-                    Column(children: [Icon(Icons.home, color: Color(0xff042E64)), Text("Home")]),
-                    Column(children: [Icon(Icons.camera, color: Color(0xff042E64)), Text("Capture Card")]),
-                    Column(children: [Icon(Icons.logout, color: Color(0xff042E64)), Text("Logout")]),
-                  ],
-                  color: Colors.white,
-                  height: 60,
-                  circleWidth: 60,
-                  circleColor: Color(0xff042E64),
-                  activeIndex: _SelectedIndex,
-                  onTap: (index) {
-                    print("-----------------------------------$index");
-                    if (index == 1) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => CameraScreen()));
-                    } else if (index == 2) {
-                      showConfirmDialogCustom(
-                        context,
-                        title: "Do you want to logout from the app?",
-                        dialogType: DialogType.CONFIRMATION,
-                        centerImage: 'URL',
-                        onAccept: (p0) {},
-                      );
-                    } else {
-                      _onTap(index);
-                    }
-                  },
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 0),
-                  cornerRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
-                    bottomRight: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
+              ? Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              BottomAppBar(
+                shape: CircularNotchedRectangle(),
+                notchMargin: 8,
+                color: Colors.white,
+                child: Container(
+                  height: 70,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Row(
+                        children: [
+                          buildNavItem(Icons.home, "Home", 0),
+                          SizedBox(width: 40),
+                          buildNavItem(Icons.search, "Search", 1),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          buildNavItem(Icons.shopping_basket_outlined, "Cart", 3),
+                          SizedBox(width: 40),
+                          buildNavItem(Icons.person_outline, "Profile", 4),
+                        ],
+                      ),
+                    ],
                   ),
-                  shadowColor: Color(0xff042E64),
-                  elevation: 10,
                 ),
-              )
+              ),
+              Positioned(
+                bottom: 30,
+                child: GestureDetector(
+                  onTap: () {
+                    CameraScreen().launch(context);
+                  },
+                  child: buildCenterButton(context),
+                ),
+              ),
+            ],
+          )
               : null,
+    );
+  }
+
+  Widget buildNavItem(IconData icon, String label, int index) {
+    final isSelected = 1 == index;
+    final color = isSelected ? Colors.blue : Colors.black45;
+
+    return GestureDetector(
+      onTap: () => {},
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color),
+          SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(color: color, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }
