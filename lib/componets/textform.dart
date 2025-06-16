@@ -13,24 +13,42 @@ class CommonTextForm extends StatelessWidget {
   final Icon? icon;
   final Widget? gesture;
   final String? hintText;
+  final String? labeltext;
   final Color? BorderColor;
   final Color? HintColor;
+  final Color? labelColor;
   final double? borderc;
   final double? heightTextform;
   final double? widthTextform;
   final double? contentpadding;
   final int? maxline;
+  final Color? fillColor;
   final TextInputType? keyboardType;
+  final bool? symetric;
 
   // final String? labelText;
   final bool obsecureText;
   const CommonTextForm(
       {super.key,
+        this.fillColor,
         this.controller,
         this.keyboardType,
         this.hintText,
         required this.obsecureText,
-        this.validator, this.icon,  this.gesture, this.focusNode, this.onfieldsumbitted, this.BorderColor, this.HintColor, this.borderc, this.heightTextform, this.widthTextform, this.maxline, this.contentpadding,  });
+        this.validator,
+        this.icon,
+        this.gesture,
+        this.focusNode,
+        this.onfieldsumbitted,
+        this.BorderColor,
+        this.HintColor,
+        this.borderc,
+        this.heightTextform,
+        this.widthTextform,
+        this.maxline,
+        this.contentpadding,
+        this.symetric, this.labeltext, this.labelColor,
+      });
 
 
 
@@ -51,7 +69,13 @@ class CommonTextForm extends StatelessWidget {
         controller: controller,
         focusNode: focusNode,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.all(contentpadding ?? 0),
+          labelText: labeltext,
+          labelStyle: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500, color: labelColor ?? Colors.black),
+          filled: true,
+          fillColor: fillColor,
+          contentPadding:  symetric==true?EdgeInsets.symmetric(horizontal: contentpadding ?? 0 ,) :EdgeInsets.all(contentpadding ?? 0),
           suffixIcon: gesture,
           // labelText: labelText,
           hintText: hintText,

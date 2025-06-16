@@ -176,6 +176,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     print('\nFinal results:');
     print('Total images decoded: ${images.length}');
+    print(Theme.of(context).cardColor);
 
     return Scaffold(
       backgroundColor: screenBGColor,
@@ -561,7 +562,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.1),
+                                  color: Colors.blue.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(

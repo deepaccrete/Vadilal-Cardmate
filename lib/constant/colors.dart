@@ -12,3 +12,6 @@ Color subtext = HexColor('#808080');
 
 
 Color screenBGColor = Colors.white;
+
+
+// color: Color(0xFFFEF7FF),

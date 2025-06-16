@@ -58,7 +58,11 @@ bool istwoside = false;
 
   Future<void> initCamera() async {
     cameras = await availableCameras();
-    controller = CameraController(cameras![0], ResolutionPreset.high);
+    controller = CameraController(
+        cameras![0],
+        ResolutionPreset.veryHigh,
+
+    );
     await controller!.initialize();
     if (!mounted) return;
     setState(() => isInitialized = true);
@@ -862,11 +866,27 @@ if(await hasInternet()){
     return Scaffold(
       body: Stack(
         children: [
-          CameraPreview(controller!),
+          SizedBox.expand(
+            child: OverflowBox(
+              alignment: Alignment.center,
+              maxHeight: double.infinity,
+              maxWidth: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: controller!.value.previewSize!.height,
+                  height: controller!.value.previewSize!.width,
+                  child: CameraPreview(controller!),
+                ),
+              ),
+            ),
+          ),
+
+
           CameraOverlay(),
           // SizedBox(height: 40,),
           Positioned(
-            bottom: 30,
+            bottom: 30 ,
             left: 0,
             right: 0,
             // color: Colors.red,
@@ -890,7 +910,7 @@ if(await hasInternet()){
                     children: [
                       // image from gallary
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 20,right: 5,left: 5),
+                        padding: const EdgeInsets.only(bottom: 10,right: 0,left: 5),
                         child: GestureDetector(
                           onTap: () {
                             pickImageFromGallery(context);
@@ -914,56 +934,47 @@ if(await hasInternet()){
                       ),
 
                       // click picture
-                      GestureDetector(
-                        onTap: () {
-                          takePicture(context);
-                        },
-                        child:
-                            isProcessing
-                                ? Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    color: Colors.lightBlue,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: CircularProgressIndicator(
-                                    color: Colors.red,
-                                  ),
-                                )
-                                : Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    color: Colors.lightBlue,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 2,
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: GestureDetector(
+                            onTap: () {
+                              takePicture(context);
+                            },
+                            child:
+                                isProcessing
+                                    ? Container(
+                                      width: 70,
+                                      height: 70,
+                                      decoration: BoxDecoration(
+                                        color: Colors.lightBlue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.red,
+                                      ),
+                                    )
+                                    : Container(
+                                      width: 70,
+                                      height: 70,
+                                      decoration: BoxDecoration(
+                                        color: Colors.lightBlue,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.black,
+                                          width: 2,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                          ),
+                        ),
                       ),
 
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20,right: 5,left: 5),
+                      SizedBox(
+                        height: 50,
+                        width: 50,
+                      )
 
-                        // child: Container(
-                        //   child: Column(
-                        //     children: [
-                        //       Icon(Icons.rotate_right, color: Colors.lightBlue),
-                        //       Text(
-                        //         'Rotate',
-                        //         style: GoogleFonts.inter(
-                        //           color: Colors.lightBlue,
-                        //           fontSize: 12,
-                        //           fontWeight: FontWeight.w600,
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ),
                     ],
                   ),
                 ),

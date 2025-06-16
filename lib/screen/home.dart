@@ -6,23 +6,17 @@ import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
-import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hive/hive.dart';
-import 'package:nb_utils/nb_utils.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-
+import 'package:shimmer/shimmer.dart';
 import 'package:universal_html/html.dart' as web;
 // web
 
@@ -38,6 +32,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchController = TextEditingController();
 
+  // border
   final outborder = OutlineInputBorder(
     borderSide: BorderSide(width: 2, color: Colors.transparent),
     borderRadius: BorderRadius.circular(10),
@@ -63,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // List<CardDetails> _cards = [];
   List<DataCard> _cardapi = [];
+   List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
 
   bool isCardLoading = true;
   String? errormessage;
@@ -153,6 +149,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> FetchCard() async {
+    setState(() {
+      isCardLoading = true;
+      errormessage = null;
+    });
     try {
       CardModel cardModel = await CardApi.getCard();
       if (cardModel.success == 1 && cardModel.data != null) {
@@ -255,10 +255,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     List<DataCard> fillterCard = [];
     if (searchController.text.toString().isEmpty) {
-      fillterCard = _cardapi;
+      fillterCard = _reversedCardApi;
     } else {
       fillterCard =
-          _cardapi.where((_element) => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))).toList();
+         _reversedCardApi.where((_element) => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))).toList();
     }
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
@@ -271,13 +271,15 @@ class _HomeScreenState extends State<HomeScreen> {
           onRefresh: () {
             return FetchCard();
           },
-          child: SingleChildScrollView(
+          child:
+            SingleChildScrollView(
             child: Container(
               // color: Colors.red,
               // height: height,
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               child: Column(
                 children: [
+                  // name
                   Row(
                     children: [
                       Container(
@@ -328,6 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           // exportDataToExcel(exportableData);
                         },
                         child: Card(
+
                           elevation: 10,
                           child: Container(
                             height: height * 0.05,
@@ -350,6 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
+
                   Container(
                     // color: Colors.blue,  // Removing blue background
                     width: width,
@@ -361,8 +365,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child:
                               isCardLoading
-                                  ? Center(child: CircularProgressIndicator())
-                                  : ListView.builder(
+                                  // ? Center(child: CircularProgressIndicator())
+
+                              ?ListView.builder(
+                                itemCount: 3,
+                                  itemBuilder: (context,index){
+                                return Shimmer.fromColors(
+                                    child: _buildShimmerCarde(context),
+                                    baseColor: Colors.grey[100]!,
+                                    highlightColor:Colors.grey[100]!
+                                );
+                              })
+                              : ListView.builder(
                                     // itemCount: _cardapi.length,
                                     itemCount: fillterCard.length,
                                     itemBuilder: (context, index) {
@@ -492,7 +506,197 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
   }
+
+
+  // --- Your Shimmer Card Skeleton Widget ---
+  Widget _buildShimmerCard(BuildContext context) {
+    final double currentHeight = MediaQuery.of(context).size.height;
+    final double currentWidth = MediaQuery.of(context).size.width;
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        elevation: 10, // Match elevation of actual card
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  // Image placeholder
+                  Container(
+                    height: currentHeight * 0.1,
+                    width: currentWidth * 0.2,
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Base color for shimmer effect
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Company Name placeholder
+                        Container(
+                          width: double.infinity,
+                          height: 14.0,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 8),
+                        // Company Address placeholder
+                        Container(
+                          width: currentWidth * 0.4,
+                          height: 11.0,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      // Date icon placeholder
+                      Container(width: 24.0, height: 24.0, color: Colors.white),
+                      const SizedBox(width: 8),
+                      // Date text placeholder
+                      Container(width: 80.0, height: 12.0, color: Colors.white),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      // 'General' tag placeholder
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        width: 50.0,
+                        height: 16.0,
+                      ),
+                      const SizedBox(width: 8),
+                      // More_vert_outlined icon placeholder
+                      Container(width: 24.0, height: 24.0, color: Colors.white),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ... (rest of your _MyCardLoadingScreenState class)
+
+// This widget will be the "ghost" or "skeleton" of your card
+  Widget _buildShimmerCarde(BuildContext context) {
+    // Get screen dimensions. Replace 'height' and 'width' variables if they are global
+    // If you are using height and width from MediaQuery, then this is good.
+    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            elevation: 10,
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: height * 0.1,
+                        width: width * 0.2,
+                        decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child:  Icon(Icons.image, color: Colors.white, size: 40),
+                      ),),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                           '',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 11,
+                                color: subtext,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.date_range, color: Colors.grey),
+                          Text(
+                           '',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'General',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.more_vert_outlined),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+  }
+// ... (rest of your _MyCardLoadingScreenState class)
+
   // card_list_screen.dart or export_helper.dart
 }
 
