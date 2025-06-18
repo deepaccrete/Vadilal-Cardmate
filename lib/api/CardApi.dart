@@ -36,8 +36,18 @@ class CardApi {
         return CardModel.fromJson(jsonDecode(response.body));
       }
     } catch (e) {
+
       print('this is the erorr for Card Api=====> $e');
       return CardModel(success: 0, data: []);
     }
   }
+
+
+  // static Future<bool> updateCard(
+  //     {required String cardId,})async{
+  //   try{
+  //     final url = Uri.parse(${AppApiConst.})
+  //   }
+  //
+  // }
 }

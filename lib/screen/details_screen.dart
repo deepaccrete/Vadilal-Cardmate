@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
+import 'package:camera_app/screen/EditCard.dart';
 import 'package:camera_app/screen/editdetails.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
@@ -350,6 +351,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     // Edit button
                     InkWell(
                       onTap: () async {
+
+
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> AddDetails(dataCard: widget.dataCard,)));
                         // final result =  await
                         // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
                         //     index:widget.index)));

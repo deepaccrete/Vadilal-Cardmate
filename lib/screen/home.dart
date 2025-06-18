@@ -6,7 +6,7 @@ import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
-import 'package:camera_app/screen/add.dart';
+import 'package:camera_app/screen/EditCard.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
 
-                          // exportDataToExcel(exportableData);
+                          exportDataToExcel(context,exportableData);
                         },
                         child: Card(
 
@@ -429,8 +429,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             Text(
                                                               card.companyAddress!.join(',') ?? "No Data",
                                                               style: GoogleFonts.raleway(
-                                                                fontWeight: FontWeight.w400,
-                                                                fontSize: 11,
+                                                                fontWeight: FontWeight.w500,
+                                                                fontSize: 12,
                                                                 color: subtext,
                                                               ),
                                                             ),
@@ -496,14 +496,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AddDetails()));
-            // _loadCard();
-          },
-          child: Icon(Icons.add, color: Colors.white),
-          backgroundColor: Colors.blue,
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () async {
+        //     Navigator.push(context, MaterialPageRoute(builder: (context) => AddDetails()));
+        //     // _loadCard();
+        //   },
+        //   child: Icon(Icons.add, color: Colors.white),
+        //   backgroundColor: Colors.blue,
+        // ),
       ),
     );
 

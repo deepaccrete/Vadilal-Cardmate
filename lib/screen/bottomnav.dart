@@ -1,13 +1,15 @@
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/screen/camera_screen.dart';
-import 'package:camera_app/screen/cart.dart';
+import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';
 import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
+import 'groupandtags.dart';
 import 'login1.dart';
 
 class Bottomnav extends StatefulWidget {
@@ -20,10 +22,10 @@ class _BottomnavState extends State<Bottomnav> {
 
   static final List<Widget> _WidgetOption = [
     HomeScreen(),
-    SearchScreen(),
     // CameraScreen(),
-    CartScreen(),
-    ProfileScreen(),
+    AddManual(),
+    GroupAndTags(),
+    LogOut(),
   ];
 
   Widget _getSelectedScreen(int index) {
@@ -33,20 +35,64 @@ class _BottomnavState extends State<Bottomnav> {
       // case 1:
       //     return  CameraScreen();
       case 1:
-        return SearchScreen();
+        return AddManual();
       case 2:
-        return CartScreen();
+        return GroupAndTags();
+
       case 3:
-        return ProfileScreen();
+        return LogOut();
       default:
         return HomeScreen();
     }
   }
 
   void _onTap(int index) {
-    setState(() {
-      _SelectedIndex = index;
-    });
+    if (index == 3) {
+      // Show confirmation dialog instead of navigating
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.grey.shade300,
+          title: Text('Logout',textAlign: TextAlign.center,),
+          content: Text('Are you sure you want to Logout?',textAlign: TextAlign.center),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap:(){
+                    Navigator.pop(context);
+                  } ,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: primarycolor
+                    ),
+                    child: Text('Cancel',style: GoogleFonts.poppins(color: Colors.white),)
+                  ),
+                ),
+                InkWell(
+                  onTap:(){
+                    Navigator.pop(context);
+                  } ,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: primarycolor
+                    ),
+                    child: Text('LogOut',style: GoogleFonts.poppins(color: Colors.white),)
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      setState(() {
+        _SelectedIndex = index;
+      });
+    }
   }
 
   Widget buildCenterButton(BuildContext context) {
@@ -78,11 +124,14 @@ class _BottomnavState extends State<Bottomnav> {
 
   @override
   Widget build(BuildContext context) {
-    bool showBottomNav = _SelectedIndex != 1; // hide on index 1
+    bool showBottomNav = ![
+      CameraScreen, // or some screen where you want full view
+    ].contains(_WidgetOption[_SelectedIndex].runtimeType);
+
 
     return Scaffold(
       extendBody: true,
-      body: _getSelectedScreen(_SelectedIndex),
+      body: _WidgetOption[_SelectedIndex],
       bottomNavigationBar:
           showBottomNav
               ? Stack(
@@ -102,15 +151,18 @@ class _BottomnavState extends State<Bottomnav> {
                       Row(
                         children: [
                           buildNavItem(Icons.home, "Home", 0),
-                          SizedBox(width: 40),
-                          buildNavItem(Icons.search, "Search", 1),
+                          SizedBox(width: 30),
+                          buildNavItem(Icons.add, "Add", 1),
+
                         ],
                       ),
+                      // SizedBox(width: 5,),
                       Row(
                         children: [
-                          buildNavItem(Icons.shopping_basket_outlined, "Cart", 3),
-                          SizedBox(width: 40),
-                          buildNavItem(Icons.person_outline, "Profile", 4),
+                          buildNavItem(Icons.search, "Group", 2),
+
+                          SizedBox(width: 30),
+                          buildNavItem(Icons.logout, "LogOut", 3),
                         ],
                       ),
                     ],
@@ -133,11 +185,11 @@ class _BottomnavState extends State<Bottomnav> {
   }
 
   Widget buildNavItem(IconData icon, String label, int index) {
-    final isSelected = 1 == index;
+    final isSelected = _SelectedIndex == index;
     final color = isSelected ? Colors.blue : Colors.black45;
 
     return GestureDetector(
-      onTap: () => {},
+      onTap:()=> _onTap(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -158,7 +210,7 @@ class _BottomnavState extends State<Bottomnav> {
 
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/screen/camera_screen.dart';
-import 'package:camera_app/screen/cart.dart';
+import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';

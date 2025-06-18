@@ -7,15 +7,19 @@ import 'package:camera_app/screen/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:universal_html/js_util.dart' as personNameControllers;
+import 'package:universal_html/js_util.dart' as personMobileControllers;
 import 'package:uuid/uuid.dart';
 
 import '../componets/button.dart';
 import '../componets/textform.dart';
 import '../constant/colors.dart';
+import '../model/cardModel.dart';
 import 'groupandtags.dart';
 
 class AddDetails extends StatefulWidget {
-  const AddDetails({super.key});
+  DataCard? dataCard;
+   AddDetails({super.key ,  this.dataCard});
 
   @override
   State<AddDetails> createState() => _AddDetailsState();
@@ -24,14 +28,18 @@ class AddDetails extends StatefulWidget {
 class _AddDetailsState extends State<AddDetails> {
 
 
-  final TextEditingController  nameController        = TextEditingController();
-  final TextEditingController  designationController = TextEditingController();
-  final TextEditingController  phoneController       = TextEditingController();
-  final TextEditingController  emailController       = TextEditingController();
-  final TextEditingController  companynameController = TextEditingController();
-  final TextEditingController  addressController     = TextEditingController();
-  final TextEditingController  webController         = TextEditingController();
-  final TextEditingController  noteController        = TextEditingController();
+   TextEditingController  designationController = TextEditingController();
+  TextEditingController  nameController        = TextEditingController();
+  TextEditingController  phoneController       = TextEditingController();
+   TextEditingController  emailController       = TextEditingController();
+   TextEditingController  companynameController = TextEditingController();
+   TextEditingController  addressController     = TextEditingController();
+  TextEditingController  webController         = TextEditingController();
+  TextEditingController  noteController        = TextEditingController();
+   List<TextEditingController> personNameControllers = [];
+   List<TextEditingController> personMobileControllers = [];
+   List<TextEditingController> personEmailControllers = [];
+   List<TextEditingController> personPositionControllers = [];
 
   FocusNode namenode = FocusNode();
   FocusNode desinationnode = FocusNode();
@@ -101,6 +109,31 @@ class _AddDetailsState extends State<AddDetails> {
     )));
   }
 
+@override
+  void initState() {
+    super.initState();
+
+    for (var person in widget.dataCard?.personDetails ?? []) {
+      personNameControllers.add(TextEditingController(text: person.name));
+      personMobileControllers.add(TextEditingController(text: person.phoneNumber));
+      personEmailControllers.add(TextEditingController(text: person.email));
+      personPositionControllers.add(TextEditingController(text: person.position));
+    }
+    companynameController = TextEditingController(text: widget.dataCard!.companyName);
+    emailController = TextEditingController(text: widget.dataCard!.companyEmail);
+    addressController = TextEditingController(
+      text: widget.dataCard!.companyAddress?.join(', ') ?? '',
+        // nameController = TextEditingController(text: widget.dataCard.personDetails)
+  );
+
+
+    // Initialize controllers for each person
+    // for (var person in widget.dataCard?.personDetails ?? []) {
+    //   personNameControllers.add(TextEditingController(text: person.name));
+    //   personMobileControllers.add(TextEditingController(text: person.phoneNumber));
+    // }
+
+}
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -150,7 +183,6 @@ class _AddDetailsState extends State<AddDetails> {
               ),
 
               // Card Details
-
                Padding(
                  padding: const EdgeInsets.symmetric(horizontal: 10),
                  child: Text(
@@ -162,13 +194,7 @@ class _AddDetailsState extends State<AddDetails> {
                                ),
                ),
 
-              Card(
-                elevation: 4,
-                shadowColor: Colors.black26,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
+            Container(
                   padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
@@ -223,343 +249,367 @@ class _AddDetailsState extends State<AddDetails> {
                         //     ),
                         //   ),
                         // ),
+                        Text('Person Details',style: GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 16),),
 
-                      Card(
-                      elevation: 2,
-                      shadowColor: Colors.black12,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFEF7FF),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Full Name',
-                              style: GoogleFonts.raleway(
-                                fontSize: 14,
-                                color: Colors.black87,
-                                fontWeight: FontWeight.bold,
+                        SizedBox(height: 5,),
+                        ...List.generate(personNameControllers.length, (index){
+                        return  Card(
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Container(
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Person ${index +1}',style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),),
+
+                                  Card(
+                                    elevation: 2,
+                                    shadowColor: Colors.black12,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFFEF7FF),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Full Name',
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 14,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          CommonTextForm(
+                                            fillColor: Colors.white,
+                                            labelColor: Colors.black54,
+                                            contentpadding: 10,
+                                            focusNode: namenode,
+                                            controller: personNameControllers[index],
+                                            labeltext: 'Enter Name',
+                                            borderc: 10,
+                                            BorderColor: Colors.black26,
+                                            icon: Icon(Icons.person_outline, color: Colors.black54),
+                                            obsecureText: false,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return "Please enter Name";
+                                              }
+                                              return null;
+                                            },
+                                            onfieldsumbitted: (value) {
+                                              FocusScope.of(context).requestFocus(desinationnode);
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+
+
+
+
+                                  SizedBox(height: 10),
+                                  Card(
+                                    elevation: 4,
+                                    shadowColor: Colors.black26,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFFEF7FF),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Designation',
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 15,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          CommonTextForm(
+                                            fillColor: Colors.white,
+                                            labelColor: Colors.black54,
+                                            contentpadding: 10,
+                                            focusNode: desinationnode,
+                                            controller: personPositionControllers[index],
+                                            labeltext: 'Designation',
+                                            borderc: 10,
+                                            BorderColor: Colors.black26,
+                                            icon: Icon(Icons.work_outline, color: Colors.black54),
+                                            obsecureText: false,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return "Please enter designation";
+                                              }
+                                              return null;
+                                            },
+                                            onfieldsumbitted: (value) {
+                                              FocusScope.of(context).nextFocus();
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+
+
+                                  SizedBox(height: 10),
+
+                                  // Phone Number Card
+                                  Card(
+                                    elevation: 4,
+                                    shadowColor: Colors.black26,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFFEF7FF),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Phone Number',
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 15,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          CommonTextForm(
+                                            fillColor: Colors.white,
+                                            labelColor: Colors.black54,
+                                            contentpadding: 10,
+                                            focusNode: phonenode,
+                                            controller: personMobileControllers[index],
+                                            labeltext: 'Enter phone number',
+                                            borderc: 10,
+                                            BorderColor: Colors.black26,
+                                            icon: Icon(Icons.phone, color: Colors.black54),
+                                            obsecureText: false,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return "Please enter phone number";
+                                              }
+                                              return null;
+                                            },
+                                            onfieldsumbitted: (value) {
+                                              FocusScope.of(context).requestFocus(desinationnode);
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+
+                                  // Designation Card
+                                  //                         Card(
+                                  //                           surfaceTintColor: Colors.transparent,
+                                  //                           shadowColor: Colors.black.withValues(alpha: 1),
+                                  //                           elevation: 4,
+                                  //                           // shadowColor: Colors.black26,
+                                  //                           shape: RoundedRectangleBorder(
+                                  //                             borderRadius: BorderRadius.circular(15),
+                                  //                           ),
+                                  //                           child: Container(
+                                  //                             padding: EdgeInsets.all(20),
+                                  //                             decoration: BoxDecoration(
+                                  //                               color: Color(0xFFFEF7FF),
+                                  //                               borderRadius: BorderRadius.circular(15),
+                                  //                             ),
+                                  //                             child: Column(
+                                  //                               crossAxisAlignment: CrossAxisAlignment.start,
+                                  //                               children: [
+                                  //                                 Text(
+                                  //                                   'Designation',
+                                  //                                   style: GoogleFonts.raleway(
+                                  //                                     fontSize: 15,
+                                  //                                     color: Colors.black87,
+                                  //                                     fontWeight: FontWeight.bold,
+                                  //                                   ),
+                                  //                                 ),
+                                  //                                 SizedBox(height: 10),
+                                  //                                 CommonTextForm(
+                                  //                                   fillColor: Colors.white,
+                                  //                                   labelColor: Colors.black54,
+                                  //                                   contentpadding: 10,
+                                  //                                   focusNode: desinationnode,
+                                  //                                   controller: designationController,
+                                  //                                   labeltext: 'Enter designation',
+                                  //                                   borderc: 10,
+                                  //                                   BorderColor: Colors.black26,
+                                  //                                   icon: Icon(Icons.work_outline, color: Colors.black54),
+                                  //                                   obsecureText: false,
+                                  //                                   validator: (value) {
+                                  //                                     if (value == null || value.isEmpty) {
+                                  //                                       return "Please enter designation";
+                                  //                                     }
+                                  //                                     return null;
+                                  //                                   },
+                                  //                                   onfieldsumbitted: (value) {
+                                  //                                     FocusScope.of(context).nextFocus();
+                                  //                                   },
+                                  //                                 )
+                                  //                               ],
+                                  //                             ),
+                                  //                           ),
+                                  //                         ),
+
+
+                                  // SizedBox(height: 10),
+                                  // // Phone
+                                  // Card(
+                                  //   child: Container(
+                                  //     decoration: BoxDecoration(
+                                  //       borderRadius: BorderRadius.circular(10),
+                                  //       color: Color(0xFFA29BFE),
+                                  //
+                                  //     ),
+                                  //     padding: EdgeInsets.all(10),
+                                  //     child: Column(
+                                  //      crossAxisAlignment: CrossAxisAlignment.start,
+                                  //       children: [
+                                  //         Text(
+                                  //           'Phone Number',
+                                  //           style: GoogleFonts.raleway(
+                                  //             fontSize: 14,
+                                  //             color: Colors.grey[700],
+                                  //             fontWeight: FontWeight.w600,
+                                  //           ),
+                                  //         ),
+                                  //         // Row(
+                                  //         //   children: [
+                                  //         //     // Container(
+                                  //         //     //   width: 40,
+                                  //         //     //   height: 40,
+                                  //         //     //   decoration: BoxDecoration(
+                                  //         //     //     color: Colors.blue.withValues(alpha: 0.1),
+                                  //         //     //     borderRadius: BorderRadius.circular(8),
+                                  //         //     //   ),
+                                  //         //     //   child: Icon(
+                                  //         //     //     Icons.phone,
+                                  //         //     //     // color: Colors.blue[700],
+                                  //         //     //     color: primarycolor,
+                                  //         //     //     size: 20,
+                                  //         //     //   ),
+                                  //         //     // ),
+                                  //         //     SizedBox(width: 5,),
+                                  //         //
+                                  //         //   ],
+                                  //         // ),
+                                  //         SizedBox(height: 5),
+                                  //         CommonTextForm(  symetric: true,
+                                  //           fillColor: Colors.grey[200],
+                                  //           labelColor: Colors.grey[600],
+                                  //           contentpadding: 5,
+                                  //           focusNode: phonenode,
+                                  //           controller: phoneController,
+                                  //           // heightTextform: height * 0.06,
+                                  //           labeltext: 'MobileNo',
+                                  //           borderc: 10,
+                                  //           BorderColor: Colors.grey,
+                                  //           icon: Icon(Icons.call_outlined,color: primarycolor,),
+                                  //           obsecureText: false,
+                                  //           validator: (value) {
+                                  //             if (value == null || value.isEmpty) {
+                                  //               return "please Enter Mobile Number";
+                                  //             }
+                                  //           },
+                                  //           onfieldsumbitted: (value){
+                                  //             FocusScope.of(context).requestFocus(emailnode);
+                                  //           },
+                                  //         ),
+                                  //       ],
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  SizedBox(height: 10),
+
+                                  // email
+                                  // Email Card
+                                  Card(
+                                    elevation: 4,
+                                    shadowColor: Colors.black26,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFFEF7FF),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Email',
+                                            style: GoogleFonts.raleway(
+                                              fontSize: 15,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          CommonTextForm(
+                                            fillColor: Colors.white,
+                                            labelColor: Colors.black54,
+                                            contentpadding: 10,
+                                            focusNode: emailnode,
+                                            controller: personEmailControllers[index],
+                                            labeltext: 'Enter email',
+                                            borderc: 10,
+                                            BorderColor: Colors.black26,
+                                            icon: Icon(Icons.email_outlined, color: Colors.black54),
+                                            obsecureText: false,
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return "Please enter email";
+                                              }
+                                              return null;
+                                            },
+                                            onfieldsumbitted: (value) {
+                                              FocusScope.of(context).requestFocus(companynamenode);
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(height: 10),
-                            CommonTextForm(
-                              fillColor: Colors.white,
-                              labelColor: Colors.black54,
-                              contentpadding: 10,
-                              focusNode: namenode,
-                              controller: nameController,
-                              labeltext: 'Enter Name',
-                              borderc: 10,
-                              BorderColor: Colors.black26,
-                              icon: Icon(Icons.person_outline, color: Colors.black54),
-                              obsecureText: false,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Please enter Name";
-                                }
-                                return null;
-                              },
-                              onfieldsumbitted: (value) {
-                                FocusScope.of(context).requestFocus(desinationnode);
-                              },
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-
-
-
-
-
-                      SizedBox(height: 10),
-                      Card(
-                        elevation: 4,
-                        shadowColor: Colors.black26,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Color(0xFFFEF7FF),
-                            borderRadius: BorderRadius.circular(15),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Designation',
-                                style: GoogleFonts.raleway(
-                                  fontSize: 15,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              CommonTextForm(
-                                fillColor: Colors.white,
-                                labelColor: Colors.black54,
-                                contentpadding: 10,
-                                focusNode: desinationnode,
-                                controller: designationController,
-                                labeltext: 'Designation',
-                                borderc: 10,
-                                BorderColor: Colors.black26,
-                                icon: Icon(Icons.work_outline, color: Colors.black54),
-                                obsecureText: false,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Please enter designation";
-                                  }
-                                  return null;
-                                },
-                                onfieldsumbitted: (value) {
-                                  FocusScope.of(context).nextFocus();
-                                },
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
+                        );
+                        }),
 
-
-
-                      SizedBox(height: 10),
-
-                        // Phone Number Card
-                        Card(
-                          elevation: 4,
-                          shadowColor: Colors.black26,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFEF7FF),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Phone Number',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 15,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                CommonTextForm(
-                                  fillColor: Colors.white,
-                                  labelColor: Colors.black54,
-                                  contentpadding: 10,
-                                  focusNode: phonenode,
-                                  controller: phoneController,
-                                  labeltext: 'Enter phone number',
-                                  borderc: 10,
-                                  BorderColor: Colors.black26,
-                                  icon: Icon(Icons.phone, color: Colors.black54),
-                                  obsecureText: false,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return "Please enter phone number";
-                                    }
-                                    return null;
-                                  },
-                                  onfieldsumbitted: (value) {
-                                    FocusScope.of(context).requestFocus(desinationnode);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
                         SizedBox(height: 10),
-
-// Designation Card
-                        Card(
-                          surfaceTintColor: Colors.transparent,
-                          shadowColor: Colors.black.withValues(alpha: 1),
-                          elevation: 4,
-                          // shadowColor: Colors.black26,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFEF7FF),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Designation',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 15,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                CommonTextForm(
-                                  fillColor: Colors.white,
-                                  labelColor: Colors.black54,
-                                  contentpadding: 10,
-                                  focusNode: desinationnode,
-                                  controller: designationController,
-                                  labeltext: 'Enter designation',
-                                  borderc: 10,
-                                  BorderColor: Colors.black26,
-                                  icon: Icon(Icons.work_outline, color: Colors.black54),
-                                  obsecureText: false,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return "Please enter designation";
-                                    }
-                                    return null;
-                                  },
-                                  onfieldsumbitted: (value) {
-                                    FocusScope.of(context).nextFocus();
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-
-
-                        // SizedBox(height: 10),
-                        // // Phone
-                        // Card(
-                        //   child: Container(
-                        //     decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(10),
-                        //       color: Color(0xFFA29BFE),
-                        //
-                        //     ),
-                        //     padding: EdgeInsets.all(10),
-                        //     child: Column(
-                        //      crossAxisAlignment: CrossAxisAlignment.start,
-                        //       children: [
-                        //         Text(
-                        //           'Phone Number',
-                        //           style: GoogleFonts.raleway(
-                        //             fontSize: 14,
-                        //             color: Colors.grey[700],
-                        //             fontWeight: FontWeight.w600,
-                        //           ),
-                        //         ),
-                        //         // Row(
-                        //         //   children: [
-                        //         //     // Container(
-                        //         //     //   width: 40,
-                        //         //     //   height: 40,
-                        //         //     //   decoration: BoxDecoration(
-                        //         //     //     color: Colors.blue.withValues(alpha: 0.1),
-                        //         //     //     borderRadius: BorderRadius.circular(8),
-                        //         //     //   ),
-                        //         //     //   child: Icon(
-                        //         //     //     Icons.phone,
-                        //         //     //     // color: Colors.blue[700],
-                        //         //     //     color: primarycolor,
-                        //         //     //     size: 20,
-                        //         //     //   ),
-                        //         //     // ),
-                        //         //     SizedBox(width: 5,),
-                        //         //
-                        //         //   ],
-                        //         // ),
-                        //         SizedBox(height: 5),
-                        //         CommonTextForm(  symetric: true,
-                        //           fillColor: Colors.grey[200],
-                        //           labelColor: Colors.grey[600],
-                        //           contentpadding: 5,
-                        //           focusNode: phonenode,
-                        //           controller: phoneController,
-                        //           // heightTextform: height * 0.06,
-                        //           labeltext: 'MobileNo',
-                        //           borderc: 10,
-                        //           BorderColor: Colors.grey,
-                        //           icon: Icon(Icons.call_outlined,color: primarycolor,),
-                        //           obsecureText: false,
-                        //           validator: (value) {
-                        //             if (value == null || value.isEmpty) {
-                        //               return "please Enter Mobile Number";
-                        //             }
-                        //           },
-                        //           onfieldsumbitted: (value){
-                        //             FocusScope.of(context).requestFocus(emailnode);
-                        //           },
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        SizedBox(height: 10),
-
-                        // email
-                        // Email Card
-                        Card(
-                          elevation: 4,
-                          shadowColor: Colors.black26,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Color(0xFFFEF7FF),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Email',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 15,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                CommonTextForm(
-                                  fillColor: Colors.white,
-                                  labelColor: Colors.black54,
-                                  contentpadding: 10,
-                                  focusNode: emailnode,
-                                  controller: emailController,
-                                  labeltext: 'Enter email',
-                                  borderc: 10,
-                                  BorderColor: Colors.black26,
-                                  icon: Icon(Icons.email_outlined, color: Colors.black54),
-                                  obsecureText: false,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return "Please enter email";
-                                    }
-                                    return null;
-                                  },
-                                  onfieldsumbitted: (value) {
-                                    FocusScope.of(context).requestFocus(companynamenode);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
+                        Text('Company Details',style: GoogleFonts.poppins(fontSize: 16,fontWeight: FontWeight.w500),),
 
 // Company Name Card
                         Card(
@@ -776,9 +826,9 @@ class _AddDetailsState extends State<AddDetails> {
                           height: height * 0.06,
                           bordercircular: 20,
                           onTap: (){
-                            if(_formkey.currentState!.validate()){
-                              _addcardtoHive();
-                            }
+                            // if(_formkey.currentState!.validate()){
+                            //   _addcardtoHive();
+                            // }
                             // _addcardtoHive();
                             // _addData();
                           },
@@ -795,7 +845,7 @@ class _AddDetailsState extends State<AddDetails> {
                     ),
                   ),
                 ),
-              ),
+
 
 
             ],
