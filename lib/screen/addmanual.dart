@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:camera_app/api/TagApi.dart';
 import 'package:camera_app/model/TagModel.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../componets/button.dart';
 import '../componets/textform.dart';
@@ -47,6 +50,8 @@ class _AddManualState extends State<AddManual> {
   FocusNode notenode = FocusNode();
 
   List<Map<String, dynamic>> listdata = [];
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
 
   List<Datatag> taglist = [];
   Datatag ? selectedTag;
@@ -135,13 +140,31 @@ class _AddManualState extends State<AddManual> {
     super.dispose();
   }
 
+  Future<void>_pickerImage (ImageSource source)async{
+    final  pickedFile = await _picker.pickImage(source: source);
+    if(pickedFile != null){
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  void _clearIMage(){
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
   // void _gotohome(){
   //   Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
   //     // datalist: listdata,
   //   )));
   // }
 
-  @override
+
+
+
+  //@override
   // void initState() {
   //   super.initState();
   //
@@ -202,17 +225,32 @@ class _AddManualState extends State<AddManual> {
                   ),
                 ),
                 // img
-                Center(
-                  child: Container(
-                    // alignment: Alignment.center,
-                    height: height * 0.2,
-                    width: width * 0.6,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey.shade300,
-      
+                InkWell(
+                  onTap: (){
+
+                    _pickerImage(ImageSource.gallery);},
+                  child: Center(
+                    child: Container(
+                      // alignment: Alignment.center,
+                      height: height * 0.2,
+                      width: width * 0.6,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey.shade300,
+
+                      ),
+                      child: _selectedImage != null
+                          ?ClipRRect(
+                        borderRadius: BorderRadiusGeometry.circular(8),
+                            child: Image.file(
+                                                    _selectedImage!,
+                                                    fit: BoxFit.cover,
+                                                    height: double.infinity,
+                                                    width: double.infinity,
+                                                  ),
+                          )      :
+                      Icon(Icons.image, color: Colors.grey),
                     ),
-                    child: Icon(Icons.image, color: Colors.grey),
                   ),
                 ),
       
