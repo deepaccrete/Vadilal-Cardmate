@@ -1,4 +1,5 @@
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/camera_screen.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
@@ -19,6 +20,22 @@ class Bottomnav extends StatefulWidget {
 
 class _BottomnavState extends State<Bottomnav> {
   int _SelectedIndex = 0;
+
+
+
+  Future<void>logout()async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    appStore.setUser(null);
+    appStore.setIsLogin(false);
+    appStore.setUserToken(null);
+
+    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (_)=>
+    LoginScreen()),
+        (route) => false);
+
+  }
 
   static final List<Widget> _WidgetOption = [
     HomeScreen(),
@@ -72,9 +89,7 @@ class _BottomnavState extends State<Bottomnav> {
                   ),
                 ),
                 InkWell(
-                  onTap:(){
-                    Navigator.pop(context);
-                  } ,
+                  onTap:() => logout(),
                   child: Container(
                     padding: EdgeInsets.all(5),
                     decoration: BoxDecoration(
