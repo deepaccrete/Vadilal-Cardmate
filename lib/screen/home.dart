@@ -168,74 +168,74 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> exportDataToExcel(BuildContext context, List<Map<String, dynamic>> data) async {
-    try {
-      if (data.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No data to export')));
-        return;
-      }
-
-      final fileName = "exported_data.xlsx";
-
-      // --- Excel Generation (NOW ON MAIN THREAD - as compute failed persistently) ---
-      // This part will run on the UI thread and may cause frame drops for large datasets.
-      var excel = Excel.createExcel();
-      Sheet sheet = excel['Sheet1'];
-
-      List<String> headers = data[0].keys.toList();
-      sheet.appendRow(headers);
-
-      for (var row in data) {
-        sheet.appendRow(headers.map((key) => row[key].toString()).toList());
-      }
-
-      final List<int>? excelBytesList = excel.encode();
-      if (excelBytesList == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to encode Excel data.')));
-        return;
-      }
-      final Uint8List excelBytes = Uint8List.fromList(excelBytesList);
-
-      // --- Web Platform Handling ---
-      if (kIsWeb) {
-        final blob = web.Blob([excelBytes], 'application/vnd.ms-excel');
-        final url = web.Url.createObjectUrlFromBlob(blob);
-        final anchor =
-            web.AnchorElement(href: url)
-              ..download = fileName
-              ..click();
-        web.Url.revokeObjectUrl(url);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file downloaded for web.')));
-        return;
-      }
-
-      // --- Mobile Platforms Handling (Android & iOS) ---
-
-      // Save the bytes to a temporary file
-      final tempDir = await getTemporaryDirectory();
-      final tempFilePath = '${tempDir.path}/$fileName';
-      final tempFile = io.File(tempFilePath);
-      await tempFile.writeAsBytes(excelBytes);
-      print('Excel bytes temporarily saved to: ${tempFile.path}');
-
-      // Now, use share_plus to let the user save or share the file
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excel file generated. Opening share dialog...')));
-
-      // Pass the temporary file path to share_plus
-      await Share.shareXFiles([XFile(tempFile.path)], text: 'Here is your exported data!');
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file shared successfully!')));
-
-      // Clean up the temporary file after sharing (it's copied by the OS)
-      if (await tempFile.exists()) {
-        await tempFile.delete();
-        print('Temporary Excel file deleted: ${tempFile.path}');
-      }
-    } catch (e) {
-      print('Export failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
-    }
-  }
+  // Future<void> exportDataToExcel(BuildContext context, List<Map<String, dynamic>> data) async {
+  //   try {
+  //     if (data.isEmpty) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No data to export')));
+  //       return;
+  //     }
+  //
+  //     final fileName = "exported_data.xlsx";
+  //
+  //     // --- Excel Generation (NOW ON MAIN THREAD - as compute failed persistently) ---
+  //     // This part will run on the UI thread and may cause frame drops for large datasets.
+  //     var excel = Excel.createExcel();
+  //     Sheet sheet = excel['Sheet1'];
+  //
+  //     List<String> headers = data[0].keys.toList();
+  //     sheet.appendRow(headers);
+  //
+  //     for (var row in data) {
+  //       sheet.appendRow(headers.map((key) => row[key].toString()).toList());
+  //     }
+  //
+  //     final List<int>? excelBytesList = excel.encode();
+  //     if (excelBytesList == null) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to encode Excel data.')));
+  //       return;
+  //     }
+  //     final Uint8List excelBytes = Uint8List.fromList(excelBytesList);
+  //
+  //     // --- Web Platform Handling ---
+  //     if (kIsWeb) {
+  //       final blob = web.Blob([excelBytes], 'application/vnd.ms-excel');
+  //       final url = web.Url.createObjectUrlFromBlob(blob);
+  //       final anchor =
+  //           web.AnchorElement(href: url)
+  //             ..download = fileName
+  //             ..click();
+  //       web.Url.revokeObjectUrl(url);
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file downloaded for web.')));
+  //       return;
+  //     }
+  //
+  //     // --- Mobile Platforms Handling (Android & iOS) ---
+  //
+  //     // Save the bytes to a temporary file
+  //     final tempDir = await getTemporaryDirectory();
+  //     final tempFilePath = '${tempDir.path}/$fileName';
+  //     final tempFile = io.File(tempFilePath);
+  //     await tempFile.writeAsBytes(excelBytes);
+  //     print('Excel bytes temporarily saved to: ${tempFile.path}');
+  //
+  //     // Now, use share_plus to let the user save or share the file
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excel file generated. Opening share dialog...')));
+  //
+  //     // Pass the temporary file path to share_plus
+  //     await Share.shareXFiles([XFile(tempFile.path)], text: 'Here is your exported data!');
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file shared successfully!')));
+  //
+  //     // Clean up the temporary file after sharing (it's copied by the OS)
+  //     if (await tempFile.exists()) {
+  //       await tempFile.delete();
+  //       print('Temporary Excel file deleted: ${tempFile.path}');
+  //     }
+  //   } catch (e) {
+  //     print('Export failed: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+  //   }
+  // }
 
   @override
   void initState() {
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Card(
                         elevation: 10,
                         child: Container(
-                          width: width * 0.65,
+                          width: width * 0.75,
                           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                           child: TextFormField(
                             onChanged: (v) {
@@ -323,23 +323,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      InkWell(
-                        onTap: () {
-                          List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
-
-                          exportDataToExcel(context,exportableData);
-                        },
-                        child: Card(
-
-                          elevation: 10,
-                          child: Container(
-                            height: height * 0.05,
-                            width: width * 0.1,
-                            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                            child: Image.asset('assets/images/csvicon.png'),
-                          ),
-                        ),
-                      ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
+                      //
+                      //     exportDataToExcel(context,exportableData);
+                      //   },
+                      //   child: Card(
+                      //
+                      //     elevation: 10,
+                      //     child: Container(
+                      //       height: height * 0.05,
+                      //       width: width * 0.1,
+                      //       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
+                      //       child: Image.asset('assets/images/csvicon.png'),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(width: 5),
                       Card(
                         elevation: 10,

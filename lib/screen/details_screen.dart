@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
@@ -34,6 +34,31 @@ class DetailsScreen extends StatefulWidget {
 }
 
 List<CardDetails> _cards = [];
+
+Future<void> callNumber(String number)async{
+  final Uri phoneUri = Uri(scheme: 'tel',path: number);
+  if( await canLaunchUrl(phoneUri)){
+    await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+  }else{
+    throw Exception('Could Not Luanch $number');
+  }
+}
+Future<void> sendmail({required String toEmail,
+String Subject = '',
+String body = '',
+})async{
+  final Uri emailUri = Uri(scheme: 'mailTO',path: toEmail,
+  queryParameters: {
+    'Subject':Subject,
+    'body': body
+  }
+  );
+   if (await canLaunchUrl(emailUri)){
+     await launchUrl(emailUri);
+  }else{
+    throw Exception('Could Not Luanch $emailUri');
+  }
+}
 
 class _DetailsScreenState extends State<DetailsScreen> {
   Future<void> _loadCard() async {
@@ -556,6 +581,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               widget.dataCard.companyEmail!.isNotEmpty)
                             ListTile(
                               onTap: () {
+                                // if(widget.dataCard.companyEmail!= null&&
+                                //     widget.dataCard.companyEmail!.isNotEmpty){
+                                //   sendmail(toEmail: widget.dataCard.companyEmail
+                                //       .toString());
+                                // }
+                                if(widget.dataCard.companyEmail==null){
+                                  sendmail(toEmail: widget.dataCard.companyEmail
+                                            .toString());
+                                }
                                 // Handle company email tap
                               },
                               contentPadding: EdgeInsets.symmetric(
@@ -599,7 +633,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 .map(
                                   (phone) => ListTile(
                                 onTap: () {
-                                  // Handle phone tap
+                              callNumber(phone.toString());
+
+                               // callNumber(phone.split('+91-').toString());
+                               //    callNumber(phone.replaceAll('+91-', '').trim());
+                               //    callNumber('1234567890');
+                               //    child: Text('Test Call');
                                 },
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -905,7 +944,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                           if (person.phoneNumber != null)
                                             ListTile(
                                               onTap: () {
-                                                // Handle phone tap
+                                                callNumber(person.phoneNumber.toString());
+
                                               },
                                               contentPadding: EdgeInsets.zero,
                                               leading: Container(
@@ -967,7 +1007,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                   size: 20,
                                                 ),
                                                 onPressed: () {
-                                                  // Handle email open
+
+                                                  // if(person.email==null){
+                                                  //   sendmail(toEmail: person.email.toString());
+                                                  // }
+
+
+                                               sendmail(toEmail: person.email.toString(),
+                                               // Subject: 'HelloFromVadilal',
+                                               //   body: 'Test Mail'
+                                               );
+
                                                 },
                                               ),
                                             ),
