@@ -264,6 +264,7 @@ bool istwoside = false;
   //   }
   // }
 
+/*
 
   Future<void> pickImageFromGallery(BuildContext context) async {
     try {
@@ -296,20 +297,20 @@ bool istwoside = false;
 
       // final String path = pickedFile.path;
 
-      setState(() {
-        isProcessing = true;
-      });
-
-      final inputImage = InputImage.fromFilePath(path);
-      final RecognizedText recognizedText = await textRecognizer.processImage(
-        inputImage,
-      );
-
-      setState(() {
-        isProcessing = false;
-      });
-
-      final String fulltext = recognizedText.text;
+      // setState(() {
+      //   isProcessing = true;
+      // });
+      //
+      // final inputImage = InputImage.fromFilePath(path);
+      // final RecognizedText recognizedText = await textRecognizer.processImage(
+      //   inputImage,
+      // );
+      //
+      // setState(() {
+      //   isProcessing = false;
+      // });
+      //
+      // final String fulltext = recognizedText.text;
 
 
       if (captureMode == 'single') {
@@ -340,17 +341,17 @@ if(await hasInternet()){
           ).showSnackBar(SnackBar(content: Text('Image Saved for later upload')));
         }
 
-        final ok =
-            await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (_) => ImagePreview(imagePath: path, initialText: fulltext),
-              ),
-            ) ??
-            false;
-
-        if (ok) Navigator.pop(context, {'front': path});
+        // final ok =
+        //     await Navigator.push<bool>(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder:
+        //             (_) => ImagePreview(imagePath: path, initialText: fulltext),
+        //       ),
+        //     ) ??
+        //     false;
+        //
+        // if (ok) Navigator.pop(context, {'front': path});
       } else {
         if (frontImagePath == null) {
           frontImagePath = path;
@@ -429,6 +430,108 @@ if(await hasInternet()){
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to pick image.')));
+    }
+  }
+*/
+
+  Future<void> pickImageFromGallery(BuildContext context) async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
+      if (pickedFile == null) return;
+
+      final originalFile = File(pickedFile.path);
+
+      // Crop image
+      final croppedFile = await cropImage(originalFile, context);
+      if (croppedFile == null) {
+        setState(() => isProcessing = false);
+        return;
+      }
+
+      final String path = croppedFile.path;
+
+      setState(() => isProcessing = true);
+
+      if (captureMode == 'single') {
+        bool uploaded = false;
+
+        if (await hasInternet()) {
+          uploaded = await ImageuploadApi.uploadImage(frontImage: File(path));
+        }
+
+        if (!uploaded) {
+          await HivePimage.savePendingImage(
+            PendingImage(id: Uuid().v4(), frontImage: path),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Image saved for later upload')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Image uploaded successfully')),
+          );
+        }
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => Bottomnav()),
+              (route) => false,
+        );
+      } else {
+        // Double side
+        if (frontImagePath == null) {
+          frontImagePath = path;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Front image selected. Now select back image.')),
+          );
+        } else {
+          backImagePath = path;
+
+          bool uploaded = false;
+          if (await hasInternet()) {
+            uploaded = await ImageuploadApi.uploadImage(
+              frontImage: File(frontImagePath!),
+              backImage: File(backImagePath!),
+            );
+          }
+
+          if (!uploaded) {
+            await HivePimage.savePendingImage(
+              PendingImage(
+                id: Uuid().v4(),
+                frontImage: frontImagePath!,
+                backPath: backImagePath!,
+              ),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Images saved for later upload')),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Images uploaded successfully')),
+            );
+          }
+
+          // Reset and navigate
+          frontImagePath = null;
+          backImagePath = null;
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => Bottomnav()),
+                (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      print('Error selecting image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick image.')),
+      );
+    } finally {
+      setState(() => isProcessing = false);
     }
   }
 
