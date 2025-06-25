@@ -1,5 +1,6 @@
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
+import 'package:camera_app/screen/Camera_Screen_2.dart';
 import 'package:camera_app/screen/camera_screen.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
+import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'groupandtags.dart';
 import 'login1.dart';
 
@@ -188,7 +190,11 @@ class _BottomnavState extends State<Bottomnav> {
                 bottom: 30,
                 child: GestureDetector(
                   onTap: () {
-                    CameraScreen().launch(context);
+
+                    _openScannerAndShowPreview(context);
+                    // Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen2()));
+                    // CameraScreen2
+                    // CameraScreen().launch(context);
                   },
                   child: buildCenterButton(context),
                 ),
@@ -220,6 +226,63 @@ class _BottomnavState extends State<Bottomnav> {
     );
   }
 }
+
+Future<void> _openScannerAndShowPreview(BuildContext context) async {
+  // This function is now self-contained and handles the entire scan-to-preview flow.
+
+  // 1. Start the document scan
+  final List<String>? imagePaths = await _startScanForPreview();
+  if (imagePaths == null || imagePaths.isEmpty) {
+    // User cancelled the scan or an error occurred.
+    return;
+  }
+
+  // 2. If scan is successful, navigate to the preview screen.
+  // The 'as BuildContext' is important if you are in a context that may be null.
+  if (context.mounted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CameraScreen2(imagePaths: imagePaths),
+      ),
+    );
+  }
+}
+
+
+Future<List<String>?> _startScanForPreview() async {
+  try {
+    final scanner = FlutterDocScanner();
+    final dynamic result = await scanner.getScannedDocumentAsImages();
+
+    print("[Preview Scan] Raw scan result: $result");
+
+    if (result is Map && result.containsKey('Uri')) {
+      final dynamic uriValue = result['Uri'];
+      final List<String> paths = [];
+      final regex = RegExp(r'imageUri=(file:///[^}]+)');
+
+      if (uriValue is List && uriValue.isNotEmpty) {
+        for (var page in uriValue) {
+          final rawPageString = page.toString();
+          final match = regex.firstMatch(rawPageString);
+          if (match != null) paths.add(match.group(1)!.replaceFirst('file://', ''));
+        }
+      } else if (uriValue is String) {
+        final matches = regex.allMatches(uriValue);
+        for (final match in matches) {
+          paths.add(match.group(1)!.replaceFirst('file://', ''));
+        }
+      }
+
+      if (paths.isNotEmpty) return paths;
+    }
+  } catch (e, s) {
+    print("[Preview Scan] ❗ Exception during scan: $e\n$s");
+  }
+  return null;
+}
+
 
 /*
 

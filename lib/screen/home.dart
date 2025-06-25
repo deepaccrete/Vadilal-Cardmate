@@ -257,8 +257,17 @@ class _HomeScreenState extends State<HomeScreen> {
     if (searchController.text.toString().isEmpty) {
       fillterCard = _reversedCardApi;
     } else {
-      fillterCard =
-         _reversedCardApi.where((_element) => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))).toList();
+      fillterCard = _reversedCardApi.where((_element){
+        final companyName =  _element.companyName?.toLowerCase() ?? '';
+        return companyName.contains(searchController.text.toLowerCase());
+      }
+      // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
+
+
+      )
+
+          .toList();
+
     }
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
