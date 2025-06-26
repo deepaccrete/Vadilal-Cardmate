@@ -25,6 +25,7 @@ class CommonButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+
       onTap: onTap,
       child: Container(
         width: width,

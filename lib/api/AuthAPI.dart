@@ -32,7 +32,7 @@ class AuthApi {
       }
     }catch (e){
       print("-=------------------------------------------->> $e");
-      return LoginModel(msg: "error",success: 0);
+      return LoginModel(msg: "Login Error",success: 0);
     }
 
   }

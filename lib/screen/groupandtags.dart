@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camera_app/api/GroupApi.dart';
 import 'package:camera_app/api/TagApi.dart';
 import 'package:camera_app/componets/button.dart';
@@ -7,9 +9,11 @@ import 'package:camera_app/model/GroupModel.dart';
 import 'package:camera_app/model/TagModel.dart';
 import 'package:camera_app/model/tagpostmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:shimmer/shimmer.dart';
 
 class GroupAndTags extends StatefulWidget {
   const GroupAndTags({super.key});
@@ -26,6 +30,21 @@ class _GroupAndTagsState extends State<GroupAndTags> {
   bool isTagLoading = true;
   String? errorMessage;
   String? errorMessageTag;
+
+  Future<bool> isInternetConnected() async {
+    try {
+      // Try to lookup google.com or any reliable host
+      final result = await InternetAddress.lookup('google.com');
+
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('Internet Available');
+        return true;
+      }
+    } catch (e) {
+      print('No Internet: $e');
+    }
+    return false;
+  }
 
   Future<void> fetchGroups() async {
     try {
@@ -260,97 +279,99 @@ TextEditingController tagcontroller = TextEditingController();
                   // mycard
                       Expanded(
                         flex: 2,
-                        child: Card(
-                          elevation: 2,
-                          child: Container(
-                            padding: EdgeInsets.all(5),
-                            width: width,
-                            height: height * 0.2,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              // shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-
-                            child:isGroupLoading
-                            ?Center(child: CircularProgressIndicator())
-                           : Container(
-                              // color: Colors.red,
-                             child: ListView.builder(
+                        child:
+                        groups.isEmpty
+                            ? Container(
+                          // color: Colors.red,
+                          width: width *0.3,
+                              height: height * 0.15,
+                              child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
+                              itemCount: 3,
+                              itemBuilder: (context , index){
+                                return Shimmer.fromColors(child: groupshimmer(context),
+                                    baseColor: Colors.grey.shade200,
+                                    highlightColor: Colors.grey.shade200);
+                              }, ),
+                            )
+                        :Container(
+                          width: width * 0.5,
+                          height:  height *0.15,
+                          // color: Colors.red,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
 
-                                itemCount: groups.length,
-                                itemBuilder: (context, index) {
-                                  final group = groups[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: width * 0.25,
-                                      // padding: EdgeInsets.only(left: 10),
-                                      decoration: BoxDecoration(
-                                          // color: Colors.green,
+                            itemCount: groups.length,
+                            itemBuilder: (context, index) {
+                              final group = groups[index];
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  width: width * 0.25,
+                                  // padding: EdgeInsets.only(left: 10),
+                                  decoration: BoxDecoration(
+                                    // color: Colors.green,
 
-                                        border: Border.all(width: 2,color: Colors.grey.shade100)
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                      border: Border.all(width: 2,color: Colors.grey.shade100)
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Container(
-                                                padding: EdgeInsets.all(5),
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(
-                                                    10,
-                                                  ),
-
-                                                  color: Colors.blue.shade100,
-                                                  // shape: BoxShape.circle,
-                                                ),
-                                                child: Text(
-                                                  group.groupname![0],
-                                                  style: GoogleFonts.raleway(
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 10,
-                                                    color: HexColor('#3259C2'),
-                                                  ),
-                                                ),
+                                          Container(
+                                            padding: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(
+                                                10,
                                               ),
 
-                                              Icon(
-                                                Icons.more_vert_outlined,
-                                                color: Colors.grey,
+                                              color: Colors.blue.shade100,
+                                              // shape: BoxShape.circle,
+                                            ),
+                                            child: Text(
+                                              group.groupname![0],
+                                              style: GoogleFonts.raleway(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 10,
+                                                color: HexColor('#3259C2'),
                                               ),
-                                            ],
-                                          ),
-
-                                          SizedBox(height: 10),
-                                          Text(
-                                            group.groupname.toString(),
-                                            style: GoogleFonts.raleway(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
                                             ),
                                           ),
 
-                                          Text(
-                                            group.groupid.toString(),
-                                            style: GoogleFonts.inter(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                          Icon(
+                                            Icons.more_vert_outlined,
+                                            color: Colors.grey,
                                           ),
-                                          SizedBox(width: 20,)
                                         ],
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-                           ),
+
+                                      SizedBox(height: 10),
+                                      Text(
+                                        group.groupname.toString(),
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+
+                                      Text(
+                                        group.groupid.toString(),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      SizedBox(width: 20,)
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -433,44 +454,98 @@ TextEditingController tagcontroller = TextEditingController();
                   ),
                   SizedBox(width: 10,),
                   Expanded(
-                    child: isTagLoading
-                      ? Center(child: CircularProgressIndicator(),)
+                    child:Container(
+                        width: width * 0.3,
+                        height: height * 0.1,
+                        child:
 
-                    :GridView.builder(
+                            tags.isEmpty?
+                                ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                    itemCount: 3,
+                                    itemBuilder: (BuildContext context, int index){
+                                return Shimmer.fromColors(child: tagShimmer(context),
+                                    baseColor: Colors.grey.shade200, highlightColor: Colors.grey.shade200);
+
+                                    }):
+                        // tags.isEmpty
+                    // isTagLoading
+                    //   ? Center(child: CircularProgressIndicator(),) :
+                    //     ListView.builder(
+                    //   scrollDirection: Axis.horizontal,
+                    //     itemCount: 4,
+                    //     itemBuilder: (BuildContext context, int index){
+                    //       return Shimmer.fromColors(child: tagShimmer(context),
+                    //       baseColor:Colors.grey.shade200,
+                    //       highlightColor: Colors.grey.shade200);
+                    //           },
+                    //       )
+               ListView.builder(
+                          scrollDirection: Axis.horizontal,
                       shrinkWrap: true,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 2
-                            ,crossAxisSpacing: 10,
-                                        mainAxisExtent: 50,mainAxisSpacing: 5,
-
-                            crossAxisCount: 3),
+                        // gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        //     childAspectRatio: 2
+                        //     ,crossAxisSpacing: 10,
+                        //                 mainAxisExtent: 50,mainAxisSpacing: 5,
+                        //
+                        //     crossAxisCount: 3),
                       itemCount: tags.length,
                       itemBuilder: (BuildContext context, int index){
                           final tag = tags[index];
-                          return
-                            Container(
-                              alignment: Alignment.center,
-                              width: width * 0.25,
-                              height: height * 0.02,
-                              decoration: BoxDecoration(
-                                color: HexColor('E5E5E5'),
-                                // border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                tag.tagname.toString()?? 'no name',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 11,
+
+                          // return tags.isEmpty
+                          //   // isTagLoading
+                          //   ? Shimmer.fromColors(child: tagShimmer(context),
+                          //     baseColor: Colors.grey.shade200,
+                          //     highlightColor: Colors.grey.shade200)
+                          //
+                          // :
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                                alignment: Alignment.center,
+                                width: width * 0.25,
+                                height: height * 0.02,
+                                decoration: BoxDecoration(
+                                  color: HexColor('E5E5E5'),
+                                  // border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  tag.tagname.toString()?? 'no name',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ),
-                            );
+                          );
                       },
                     ),
                   ),
-                ],
+    ) ],
               ),
+
+
+
+
+              // Network check
+              // SizedBox(height: 10,),
+              // CommonButton(
+              //     width: width * 0.5,
+              //     height:  height * 0.05,
+              //     onTap: ()async{
+              //
+              //       bool  connected =  await isInternetConnected();
+              //       if(connected){
+              //         print('Connected');
+              //       }else{
+              //         print('Not Connected');
+              //       }
+              //
+              //     },
+              //     child:Text('Check Network',style: GoogleFonts.poppins(color: Colors.white),))
             ],
           ),
         ),
@@ -487,6 +562,105 @@ TextEditingController tagcontroller = TextEditingController();
       //           );
       //         })
       //
+    );
+  }
+
+
+  Widget groupshimmer(BuildContext context){
+    final width = MediaQuery.of(context).size.width * 1;
+    final height = MediaQuery.of(context).size.height * 1;
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: width * 0.25,
+            // padding: EdgeInsets.only(left: 10),
+            decoration: BoxDecoration(
+              // color: Colors.green,
+
+                border: Border.all(width: 2,color: Colors.grey.shade100)
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          10,
+                        ),
+
+                        color: Colors.blue.shade100,
+                        // shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                    '',
+                        style: GoogleFonts.raleway(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          color: HexColor('#3259C2'),
+                        ),
+                      ),
+                    ),
+
+                    Icon(
+                      Icons.more_vert_outlined,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 10),
+                Text(
+                '',
+                  style: GoogleFonts.raleway(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                Text(
+              '',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: 20,)
+              ],
+            ),
+          ),
+        );
+
+  }
+
+  Widget tagShimmer (BuildContext context){
+    final width = MediaQuery.of(context).size.width * 1;
+    final height = MediaQuery.of(context).size.height * 1;
+    return    Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        alignment: Alignment.center,
+        width: width * 0.25,
+        height: height * 0.02,
+        decoration: BoxDecoration(
+          color: HexColor('E5E5E5'),
+          // border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Text(
+         '',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            fontSize: 11,
+          ),
+        ),
+      ),
     );
   }
 }

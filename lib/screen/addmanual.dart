@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:camera_app/api/TagApi.dart';
 import 'package:camera_app/model/TagModel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../componets/button.dart';
 import '../componets/textform.dart';
@@ -225,35 +227,34 @@ class _AddManualState extends State<AddManual> {
                   ),
                 ),
                 // img
-                InkWell(
-                  onTap: (){
+               Center(
+                    child: InkWell(
+                        onTap: (){
+                      _pickerImage(ImageSource.gallery);},
+                      child: Container(
+                        // alignment: Alignment.center,
+                        height: height * 0.2,
+                        width: width * 0.6,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey.shade300,
 
-                    _pickerImage(ImageSource.gallery);},
-                  child: Center(
-                    child: Container(
-                      // alignment: Alignment.center,
-                      height: height * 0.2,
-                      width: width * 0.6,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.grey.shade300,
-
+                        ),
+                        child: _selectedImage != null
+                            ?ClipRRect(
+                          borderRadius: BorderRadiusGeometry.circular(8),
+                              child: Image.file(
+                                                      _selectedImage!,
+                                                      fit: BoxFit.cover,
+                                                      height: double.infinity,
+                                                      width: double.infinity,
+                                                    ),
+                            )      :
+                        Icon(Icons.image, color: Colors.grey),
                       ),
-                      child: _selectedImage != null
-                          ?ClipRRect(
-                        borderRadius: BorderRadiusGeometry.circular(8),
-                            child: Image.file(
-                                                    _selectedImage!,
-                                                    fit: BoxFit.cover,
-                                                    height: double.infinity,
-                                                    width: double.infinity,
-                                                  ),
-                          )      :
-                      Icon(Icons.image, color: Colors.grey),
                     ),
                   ),
-                ),
-      
+
                 // Card Details
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -350,9 +351,13 @@ class _AddManualState extends State<AddManual> {
                                     ),
                                   ),
                                   SizedBox(height: 10),
+
                                   taglist.isEmpty?
-                                  CircularProgressIndicator():
-                                  Container(
+                                      Shimmer.fromColors(child: buildShimmer(context),
+                                          baseColor: Colors.grey.shade200,
+                                          highlightColor: Colors.grey.shade200)
+
+                                  :Container(
                                     padding:EdgeInsets.all(5),
                                     decoration: BoxDecoration(
                                       border: Border.all(width:2,color:Colors.grey.shade200),
@@ -361,7 +366,9 @@ class _AddManualState extends State<AddManual> {
                   
                                     ),
                                     child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<Datatag>(
+                                      child:  taglist.isEmpty?
+                                      Center(child: CircularProgressIndicator(color: primarycolor,)):
+                                      DropdownButton<Datatag>(
                                      style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
                                           isExpanded: true,
                                           hint: Text("SELECT Tag"),
@@ -965,6 +972,36 @@ class _AddManualState extends State<AddManual> {
           ),
         ),
       
+      ),
+    );
+  }
+
+  Widget buildShimmer(BuildContext context){
+    return Container(
+      padding:EdgeInsets.all(5),
+      decoration: BoxDecoration(
+          border: Border.all(width:2,color:Colors.grey.shade200),
+          color: Colors.white,
+          borderRadius:BorderRadius.circular(10)
+
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Datatag>(
+            style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
+            isExpanded: true,
+            hint: Text("SELECT Tag"),
+            value: selectedTag,
+            items:taglist.map((tag){
+              return DropdownMenuItem<Datatag>(
+                value: tag,
+                child: Text(tag.tagname.toString()),
+              );
+            }).toList() ,
+            onChanged: (Datatag? value){
+              setState(() {
+                selectedTag = value;
+              });
+            }),
       ),
     );
   }

@@ -1,24 +1,16 @@
 import 'dart:convert';
-import 'dart:io' as io;
 import 'dart:typed_data';
 import 'dart:math';
 import 'package:camera_app/api/CardApi.dart';
+import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
-import 'package:camera_app/screen/EditCard.dart';
 import 'package:camera_app/screen/details_screen.dart';
-import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import 'package:shimmer/shimmer.dart';
-import 'package:universal_html/html.dart' as web;
-// web
 
 class HomeScreen extends StatefulWidget {
   final String? token;
@@ -262,13 +254,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return companyName.contains(searchController.text.toLowerCase());
       }
       // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
+      ).toList();}
 
-
-      )
-
-          .toList();
-
-    }
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     // List<Map<String, dynamic>> exportableData = _cardapi.map((card) => card).toList();
@@ -307,60 +294,53 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   Divider(),
-                  Row(
-                    children: [
-                      Card(
-                        elevation: 10,
-                        child: Container(
-                          width: width * 0.75,
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                          child: TextFormField(
-                            onChanged: (v) {
-                              setState(() {});
-                            },
-                            controller: searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Name, email, tags,etc...',
-                              hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                              prefixIcon: Icon(Icons.search, color: Colors.grey),
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              focusedErrorBorder: InputBorder.none,
-                            ),
-                          ),
+
+                  Card(
+                    elevation: 10,
+                    child: Container(
+                      width: width ,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                      child: TextFormField(
+                        onChanged: (v) {
+                          setState(() {});
+                        },
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Name, email, tags,etc...',
+                          hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
                         ),
                       ),
-                      // InkWell(
-                      //   onTap: () {
-                      //     List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
-                      //
-                      //     exportDataToExcel(context,exportableData);
-                      //   },
-                      //   child: Card(
-                      //
-                      //     elevation: 10,
-                      //     child: Container(
-                      //       height: height * 0.05,
-                      //       width: width * 0.1,
-                      //       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                      //       child: Image.asset('assets/images/csvicon.png'),
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(width: 5),
-                      Card(
-                        elevation: 10,
-                        child: Container(
-                          height: height * 0.05,
-                          width: width * 0.1,
-                          decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                          child: Icon(Icons.filter_alt, color: Colors.grey),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+
+                  // Row(
+                  //   children: [
+                  //
+                  //     // InkWell(
+                  //     //   onTap: () {
+                  //     //     List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
+                  //     //
+                  //     //     exportDataToExcel(context,exportableData);
+                  //     //   },
+                  //     //   child: Card(
+                  //     //
+                  //     //     elevation: 10,
+                  //     //     child: Container(
+                  //     //       height: height * 0.05,
+                  //     //       width: width * 0.1,
+                  //     //       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
+                  //     //       child: Image.asset('assets/images/csvicon.png'),
+                  //     //     ),
+                  //     //   ),
+                  //     // ),
+                  //   ],
+                  // ),
 
 
                   Container(
@@ -377,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   // ? Center(child: CircularProgressIndicator())
 
                               ?ListView.builder(
-                                itemCount: 3,
+                                itemCount: 4,
                                   itemBuilder: (context,index){
                                 return Shimmer.fromColors(
                                     child: _buildShimmerCarde(context),
@@ -500,6 +480,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+
+                  SizedBox(height: 10,),
+
+
                 ],
               ),
             ),
