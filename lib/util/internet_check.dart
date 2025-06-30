@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http ;
+import 'internertchecker.dart';
 class InternetChecker with WidgetsBindingObserver {
   static final InternetChecker _instance = InternetChecker._internal();
   factory InternetChecker() => _instance;
@@ -28,26 +27,23 @@ class InternetChecker with WidgetsBindingObserver {
       }
     });
   }
+  //
+  // Future<bool> checkInternet() async {
+  //   try {
+  //     final response = await http.get(Uri.parse('https://www.google.com'));
+  //     if (response.statusCode == 200) {
+  //       print('Internet is Working');
+  //       return true;
+  //     } else {
+  //       print('Internet not reachable');
+  //       return false;
+  //     }
+  //   } catch (_) {
+  //     print('No Internet');
+  //     return false;
+  //   }
+  // }
 
-  Future<bool> checkInternet() async {
-    try {
-
-      final repsonse = await HttpClient().getUrl(Uri.parse('https://www.google.com'));
-      await repsonse.close();
-      print('Internet is Working');
-      return true;
-     //  final result = await InternetAddress.lookup('google.com');
-     // return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-
-      // final address = result.first;
-      // final socket = await Socket.connect(address.address, 80, timeout: Duration(seconds: 2));
-      // socket.destroy();
-      // return true;
-    } catch (_) {
-      print('no Internnet');
-      return false;
-    }
-  }
 
   void _showInternetPopup() {
     final ctx = navigatorKey.currentContext;
