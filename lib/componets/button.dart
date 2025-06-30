@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 
 class CommonButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget? child;
   final Color? bgcolor;
   final Color? bordercolor;
@@ -14,7 +14,7 @@ class CommonButton extends StatelessWidget {
   final IconData? iconData;
   CommonButton(
       {super.key,
-        required this.onTap,
+         this.onTap,
         required this.child,
         this.bgcolor,
         this.iconData,

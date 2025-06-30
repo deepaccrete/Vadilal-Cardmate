@@ -35,12 +35,15 @@ class _LoginScreenState extends State<LoginScreen> {
   );
 
   String? validateEmail(String? value) {
+
     if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+      return 'Please enter your email address.';
     }
 
-    if (!EmailValidator.validate(value)) {
-      return 'Enter a valid email';
+    final trimmedValue = value.trim();
+
+    if (!EmailValidator.validate(trimmedValue)) {
+      return 'Please enter a valid email address.';
     }
 
     // // Simple email regex
@@ -69,19 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: primarycolor,
-
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
             children: [
+
+              // lOGO
               Container(
-                // alignment: Alignment.bottomCenter,
                 height: height * 0.1,
                 width: width * 0.5,
-                decoration: BoxDecoration(
-                  // color: Colors.red
-                ),
                 child: Image.asset(
                   'assets/images/logov.png', fit: BoxFit.fill,),
               ),
@@ -89,14 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
               Container(
                 height: height * 0.16,
                 width: width,
-                decoration: BoxDecoration(
-                  // color: Colors.red
-                ),
                 child: Image.asset('assets/images/Sign up (1).png'),
               ),
-
               SizedBox(height: 50,),
 
+              // LOGInText
               Container(
                 // color: Colors.red,
                 child: Text(
@@ -112,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Text('Email Address',
                       style: GoogleFonts.openSans(color: Colors.white),),
                     SizedBox(height: 10,),

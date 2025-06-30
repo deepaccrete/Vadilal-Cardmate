@@ -49,11 +49,13 @@ class ImageuploadApi {
 
     try {
       final response = await request.send();
+      print('[Upload Response] $response');
 
       if (response.statusCode == 200) {
         print(" Image uploaded successfully to API");
         print("==========>>>>>>>>>>>>>>>>>>>>>${response.statusCode}");
         return true;
+
       } else {
         print(" Upload failed: ${response.statusCode}");
         return false;

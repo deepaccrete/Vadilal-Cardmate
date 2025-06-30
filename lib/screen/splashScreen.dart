@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   getData() async {
-    // try {
+    try {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     final bool? isLogin = prefs.getBool(IS_LOGGED_IN);
@@ -55,10 +55,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       UserData userDetails = UserData.fromJson(userDetailsString);
       appStore.setUser(userDetails);
     }
-    // } catch (e) {
-    //   print(
-    //       "this is the following error ------------------------------------------------------------------------------------->\n ${e}");
-    // }
+    } catch (e) {
+      print(
+          "this is the following error ------------------------------------------------------------------------------------->\n ${e}");
+    }
   }
 
   void _startAnimation() {

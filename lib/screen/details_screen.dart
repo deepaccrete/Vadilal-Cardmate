@@ -887,14 +887,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              person.name ?? 'N/A',
+
+                                            (person.name== null || person.name!.trim().isEmpty || person.name!.toLowerCase()=='null')
+                                                ? SizedBox()
+                                                : Text(
+                                              person.name!,
+                                              // person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
                                               style: GoogleFonts.raleway(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.grey[800],
                                               ),
                                             ),
+                                            // Text(
+                                            //   // person.name ?? 'N/A',
+                                            //   person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
+                                            //   style: GoogleFonts.raleway(
+                                            //     fontSize: 16,
+                                            //     fontWeight: FontWeight.w600,
+                                            //     color: Colors.grey[800],
+                                            //   ),
+                                            // ),
                                             if (person.position != null)
                                               Container(
                                                 margin: EdgeInsets.only(top: 4),
@@ -971,8 +984,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                 ),
                                               ),
                                             ),
-                                          if (person.email != null)
-                                            ListTile(
+                                           (person.email== null || person.email!.trim().isEmpty || person.email!.toLowerCase()=='null')
+                                          ?SizedBox()
+
+                                            :ListTile(
                                               onTap: () {
                                                 // Handle email tap
                                               },

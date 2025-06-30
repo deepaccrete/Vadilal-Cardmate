@@ -30,25 +30,26 @@ class _HomeScreenState extends State<HomeScreen> {
     borderRadius: BorderRadius.circular(10),
   );
 
-  Map<String, dynamic> dataCardToExportableMap(DataCard card) {
-    return {
-      'Card ID': card.cardID?.toString() ?? '',
-      'Company Name': card.companyName ?? '',
-      'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
-      'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
-      'Person Phone ': card.personDetails?.map((p) => p.phoneNumber).join(',') ?? '',
-      'Company Phone': card.companyPhoneNumber ?? '',
-      'Company Address': card.companyAddress?.join(', ') ?? '',
-      'Company Email': card.companyEmail ?? '',
-      'Web Address': card.webAddress ?? '',
-      'Work Details': card.companySWorkDetails ?? '',
-      'GSTIN': card.gSTIN ?? '',
-      'Created By': card.createdBy?.toString() ?? '',
-      'Created At': card.createdAt ?? '',
-    };
-  }
+  // Map<String, dynamic> dataCardToExportableMap(DataCard card) {
+  //   return {
+  //     'Card ID': card.cardID?.toString() ?? '',
+  //     'Company Name': card.companyName ?? '',
+  //     'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
+  //     'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
+  //     'Person Phone ': card.personDetails?.map((p) => p.phoneNumber).join(',') ?? '',
+  //     'Company Phone': card.companyPhoneNumber ?? '',
+  //     'Company Address': card.companyAddress?.join(', ') ?? '',
+  //     'Company Email': card.companyEmail ?? '',
+  //     'Web Address': card.webAddress ?? '',
+  //     'Work Details': card.companySWorkDetails ?? '',
+  //     'GSTIN': card.gSTIN ?? '',
+  //     'Created By': card.createdBy?.toString() ?? '',
+  //     'Created At': card.createdAt ?? '',
+  //   };
+  // }
+  //
+  // // List<CardDetails> _cards = [];
 
-  // List<CardDetails> _cards = [];
   List<DataCard> _cardapi = [];
    List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
 

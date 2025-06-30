@@ -3,7 +3,7 @@ import 'package:camera_app/model/dbModel/imagemodel.dart';
 import 'package:camera_app/screen/EditCard.dart';
 import 'package:camera_app/screen/home.dart';
 
-import 'package:camera_app/screen/splash.dart';
+import 'package:camera_app/screen/splashScreen.dart';
 import 'package:camera_app/store/appStore.dart';
 import 'package:camera_app/util/internet_check.dart';
 import 'package:flutter/material.dart';

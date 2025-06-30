@@ -387,7 +387,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
   /// Initiates the document scan and processes the result.
   ///
   /// The [label] is used for logging purposes to distinguish between scan calls.
-  /// Returns the file path of the scanned image, or null on failure.
+*  /// Returns the file path of the scanned image, or null on failure.
   Future<List<String>?> _startScan(String label) async {
     try {
       final scanner = FlutterDocScanner();
