@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/util/const.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +15,7 @@ import 'package:path/path.dart';
 import '../main.dart';
 
 class ImageuploadApi {
+
   static Future<bool> uploadImage({
     required File frontImage,
     File? backImage,
@@ -49,13 +52,18 @@ class ImageuploadApi {
 
     try {
       final response = await request.send();
-      print('[Upload Response] $response');
 
       if (response.statusCode == 200) {
+        // final responseBody = await response.stream.bytesToString();
+        // final cardModel = CardModel.fromJson(jsonDecode(responseBody));
+        // if(cardModel.success == 1 && cardModel.data != null && cardModel.data!.isNotEmpty){
+        //   print('API Success : DataCard object extracted');
+        //   // return cardModel.data![0];
+        // }
+
         print(" Image uploaded successfully to API");
         print("==========>>>>>>>>>>>>>>>>>>>>>${response.statusCode}");
         return true;
-
       } else {
         print(" Upload failed: ${response.statusCode}");
         return false;

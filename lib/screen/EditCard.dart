@@ -9,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:universal_html/js_util.dart' as personNameControllers;
 import 'package:universal_html/js_util.dart' as personMobileControllers;
-import 'package:uuid/uuid.dart';
+// import 'package:uuid/uuid.dart';
 
 import '../componets/button.dart';
 import '../componets/textform.dart';
@@ -17,15 +17,15 @@ import '../constant/colors.dart';
 import '../model/cardModel.dart';
 import 'groupandtags.dart';
 
-class AddDetails extends StatefulWidget {
+class EditCard extends StatefulWidget {
   DataCard? dataCard;
-   AddDetails({super.key ,  this.dataCard});
+   EditCard({super.key ,  this.dataCard});
 
   @override
-  State<AddDetails> createState() => _AddDetailsState();
+  State<EditCard> createState() => _EditCardState();
 }
 
-class _AddDetailsState extends State<AddDetails> {
+class _EditCardState extends State<EditCard> {
 
 
    TextEditingController  designationController = TextEditingController();
@@ -40,6 +40,11 @@ class _AddDetailsState extends State<AddDetails> {
    List<TextEditingController> personMobileControllers = [];
    List<TextEditingController> personEmailControllers = [];
    List<TextEditingController> personPositionControllers = [];
+
+   List<FocusNode> personnameNode = [];
+   List<FocusNode> personMobileNode = [];
+   List<FocusNode> personEmailNode = [];
+   List<FocusNode> personPositionNode = [];
 
   FocusNode namenode = FocusNode();
   FocusNode desinationnode = FocusNode();
@@ -56,7 +61,7 @@ class _AddDetailsState extends State<AddDetails> {
 
 
   // function to add data in hive
-  Future<void> _addcardtoHive()async{
+ /* Future<void> _addcardtoHive()async{
     if(_formkey.currentState!.validate()){
       final newCard = CardDetails(
           id: Uuid().v4().toString(),
@@ -79,29 +84,47 @@ class _AddDetailsState extends State<AddDetails> {
       // dispose();
 
     }
-  }
+  }*/
 
-  void dispose(){
-    nameController.dispose();
-    designationController.dispose();
-    phoneController.dispose();
-    emailController.dispose();
-    companynameController.dispose();
-    addressController.dispose();
-    webController.dispose();
-    noteController.dispose();
-    namenode.dispose();
-    desinationnode.dispose();
-    phonenode.dispose();
-    emailnode.dispose();
-    companynamenode.dispose();
-    addressnode.dispose();
-    webnode.dispose();
-    notenode.dispose();
+   @override
+   void dispose()
+   {
+     // Single controllers
+     nameController.dispose();
+     designationController.dispose();
+     phoneController.dispose();
+     emailController.dispose();
+     companynameController.dispose();
+     addressController.dispose();
+     webController.dispose();
+     noteController.dispose();
 
+     // Focus nodes
+     namenode.dispose();
+     desinationnode.dispose();
+     phonenode.dispose();
+     emailnode.dispose();
+     companynamenode.dispose();
+     addressnode.dispose();
+     webnode.dispose();
+     notenode.dispose();
 
-    super.dispose();
-  }
+     // Dispose dynamic lists
+     for (var controller in personNameControllers) {
+       controller.dispose();
+     }
+     for (var controller in personEmailControllers) {
+       controller.dispose();
+     }
+     for (var controller in personMobileControllers) {
+       controller.dispose();
+     }
+     for (var controller in personPositionControllers) {
+       controller.dispose();
+     }
+
+     super.dispose();
+   }
 
   void _gotohome(){
     Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
@@ -112,12 +135,21 @@ class _AddDetailsState extends State<AddDetails> {
 @override
   void initState() {
     super.initState();
-
     for (var person in widget.dataCard?.personDetails ?? []) {
       personNameControllers.add(TextEditingController(text: person.name));
       personMobileControllers.add(TextEditingController(text: person.phoneNumber));
       personEmailControllers.add(TextEditingController(text: person.email));
       personPositionControllers.add(TextEditingController(text: person.position));
+
+      personnameNode.add(FocusNode());
+      personEmailNode.add(FocusNode());
+      personMobileNode.add(FocusNode());
+      personPositionNode.add(FocusNode());
+
+    }
+    if(personNameControllers.isEmpty){
+      addemptyPerson();
+
     }
     companynameController = TextEditingController(text: widget.dataCard!.companyName);
     emailController = TextEditingController(text: widget.dataCard!.companyEmail);
@@ -134,6 +166,48 @@ class _AddDetailsState extends State<AddDetails> {
     // }
 
 }
+void addemptyPerson(){
+      personNameControllers.add(TextEditingController());
+      personEmailControllers.add(TextEditingController());
+      personMobileControllers.add(TextEditingController());
+      personPositionControllers.add(TextEditingController());
+      personnameNode.add(FocusNode());
+      personEmailNode.add(FocusNode());
+      personMobileNode.add(FocusNode());
+      personPositionNode.add(FocusNode());
+
+      print('Names: ${personNameControllers.length}');
+      print('Emails: ${personEmailControllers.length}');
+      print('Mobiles: ${personMobileControllers.length}');
+      print('Positions: ${personPositionControllers.length}');
+}
+
+   void removePerson(int index) {
+     if (index < personNameControllers.length) {
+       personNameControllers[index].dispose();
+       personEmailControllers[index].dispose();
+       personMobileControllers[index].dispose();
+       personPositionControllers[index].dispose();
+
+       personNameControllers.removeAt(index);
+       personEmailControllers.removeAt(index);
+       personMobileControllers.removeAt(index);
+       personPositionControllers.removeAt(index);
+
+       personnameNode[index].dispose();
+       personEmailNode[index].dispose();
+       personMobileNode[index].dispose();
+       personPositionNode[index].dispose();
+
+       personnameNode.removeAt(index);
+       personEmailNode.removeAt(index);
+       personMobileNode.removeAt(index);
+       personPositionNode.removeAt(index);
+
+       print('Removed person at index $index');
+     }
+   }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -249,10 +323,56 @@ class _AddDetailsState extends State<AddDetails> {
                         //     ),
                         //   ),
                         // ),
-                        Text('Person Details',style: GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 16),),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('Person Details',style: GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 16),),
+
+
+                            personNameControllers.isEmpty?
+                            InkWell(
+                              onTap: (){
+                            setState(() {
+                              addemptyPerson();
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Persone Added')));
+
+                            });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade400,
+                                    borderRadius: BorderRadius.circular(5)
+                                  ),
+                                  child: Text('ADD+',style: GoogleFonts.poppins(color: Colors.black),)),
+                            )
+                                :SizedBox()
+
+                            // CommonButton(
+                            //   bordercircular: 5,
+                            //   width: width * 0.2,
+                            //   height: height * 0.04,
+                            //   child: Text('ADD+',style: GoogleFonts.poppins(color: Colors.white),),
+                            //   onTap: (){
+                            //   addemptyPersone();
+                            //   setState(() {
+                            //
+                            //   });
+                            //   },
+                            // )
+                          ],
+                        ),
 
                         SizedBox(height: 5,),
-                        ...List.generate(personNameControllers.length, (index){
+
+
+                        ...List.generate(
+
+
+                           // personNameControllers.isEmpty? 1 : personNameControllers.length,
+                            personNameControllers.length,
+                                (index){
                         return  Card(
                           margin: const EdgeInsets.only(bottom: 12.0),
                           elevation: 5,
@@ -264,8 +384,68 @@ class _AddDetailsState extends State<AddDetails> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Person ${index +1}',style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),),
 
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text('Person ${index +1}',style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),),
+
+
+                                      Row(
+                                        children: [
+                                          InkWell(
+                                            onTap: (){
+                                              setState(() {
+                                                addemptyPerson();
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Person Added')));
+
+                                              });
+                                            },
+                                            child: Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                    color: Colors.grey.shade300,
+                                                    borderRadius: BorderRadius.circular(5)
+                                                ),
+                                                child: Text('ADD',style: GoogleFonts.poppins(color: Colors.black),)),
+                                          ),
+                                          SizedBox(width: 5,),
+                                          InkWell(
+                                            onTap: (){
+                                              setState(() {
+
+                                                removePerson(index);
+
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Person Removed')));
+
+                                              });
+                                            },
+                                            child: Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                    color: Colors.grey.shade300,
+                                                    borderRadius: BorderRadius.circular(5)
+                                                ),
+                                                child: Text('Remove ',style: GoogleFonts.poppins(color: Colors.black),)),
+                                          ),
+                                        ],
+                                      ),
+
+                                      // CommonButton(
+                                      //   bordercircular: 5,
+                                      //   width: width * 0.2,
+                                      //   height: height * 0.04,
+                                      //   child: Text('ADD+',style: GoogleFonts.poppins(color: Colors.white),),
+                                      //   onTap: (){
+                                      //   addemptyPersone();
+                                      //   setState(() {
+                                      //
+                                      //   });
+                                      //   },
+                                      // )
+                                    ],
+                                  ),
                                   Card(
                                     elevation: 2,
                                     shadowColor: Colors.black12,
@@ -294,7 +474,7 @@ class _AddDetailsState extends State<AddDetails> {
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: namenode,
+                                            focusNode: personnameNode[index],
                                             controller: personNameControllers[index],
                                             labeltext: 'Enter Name',
                                             borderc: 10,
@@ -349,7 +529,7 @@ class _AddDetailsState extends State<AddDetails> {
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: desinationnode,
+                                            focusNode: personPositionNode[index],
                                             controller: personPositionControllers[index],
                                             labeltext: 'Designation',
                                             borderc: 10,
@@ -404,7 +584,7 @@ class _AddDetailsState extends State<AddDetails> {
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: phonenode,
+                                            focusNode: personMobileNode[index],
                                             controller: personMobileControllers[index],
                                             labeltext: 'Enter phone number',
                                             borderc: 10,
@@ -580,7 +760,7 @@ class _AddDetailsState extends State<AddDetails> {
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: emailnode,
+                                            focusNode: personEmailNode[index],
                                             controller: personEmailControllers[index],
                                             labeltext: 'Enter email',
                                             borderc: 10,

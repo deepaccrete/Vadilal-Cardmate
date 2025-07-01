@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
 import 'package:camera_app/api/CardApi.dart';
-import 'package:camera_app/componets/button.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
@@ -265,6 +264,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: screenBGColor,
         body: RefreshIndicator(
+          color: primarycolor,
+          backgroundColor: Colors.grey.shade300,
+
           onRefresh: () {
             return FetchCard();
           },
@@ -504,95 +506,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  // --- Your Shimmer Card Skeleton Widget ---
-  Widget _buildShimmerCard(BuildContext context) {
-    final double currentHeight = MediaQuery.of(context).size.height;
-    final double currentWidth = MediaQuery.of(context).size.width;
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 10, // Match elevation of actual card
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  // Image placeholder
-                  Container(
-                    height: currentHeight * 0.1,
-                    width: currentWidth * 0.2,
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Base color for shimmer effect
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Company Name placeholder
-                        Container(
-                          width: double.infinity,
-                          height: 14.0,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        // Company Address placeholder
-                        Container(
-                          width: currentWidth * 0.4,
-                          height: 11.0,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      // Date icon placeholder
-                      Container(width: 24.0, height: 24.0, color: Colors.white),
-                      const SizedBox(width: 8),
-                      // Date text placeholder
-                      Container(width: 80.0, height: 12.0, color: Colors.white),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      // 'General' tag placeholder
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        width: 50.0,
-                        height: 16.0,
-                      ),
-                      const SizedBox(width: 8),
-                      // More_vert_outlined icon placeholder
-                      Container(width: 24.0, height: 24.0, color: Colors.white),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  // ... (rest of your _MyCardLoadingScreenState class)
-
-// This widget will be the "ghost" or "skeleton" of your card
   Widget _buildShimmerCarde(BuildContext context) {
     // Get screen dimensions. Replace 'height' and 'width' variables if they are global
     // If you are using height and width from MediaQuery, then this is good.
@@ -689,7 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
   }
-// ... (rest of your _MyCardLoadingScreenState class)
+
 
   // card_list_screen.dart or export_helper.dart
 }

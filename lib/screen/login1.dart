@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   FocusNode emaiilFocus = FocusNode();
   FocusNode passwordFocus = FocusNode();
+  bool? isLoading = false;
 
   final _formkey = GlobalKey<FormState>();
 
@@ -228,8 +229,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     loginReq();
                   },
 
-                  child: Text('Login', style: GoogleFonts.openSans(
-                      color: Colors.white, fontSize: 20),)),
+                  child: Center(
+                    child:isLoading==true?
+                        CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                    :Text('Login', style: GoogleFonts.openSans(
+                        color: Colors.white, fontSize: 20),),
+                  )),
 
               SizedBox(height: 10,),
 
@@ -245,6 +252,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   loginReq() async {
     if (_formkey.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
+      });
       try {
         final loginResponse = await AuthApi.login(
           email: emailController.text.trim(),
@@ -252,6 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (loginResponse.success == 1) {
+
           if (rememberme) {
             SharedPreferences pref = await SharedPreferences.getInstance();
             await pref.setString(TOKEN, loginResponse.userData?.token ?? '');
@@ -263,21 +274,31 @@ class _LoginScreenState extends State<LoginScreen> {
           appStore.setUserToken(loginResponse.userData?.token);
           appStore.setIsLogin(true);
           appStore.setUser(loginResponse.userData);
+    setState(() {
+      isLoading = false;
+    });
 
           print("Login success");
           //
           // if (!context.mounted) return;
-
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => Bottomnav()),
           );
         } else {
+        setState(() {
+          isLoading = false;
+        });
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(loginResponse.msg ?? 'Invalid credentials')),
           );
         }
       } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred. Please try again.')),
         );

@@ -142,8 +142,9 @@ class _BottomnavState extends State<Bottomnav> {
   @override
   Widget build(BuildContext context) {
     bool showBottomNav = ![
-      CameraScreen, // or some screen where you want full view
-    ].contains(_WidgetOption[_SelectedIndex].runtimeType);
+      // CameraScreen, // or some screen where you want full view
+    ].contains(_WidgetOption
+    [_SelectedIndex].runtimeType);
 
 
     return Scaffold(

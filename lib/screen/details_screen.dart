@@ -6,18 +6,15 @@ import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/EditCard.dart';
-import 'package:camera_app/screen/editdetails.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
-import 'package:hive/hive.dart';
-import 'package:nb_utils/nb_utils.dart';
-
-import '../db/hive_card.dart';
 
 class DetailsScreen extends StatefulWidget {
+
   // final CardDetails cardDetails;
   DataCard dataCard;
 
@@ -25,8 +22,6 @@ class DetailsScreen extends StatefulWidget {
   DetailsScreen({
     super.key,
     required this.dataCard,
-    // required this.cardDetails,
-    // required this.index
   });
 
   @override
@@ -36,41 +31,56 @@ class DetailsScreen extends StatefulWidget {
 List<CardDetails> _cards = [];
 
 Future<void> callNumber(String number)async{
-  final Uri phoneUri = Uri(scheme: 'tel',path: number);
-  if( await canLaunchUrl(phoneUri)){
-    await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
-  }else{
-    throw Exception('Could Not Luanch $number');
+  try{
+    final Uri phoneUri = Uri(scheme: 'tel',path: number);
+    if( await canLaunchUrl(phoneUri)){
+      await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+    }else{
+      throw Exception('Could Not Luanch $number');
+    }
+  }catch(e){
+    print('Error on CallNumber $e');
   }
+
 }
+
 Future<void> sendmail({required String toEmail,
 String Subject = '',
 String body = '',
 })async{
-  final Uri emailUri = Uri(scheme: 'mailTO',path: toEmail,
-  queryParameters: {
-    'Subject':Subject,
-    'body': body
-  }
-  );
-   if (await canLaunchUrl(emailUri)){
-     await launchUrl(emailUri);
-  }else{
-    throw Exception('Could Not Luanch $emailUri');
+  try{
+    final Uri emailUri = Uri(scheme: 'mailTO',path: toEmail,
+        queryParameters: {
+          'Subject':Subject,
+          'body': body
+        }
+    );
+    if (await canLaunchUrl(emailUri)){
+      await launchUrl(emailUri);
+    }else{
+      throw Exception('Could Not Lunch $emailUri');
+    }
+  }catch(e){
+    print('Send Mail Error $e');
   }
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
-  Future<void> _loadCard() async {
+
+  //Hive Load Card
+  /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
       _cards = box.values.toList();
     });
-  }
+  }*/
 
+//   Delete Card
+/*
   void _deleteCardhive(dynamic id) async {
     await HiveBoxes.deleteCard(id);
   }
+*/
 
   int _currentIndex = 0;
   @override
@@ -218,7 +228,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             FocusScope.of(context).unfocus();
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios),
         ),
         title: Text(
           widget.dataCard.companyName.toString(),
@@ -378,7 +388,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       onTap: () async {
 
 
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=> AddDetails(dataCard: widget.dataCard,)));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> EditCard(dataCard: widget.dataCard,)));
                         // final result =  await
                         // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
                         //     index:widget.index)));
