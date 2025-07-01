@@ -16,7 +16,7 @@ import '../main.dart';
 
 class ImageuploadApi {
 
-  static Future<bool> uploadImage({
+  static Future<Map<String , dynamic>?> uploadImage({
     required File frontImage,
     File? backImage,
   }) async {
@@ -61,16 +61,23 @@ class ImageuploadApi {
         //   // return cardModel.data![0];
         // }
 
+        final responseBody = await response.stream.bytesToString();
+        final json = jsonDecode(responseBody);
+        print(' Uploaded Json: $json');
+
+        if(json['success']==1){
+          return json['carddata'];
+        }
         print(" Image uploaded successfully to API");
         print("==========>>>>>>>>>>>>>>>>>>>>>${response.statusCode}");
-        return true;
+        // return true;
       } else {
         print(" Upload failed: ${response.statusCode}");
-        return false;
+        return null;
       }
     } catch (e) {
       print(" Upload error: $e");
-      return false;
+      return null;
     }
   }
 }

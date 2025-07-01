@@ -1,5 +1,7 @@
 
 import 'dart:io';
+import 'package:camera_app/model/cardModel.dart';
+import 'package:camera_app/screen/EditCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -111,18 +113,30 @@ class _CameraScreen2State extends State<CameraScreen2> {
     _setLoading(true);
 
     try {
+      Map<String, dynamic>? cardjson;
       bool uploaded = false;
       // Handle two-sided case
       if (_backImagePath != null) {
-        uploaded = await ImageuploadApi.uploadImage(
+        cardjson = await ImageuploadApi.uploadImage(
           frontImage: File(_frontImagePath!),
           backImage: File(_backImagePath!),
         );
-        _showSnackBarAndNavigate(uploaded, isTwoSided: true);
+        // _showSnackBarAndNavigate(uploaded, isTwoSided: true);
 
       } else { // Handle single-sided case
-        uploaded = await ImageuploadApi.uploadImage(frontImage: File(_frontImagePath!));
+        cardjson = await ImageuploadApi.uploadImage(
+            frontImage: File(_frontImagePath!));
         _showSnackBarAndNavigate(uploaded, isTwoSided: false);
+      }
+      if(cardjson != null){
+        final newcard = DataCard.fromJson(cardjson);
+
+      //   Navigate to next
+
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> EditCard(dataCard: newcard,)));
+
+      }else{
+        _showError("Upload Faild");
       }
     } catch (e) {
       print("Error during upload/save: $e");

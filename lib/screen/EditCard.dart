@@ -220,7 +220,7 @@ void addemptyPerson(){
         backgroundColor: screenBGColor,
         elevation: 10,
         centerTitle:true,
-        title: Text('Add Details'),
+        title: Text('Add Detailss'),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -1006,6 +1006,8 @@ void addemptyPerson(){
                           height: height * 0.06,
                           bordercircular: 20,
                           onTap: (){
+
+                            Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
                             // if(_formkey.currentState!.validate()){
                             //   _addcardtoHive();
                             // }
