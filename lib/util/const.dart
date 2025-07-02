@@ -11,6 +11,8 @@ static String groupget = '$baseUrl/group/getgroup';
 static String tagget = '$baseUrl/tag/gettag';
 static String imageupload = '$baseUrl/card/uploadcard';
 static String cardget = '$baseUrl/card/getcardlists';
+static String GroupPost = '$baseUrl/group/insertgroup';
+static String TagPost = '$baseUrl/tag/inserttag';
 }
 
 const IS_LOGGED_IN = 'IS_LOGGED_IN';

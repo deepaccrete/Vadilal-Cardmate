@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class LogOut extends StatefulWidget {
+  const LogOut({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<LogOut> createState() => _LogOutState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _LogOutState extends State<LogOut> {
   @override
   Widget build(BuildContext context) {
     return Center(child: Text('Profile Screen'),);

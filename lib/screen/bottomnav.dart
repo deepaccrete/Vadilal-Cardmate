@@ -1,13 +1,18 @@
 import 'package:camera_app/constant/colors.dart';
+import 'package:camera_app/main.dart';
+import 'package:camera_app/screen/Camera_Screen_2.dart';
 import 'package:camera_app/screen/camera_screen.dart';
-import 'package:camera_app/screen/cart.dart';
+import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';
 import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
+import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
+import 'groupandtags.dart';
 import 'login1.dart';
 
 class Bottomnav extends StatefulWidget {
@@ -18,12 +23,28 @@ class Bottomnav extends StatefulWidget {
 class _BottomnavState extends State<Bottomnav> {
   int _SelectedIndex = 0;
 
+
+
+  Future<void>logout()async{
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    appStore.setUser(null);
+    appStore.setIsLogin(false);
+    appStore.setUserToken(null);
+
+    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (_)=>
+    LoginScreen()),
+        (route) => false);
+
+  }
+
   static final List<Widget> _WidgetOption = [
     HomeScreen(),
-    SearchScreen(),
     // CameraScreen(),
-    CartScreen(),
-    ProfileScreen(),
+    AddManual(),
+    GroupAndTags(),
+    LogOut(),
   ];
 
   Widget _getSelectedScreen(int index) {
@@ -33,20 +54,62 @@ class _BottomnavState extends State<Bottomnav> {
       // case 1:
       //     return  CameraScreen();
       case 1:
-        return SearchScreen();
+        return AddManual();
       case 2:
-        return CartScreen();
+        return GroupAndTags();
+
       case 3:
-        return ProfileScreen();
+        return LogOut();
       default:
         return HomeScreen();
     }
   }
 
   void _onTap(int index) {
-    setState(() {
-      _SelectedIndex = index;
-    });
+    if (index == 3) {
+      // Show confirmation dialog instead of navigating
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.grey.shade300,
+          title: Text('Logout',textAlign: TextAlign.center,),
+          content: Text('Are you sure you want to Logout?',textAlign: TextAlign.center),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap:(){
+                    Navigator.pop(context);
+                  } ,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: primarycolor
+                    ),
+                    child: Text('Cancel',style: GoogleFonts.poppins(color: Colors.white),)
+                  ),
+                ),
+                InkWell(
+                  onTap:() => logout(),
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: primarycolor
+                    ),
+                    child: Text('LogOut',style: GoogleFonts.poppins(color: Colors.white),)
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      setState(() {
+        _SelectedIndex = index;
+      });
+    }
   }
 
   Widget buildCenterButton(BuildContext context) {
@@ -78,11 +141,15 @@ class _BottomnavState extends State<Bottomnav> {
 
   @override
   Widget build(BuildContext context) {
-    bool showBottomNav = _SelectedIndex != 1; // hide on index 1
+    bool showBottomNav = ![
+      // CameraScreen, // or some screen where you want full view
+    ].contains(_WidgetOption
+    [_SelectedIndex].runtimeType);
+
 
     return Scaffold(
       extendBody: true,
-      body: _getSelectedScreen(_SelectedIndex),
+      body: _WidgetOption[_SelectedIndex],
       bottomNavigationBar:
           showBottomNav
               ? Stack(
@@ -102,15 +169,18 @@ class _BottomnavState extends State<Bottomnav> {
                       Row(
                         children: [
                           buildNavItem(Icons.home, "Home", 0),
-                          SizedBox(width: 40),
-                          buildNavItem(Icons.search, "Search", 1),
+                          SizedBox(width: 30),
+                          buildNavItem(Icons.add, "Add", 1),
+
                         ],
                       ),
+                      // SizedBox(width: 5,),
                       Row(
                         children: [
-                          buildNavItem(Icons.shopping_basket_outlined, "Cart", 3),
-                          SizedBox(width: 40),
-                          buildNavItem(Icons.logout, "Logout ", 4),
+                          buildNavItem(Icons.search, "Group", 2),
+
+                          SizedBox(width: 30),
+                          buildNavItem(Icons.logout, "LogOut", 3),
                         ],
                       ),
                     ],
@@ -121,7 +191,11 @@ class _BottomnavState extends State<Bottomnav> {
                 bottom: 30,
                 child: GestureDetector(
                   onTap: () {
-                    CameraScreen().launch(context);
+
+                    _openScannerAndShowPreview(context);
+                    // Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen2()));
+                    // CameraScreen2
+                    // CameraScreen().launch(context);
                   },
                   child: buildCenterButton(context),
                 ),
@@ -133,11 +207,11 @@ class _BottomnavState extends State<Bottomnav> {
   }
 
   Widget buildNavItem(IconData icon, String label, int index) {
-    final isSelected = 1 == index;
+    final isSelected = _SelectedIndex == index;
     final color = isSelected ? Colors.blue : Colors.black45;
 
     return GestureDetector(
-      onTap: () => {},
+      onTap:()=> _onTap(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -154,11 +228,68 @@ class _BottomnavState extends State<Bottomnav> {
   }
 }
 
+Future<void> _openScannerAndShowPreview(BuildContext context) async {
+  // This function is now self-contained and handles the entire scan-to-preview flow.
+
+  // 1. Start the document scan
+  final List<String>? imagePaths = await _startScanForPreview();
+  if (imagePaths == null || imagePaths.isEmpty) {
+    // User cancelled the scan or an error occurred.
+    return;
+  }
+
+  // 2. If scan is successful, navigate to the preview screen.
+  // The 'as BuildContext' is important if you are in a context that may be null.
+  if (context.mounted) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CameraScreen2(imagePaths: imagePaths),
+      ),
+    );
+  }
+}
+
+
+Future<List<String>?> _startScanForPreview() async {
+  try {
+    final scanner = FlutterDocScanner();
+    final dynamic result = await scanner.getScannedDocumentAsImages();
+
+    print("[Preview Scan] Raw scan result: $result");
+
+    if (result is Map && result.containsKey('Uri')) {
+      final dynamic uriValue = result['Uri'];
+      final List<String> paths = [];
+      final regex = RegExp(r'imageUri=(file:///[^}]+)');
+
+      if (uriValue is List && uriValue.isNotEmpty) {
+        for (var page in uriValue) {
+          final rawPageString = page.toString();
+          final match = regex.firstMatch(rawPageString);
+          if (match != null) paths.add(match.group(1)!.replaceFirst('file://', ''));
+        }
+      } else if (uriValue is String) {
+        final matches = regex.allMatches(uriValue);
+        for (final match in matches) {
+          paths.add(match.group(1)!.replaceFirst('file://', ''));
+        }
+      }
+
+      if (paths.isNotEmpty) return paths;
+    }
+  } catch (e, s) {
+    print("[Preview Scan] ❗ Exception during scan: $e\n$s");
+  }
+  return null;
+}
+
+
 /*
 
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/screen/camera_screen.dart';
-import 'package:camera_app/screen/cart.dart';
+import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:camera_app/screen/profile.dart';
 import 'package:camera_app/screen/search.dart';

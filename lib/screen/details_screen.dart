@@ -1,22 +1,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
-import 'package:camera_app/screen/editdetails.dart';
+import 'package:camera_app/screen/EditCard.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
-import 'package:hive/hive.dart';
-import 'package:nb_utils/nb_utils.dart';
-
-import '../db/hive_card.dart';
 
 class DetailsScreen extends StatefulWidget {
+
   // final CardDetails cardDetails;
   DataCard dataCard;
 
@@ -24,8 +22,6 @@ class DetailsScreen extends StatefulWidget {
   DetailsScreen({
     super.key,
     required this.dataCard,
-    // required this.cardDetails,
-    // required this.index
   });
 
   @override
@@ -34,17 +30,57 @@ class DetailsScreen extends StatefulWidget {
 
 List<CardDetails> _cards = [];
 
+Future<void> callNumber(String number)async{
+  try{
+    final Uri phoneUri = Uri(scheme: 'tel',path: number);
+    if( await canLaunchUrl(phoneUri)){
+      await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+    }else{
+      throw Exception('Could Not Luanch $number');
+    }
+  }catch(e){
+    print('Error on CallNumber $e');
+  }
+
+}
+
+Future<void> sendmail({required String toEmail,
+String Subject = '',
+String body = '',
+})async{
+  try{
+    final Uri emailUri = Uri(scheme: 'mailTO',path: toEmail,
+        queryParameters: {
+          'Subject':Subject,
+          'body': body
+        }
+    );
+    if (await canLaunchUrl(emailUri)){
+      await launchUrl(emailUri);
+    }else{
+      throw Exception('Could Not Lunch $emailUri');
+    }
+  }catch(e){
+    print('Send Mail Error $e');
+  }
+}
+
 class _DetailsScreenState extends State<DetailsScreen> {
-  Future<void> _loadCard() async {
+
+  //Hive Load Card
+  /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
       _cards = box.values.toList();
     });
-  }
+  }*/
 
+//   Delete Card
+/*
   void _deleteCardhive(dynamic id) async {
     await HiveBoxes.deleteCard(id);
   }
+*/
 
   int _currentIndex = 0;
   @override
@@ -192,7 +228,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             FocusScope.of(context).unfocus();
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios),
         ),
         title: Text(
           widget.dataCard.companyName.toString(),
@@ -350,6 +386,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     // Edit button
                     InkWell(
                       onTap: () async {
+
+
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> EditCard(dataCard: widget.dataCard,)));
                         // final result =  await
                         // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
                         //     index:widget.index)));
@@ -552,6 +591,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               widget.dataCard.companyEmail!.isNotEmpty)
                             ListTile(
                               onTap: () {
+                                // if(widget.dataCard.companyEmail!= null&&
+                                //     widget.dataCard.companyEmail!.isNotEmpty){
+                                //   sendmail(toEmail: widget.dataCard.companyEmail
+                                //       .toString());
+                                // }
+                                if(widget.dataCard.companyEmail==null){
+                                  sendmail(toEmail: widget.dataCard.companyEmail
+                                            .toString());
+                                }
                                 // Handle company email tap
                               },
                               contentPadding: EdgeInsets.symmetric(
@@ -595,7 +643,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 .map(
                                   (phone) => ListTile(
                                 onTap: () {
-                                  // Handle phone tap
+                              callNumber(phone.toString());
+
+                               // callNumber(phone.split('+91-').toString());
+                               //    callNumber(phone.replaceAll('+91-', '').trim());
+                               //    callNumber('1234567890');
+                               //    child: Text('Test Call');
                                 },
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -844,14 +897,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              person.name ?? 'N/A',
+
+                                            (person.name== null || person.name!.trim().isEmpty || person.name!.toLowerCase()=='null')
+                                                ? SizedBox()
+                                                : Text(
+                                              person.name!,
+                                              // person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
                                               style: GoogleFonts.raleway(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                                 color: Colors.grey[800],
                                               ),
                                             ),
+                                            // Text(
+                                            //   // person.name ?? 'N/A',
+                                            //   person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
+                                            //   style: GoogleFonts.raleway(
+                                            //     fontSize: 16,
+                                            //     fontWeight: FontWeight.w600,
+                                            //     color: Colors.grey[800],
+                                            //   ),
+                                            // ),
                                             if (person.position != null)
                                               Container(
                                                 margin: EdgeInsets.only(top: 4),
@@ -901,7 +967,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                           if (person.phoneNumber != null)
                                             ListTile(
                                               onTap: () {
-                                                // Handle phone tap
+                                                callNumber(person.phoneNumber.toString());
+
                                               },
                                               contentPadding: EdgeInsets.zero,
                                               leading: Container(
@@ -927,8 +994,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                 ),
                                               ),
                                             ),
-                                          if (person.email != null)
-                                            ListTile(
+                                           (person.email== null || person.email!.trim().isEmpty || person.email!.toLowerCase()=='null')
+                                          ?SizedBox()
+
+                                            :ListTile(
                                               onTap: () {
                                                 // Handle email tap
                                               },
@@ -963,7 +1032,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                   size: 20,
                                                 ),
                                                 onPressed: () {
-                                                  // Handle email open
+
+                                                  // if(person.email==null){
+                                                  //   sendmail(toEmail: person.email.toString());
+                                                  // }
+
+
+                                               sendmail(toEmail: person.email.toString(),
+                                               // Subject: 'HelloFromVadilal',
+                                               //   body: 'Test Mail'
+                                               );
+
                                                 },
                                               ),
                                             ),

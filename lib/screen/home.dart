@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io' as io;
 import 'dart:typed_data';
 import 'dart:math';
 import 'package:camera_app/api/CardApi.dart';
@@ -9,7 +8,6 @@ import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
-import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,6 +19,7 @@ import 'dart:io';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:universal_html/html.dart' as web;
 // web
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? token;
@@ -40,25 +39,26 @@ class _HomeScreenState extends State<HomeScreen> {
     borderRadius: BorderRadius.circular(10),
   );
 
-  Map<String, dynamic> dataCardToExportableMap(DataCard card) {
-    return {
-      'Card ID': card.cardID?.toString() ?? '',
-      'Company Name': card.companyName ?? '',
-      'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
-      'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
-      'Person Phone ': card.personDetails?.map((p) => p.phoneNumber).join(',') ?? '',
-      'Company Phone': card.companyPhoneNumber ?? '',
-      'Company Address': card.companyAddress?.join(', ') ?? '',
-      'Company Email': card.companyEmail ?? '',
-      'Web Address': card.webAddress ?? '',
-      'Work Details': card.companySWorkDetails ?? '',
-      'GSTIN': card.gSTIN ?? '',
-      'Created By': card.createdBy?.toString() ?? '',
-      'Created At': card.createdAt ?? '',
-    };
-  }
+  // Map<String, dynamic> dataCardToExportableMap(DataCard card) {
+  //   return {
+  //     'Card ID': card.cardID?.toString() ?? '',
+  //     'Company Name': card.companyName ?? '',
+  //     'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
+  //     'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
+  //     'Person Phone ': card.personDetails?.map((p) => p.phoneNumber).join(',') ?? '',
+  //     'Company Phone': card.companyPhoneNumber ?? '',
+  //     'Company Address': card.companyAddress?.join(', ') ?? '',
+  //     'Company Email': card.companyEmail ?? '',
+  //     'Web Address': card.webAddress ?? '',
+  //     'Work Details': card.companySWorkDetails ?? '',
+  //     'GSTIN': card.gSTIN ?? '',
+  //     'Created By': card.createdBy?.toString() ?? '',
+  //     'Created At': card.createdAt ?? '',
+  //   };
+  // }
+  //
+  // // List<CardDetails> _cards = [];
 
-  // List<CardDetails> _cards = [];
   List<DataCard> _cardapi = [];
 
   bool isCardLoading = true;
@@ -169,74 +169,74 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> exportDataToExcel(BuildContext context, List<Map<String, dynamic>> data) async {
-    try {
-      if (data.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No data to export')));
-        return;
-      }
-
-      final fileName = "exported_data.xlsx";
-
-      // --- Excel Generation (NOW ON MAIN THREAD - as compute failed persistently) ---
-      // This part will run on the UI thread and may cause frame drops for large datasets.
-      var excel = Excel.createExcel();
-      Sheet sheet = excel['Sheet1'];
-
-      List<String> headers = data[0].keys.toList();
-      sheet.appendRow(headers);
-
-      for (var row in data) {
-        sheet.appendRow(headers.map((key) => row[key].toString()).toList());
-      }
-
-      final List<int>? excelBytesList = excel.encode();
-      if (excelBytesList == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to encode Excel data.')));
-        return;
-      }
-      final Uint8List excelBytes = Uint8List.fromList(excelBytesList);
-
-      // --- Web Platform Handling ---
-      if (kIsWeb) {
-        final blob = web.Blob([excelBytes], 'application/vnd.ms-excel');
-        final url = web.Url.createObjectUrlFromBlob(blob);
-        final anchor =
-            web.AnchorElement(href: url)
-              ..download = fileName
-              ..click();
-        web.Url.revokeObjectUrl(url);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file downloaded for web.')));
-        return;
-      }
-
-      // --- Mobile Platforms Handling (Android & iOS) ---
-
-      // Save the bytes to a temporary file
-      final tempDir = await getTemporaryDirectory();
-      final tempFilePath = '${tempDir.path}/$fileName';
-      final tempFile = io.File(tempFilePath);
-      await tempFile.writeAsBytes(excelBytes);
-      print('Excel bytes temporarily saved to: ${tempFile.path}');
-
-      // Now, use share_plus to let the user save or share the file
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excel file generated. Opening share dialog...')));
-
-      // Pass the temporary file path to share_plus
-      await Share.shareXFiles([XFile(tempFile.path)], text: 'Here is your exported data!');
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file shared successfully!')));
-
-      // Clean up the temporary file after sharing (it's copied by the OS)
-      if (await tempFile.exists()) {
-        await tempFile.delete();
-        print('Temporary Excel file deleted: ${tempFile.path}');
-      }
-    } catch (e) {
-      print('Export failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
-    }
-  }
+  // Future<void> exportDataToExcel(BuildContext context, List<Map<String, dynamic>> data) async {
+  //   try {
+  //     if (data.isEmpty) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No data to export')));
+  //       return;
+  //     }
+  //
+  //     final fileName = "exported_data.xlsx";
+  //
+  //     // --- Excel Generation (NOW ON MAIN THREAD - as compute failed persistently) ---
+  //     // This part will run on the UI thread and may cause frame drops for large datasets.
+  //     var excel = Excel.createExcel();
+  //     Sheet sheet = excel['Sheet1'];
+  //
+  //     List<String> headers = data[0].keys.toList();
+  //     sheet.appendRow(headers);
+  //
+  //     for (var row in data) {
+  //       sheet.appendRow(headers.map((key) => row[key].toString()).toList());
+  //     }
+  //
+  //     final List<int>? excelBytesList = excel.encode();
+  //     if (excelBytesList == null) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to encode Excel data.')));
+  //       return;
+  //     }
+  //     final Uint8List excelBytes = Uint8List.fromList(excelBytesList);
+  //
+  //     // --- Web Platform Handling ---
+  //     if (kIsWeb) {
+  //       final blob = web.Blob([excelBytes], 'application/vnd.ms-excel');
+  //       final url = web.Url.createObjectUrlFromBlob(blob);
+  //       final anchor =
+  //           web.AnchorElement(href: url)
+  //             ..download = fileName
+  //             ..click();
+  //       web.Url.revokeObjectUrl(url);
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file downloaded for web.')));
+  //       return;
+  //     }
+  //
+  //     // --- Mobile Platforms Handling (Android & iOS) ---
+  //
+  //     // Save the bytes to a temporary file
+  //     final tempDir = await getTemporaryDirectory();
+  //     final tempFilePath = '${tempDir.path}/$fileName';
+  //     final tempFile = io.File(tempFilePath);
+  //     await tempFile.writeAsBytes(excelBytes);
+  //     print('Excel bytes temporarily saved to: ${tempFile.path}');
+  //
+  //     // Now, use share_plus to let the user save or share the file
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Excel file generated. Opening share dialog...')));
+  //
+  //     // Pass the temporary file path to share_plus
+  //     await Share.shareXFiles([XFile(tempFile.path)], text: 'Here is your exported data!');
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Excel file shared successfully!')));
+  //
+  //     // Clean up the temporary file after sharing (it's copied by the OS)
+  //     if (await tempFile.exists()) {
+  //       await tempFile.delete();
+  //       print('Temporary Excel file deleted: ${tempFile.path}');
+  //     }
+  //   } catch (e) {
+  //     print('Export failed: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+  //   }
+  // }
 
   @override
   void initState() {
@@ -258,9 +258,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (searchController.text.toString().isEmpty) {
       fillterCard = _cardapi;
     } else {
-      fillterCard =
-          _cardapi.where((_element) => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))).toList();
-    }
+      fillterCard = _reversedCardApi.where((_element){
+        final companyName =  _element.companyName?.toLowerCase() ?? '';
+        return companyName.contains(searchController.text.toLowerCase());
+      }
+      // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
+      ).toList();}
+
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     // List<Map<String, dynamic>> exportableData = _cardapi.map((card) => card).toList();
@@ -269,6 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: screenBGColor,
         body: RefreshIndicator(
+          color: primarycolor,
+          backgroundColor: Colors.grey.shade300,
+
           onRefresh: () {
             return FetchCard();
           },
@@ -299,59 +306,54 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   Divider(),
-                  Row(
-                    children: [
-                      Card(
-                        elevation: 10,
-                        child: Container(
-                          width: width * 0.65,
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                          child: TextFormField(
-                            onChanged: (v) {
-                              setState(() {});
-                            },
-                            controller: searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Name, email, tags,etc...',
-                              hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-                              prefixIcon: Icon(Icons.search, color: Colors.grey),
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              focusedErrorBorder: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
 
-                          // exportDataToExcel(exportableData);
+                  Card(
+                    elevation: 10,
+                    child: Container(
+                      width: width ,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                      child: TextFormField(
+                        onChanged: (v) {
+                          setState(() {});
                         },
-                        child: Card(
-                          elevation: 10,
-                          child: Container(
-                            height: height * 0.05,
-                            width: width * 0.1,
-                            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                            child: Image.asset('assets/images/csvicon.png'),
-                          ),
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Name, email, tags,etc...',
+                          hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
                         ),
                       ),
-                      SizedBox(width: 5),
-                      Card(
-                        elevation: 10,
-                        child: Container(
-                          height: height * 0.05,
-                          width: width * 0.1,
-                          decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                          child: Icon(Icons.filter_alt, color: Colors.grey),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+
+                  // Row(
+                  //   children: [
+                  //
+                  //     // InkWell(
+                  //     //   onTap: () {
+                  //     //     List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
+                  //     //
+                  //     //     exportDataToExcel(context,exportableData);
+                  //     //   },
+                  //     //   child: Card(
+                  //     //
+                  //     //     elevation: 10,
+                  //     //     child: Container(
+                  //     //       height: height * 0.05,
+                  //     //       width: width * 0.1,
+                  //     //       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
+                  //     //       child: Image.asset('assets/images/csvicon.png'),
+                  //     //     ),
+                  //     //   ),
+                  //     // ),
+                  //   ],
+                  // ),
+
 
                   Container(
                     // color: Colors.blue,  // Removing blue background
@@ -490,22 +492,128 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+
+                  SizedBox(height: 10,),
+
+
                 ],
               ),
             ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AddDetails()));
-            // _loadCard();
-          },
-          child: Icon(Icons.add, color: Colors.white),
-          backgroundColor: Colors.blue,
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () async {
+        //     Navigator.push(context, MaterialPageRoute(builder: (context) => AddDetails()));
+        //     // _loadCard();
+        //   },
+        //   child: Icon(Icons.add, color: Colors.white),
+        //   backgroundColor: Colors.blue,
+        // ),
       ),
     );
   }
+
+
+
+
+  Widget _buildShimmerCarde(BuildContext context) {
+    // Get screen dimensions. Replace 'height' and 'width' variables if they are global
+    // If you are using height and width from MediaQuery, then this is good.
+    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            elevation: 10,
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: height * 0.1,
+                        width: width * 0.2,
+                        decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child:  Icon(Icons.image, color: Colors.white, size: 40),
+                      ),),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                           '',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 11,
+                                color: subtext,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.date_range, color: Colors.grey),
+                          Text(
+                           '',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'General',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.more_vert_outlined),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+  }
+
+
   // card_list_screen.dart or export_helper.dart
 }
 
