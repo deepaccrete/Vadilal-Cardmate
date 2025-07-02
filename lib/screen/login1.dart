@@ -12,7 +12,7 @@ import '../api/AuthAPI.dart';
 import '../main.dart';
 import '../util/const.dart';
 import 'bottomnav.dart';
-
+import 'package:flutter_mobx/flutter_mobx.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode emaiilFocus = FocusNode();
   FocusNode passwordFocus = FocusNode();
   bool? isLoading = false;
+  ValueNotifier obsecurepass = ValueNotifier(true);
 
   final _formkey = GlobalKey<FormState>();
 
@@ -60,12 +61,24 @@ class _LoginScreenState extends State<LoginScreen> {
   bool rememberme = false;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    emailController.dispose();
+    passwordController.dispose();
+    emaiilFocus.dispose();
+    obsecurepass.dispose();
+    passwordFocus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // print('Rebuild ');
+
     final width = MediaQuery
         .of(context)
         .size
         .width * 1;
-    ValueNotifier obsecurepass = ValueNotifier(true);
     final height = MediaQuery
         .of(context)
         .size
@@ -84,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: height * 0.1,
                 width: width * 0.5,
                 child: Image.asset(
-                  'assets/images/logov.png', fit: BoxFit.fill,),
+                  'assets/images/logovadilal.png', fit: BoxFit.fill,),
               ),
               SizedBox(height: 10,),
               Container(
@@ -149,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ValueListenableBuilder(
 
                         valueListenable: obsecurepass,
-                        builder: (BuildContext context, value, child) {
+                        builder: ( context, value, child) {
                           return Container(
                             // color: Colors.red,
                             // height: height * 0.1,
@@ -222,21 +235,21 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 25,),
 
 
-              CommonButton(
+              Observer(
+                builder: (_) => CommonButton(
                   width: width * 0.8,
                   bgcolor: Colors.indigoAccent,
                   onTap: () {
                     loginReq();
                   },
-
                   child: Center(
-                    child:isLoading==true?
-                        CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                    :Text('Login', style: GoogleFonts.openSans(
-                        color: Colors.white, fontSize: 20),),
-                  )),
+                    child: appStore.isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text('Login', style: GoogleFonts.openSans(color: Colors.white, fontSize: 20)),
+                  ),
+                ),
+              ),
+
 
               SizedBox(height: 10,),
 
@@ -252,10 +265,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   loginReq() async {
     if (_formkey.currentState!.validate()) {
-      setState(() {
-        isLoading = true;
-      });
+      // setState(() {
+      //   // isLoading = true;
+      //   appStore.isLoading = true;
+      // });
+      // appStore.isLoading = true;
+
       try {
+        // appStore.isLoading = true;
+        appStore.setIsLoading(true);
+
         final loginResponse = await AuthApi.login(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
@@ -274,9 +293,13 @@ class _LoginScreenState extends State<LoginScreen> {
           appStore.setUserToken(loginResponse.userData?.token);
           appStore.setIsLogin(true);
           appStore.setUser(loginResponse.userData);
-    setState(() {
-      isLoading = false;
-    });
+    // setState(() {
+    //   isLoading = false;
+    // });
+
+          // appStore.isLoading = false;
+          appStore.setIsLoading(false);
+
 
           print("Login success");
           //
@@ -286,18 +309,26 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => Bottomnav()),
           );
         } else {
-        setState(() {
-          isLoading = false;
-        });
+        // setState(() {
+        //   isLoading = false;
+        // });
+        //   appStore.isLoading = false;
+          appStore.setIsLoading(false);
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(loginResponse.msg ?? 'Invalid credentials')),
-          );
+            SnackBar(
+                backgroundColor: Colors.grey.shade100,
+                showCloseIcon: true,
+                content: Text(loginResponse.msg ?? 'Invalid credentials',textAlign:TextAlign.center ,style: GoogleFonts.poppins(color: Colors.black,
+                fontWeight: FontWeight.w500),)),);
+
         }
       } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
+        // setState(() {
+        //   isLoading = false;
+        // });
+        // appStore.isLoading = false;
+        appStore.setIsLoading(false);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred. Please try again.')),

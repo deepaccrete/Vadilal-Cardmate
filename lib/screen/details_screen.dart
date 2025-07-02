@@ -44,23 +44,29 @@ Future<void> callNumber(String number)async{
 
 }
 
-Future<void> sendmail({required String toEmail,
-String Subject = '',
-String body = '',
-})async{
-  try{
-    final Uri emailUri = Uri(scheme: 'mailTO',path: toEmail,
-        queryParameters: {
-          'Subject':Subject,
-          'body': body
-        }
+Future<void> sendmail({
+  required String toEmail,
+  String subject = '',
+  String body = '',
+}) async {
+  try {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: toEmail,
+      queryParameters: {
+        'subject': subject,
+        'body': body,
+      },
     );
-    if (await canLaunchUrl(emailUri)){
-      await launchUrl(emailUri);
-    }else{
-      throw Exception('Could Not Lunch $emailUri');
+
+    print("Generated Mail URL: $emailUri");
+
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+    } else {
+      throw Exception('Could Not Launch $emailUri');
     }
-  }catch(e){
+  } catch (e) {
     print('Send Mail Error $e');
   }
 }
@@ -1038,7 +1044,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                   // }
 
 
-                                               sendmail(toEmail: person.email.toString(),
+                                               sendmail(
+                                                 subject : '',
+                                                 body: '',
+                                                 toEmail: person.email!,
                                                // Subject: 'HelloFromVadilal',
                                                //   body: 'Test Mail'
                                                );

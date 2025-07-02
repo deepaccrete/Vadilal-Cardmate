@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/LoginModel.dart';
 import 'package:camera_app/screen/bottomnav.dart';
@@ -9,7 +8,6 @@ import 'package:camera_app/screen/login1.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../main.dart';
 import '../util/const.dart';
 

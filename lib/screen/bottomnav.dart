@@ -1,12 +1,9 @@
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/Camera_Screen_2.dart';
-import 'package:camera_app/screen/camera_screen.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
-import 'package:camera_app/screen/profile.dart';
-import 'package:camera_app/screen/search.dart';
-import 'package:circle_nav_bar/circle_nav_bar.dart';
+import 'package:camera_app/screen/tempscreen/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';

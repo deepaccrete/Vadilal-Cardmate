@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/screen/EditCard.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../api/ImageUploadApi.dart';
 import '../componets/button.dart';
@@ -90,11 +89,16 @@ class _CameraScreen2State extends State<CameraScreen2> {
 
   /// Assigns the passed image paths to the state variables.
   void _assignImagePaths() {
-    if (widget.imagePaths.isNotEmpty) {
-      _frontImagePath = widget.imagePaths[0];
-    }
-    if (widget.imagePaths.length > 1) {
-      _backImagePath = widget.imagePaths[1];
+
+    try{
+      if (widget.imagePaths.isNotEmpty) {
+        _frontImagePath = widget.imagePaths[0];
+      }
+      if (widget.imagePaths.length > 1) {
+        _backImagePath = widget.imagePaths[1];
+      }
+    }catch(e){
+      print('Assign Image Error $e');
     }
   }
 
@@ -114,7 +118,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
 
     try {
       Map<String, dynamic>? cardjson;
-      bool uploaded = false;
+      // bool uploaded = false;
       // Handle two-sided case
       if (_backImagePath != null) {
         cardjson = await ImageuploadApi.uploadImage(
@@ -126,13 +130,16 @@ class _CameraScreen2State extends State<CameraScreen2> {
       } else { // Handle single-sided case
         cardjson = await ImageuploadApi.uploadImage(
             frontImage: File(_frontImagePath!));
-        _showSnackBarAndNavigate(uploaded, isTwoSided: false);
+        // _showSnackBarAndNavigate(uploaded, isTwoSided: false);
       }
       if(cardjson != null){
         final newcard = DataCard.fromJson(cardjson);
 
       //   Navigate to next
-
+        // Show success & navigate
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Image uploaded successfully!')),
+        );
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> EditCard(dataCard: newcard,)));
 
       }else{
@@ -147,6 +154,8 @@ class _CameraScreen2State extends State<CameraScreen2> {
       }
     }
   }
+
+
 
   void _showSnackBarAndNavigate(bool uploaded, {required bool isTwoSided}) {
     final message = uploaded
@@ -185,6 +194,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text("Preview Document"),
         automaticallyImplyLeading: false, // Remove back button
       ),
@@ -210,7 +220,9 @@ class _CameraScreen2State extends State<CameraScreen2> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
+                      child:
+
+                      OutlinedButton(
                         onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
                         child: Text("Retake"),
                         style: OutlinedButton.styleFrom(

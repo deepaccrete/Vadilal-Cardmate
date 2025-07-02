@@ -4,7 +4,6 @@ import 'package:camera_app/model/GroupModel.dart';
 import 'package:camera_app/model/groupPostModel.dart';
 import 'package:camera_app/util/const.dart';
 import 'package:flutter/material.dart';
-
 import '../main.dart';
 import 'package:http/http.dart' as http;
 // //
@@ -32,6 +31,7 @@ import 'package:http/http.dart' as http;
 // }
 
 class GroupApi {
+
   static Future<GroupModel> getGroup() async {
     try {
       var headers1 = {'Authorization': 'Bearer ${appStore.userData!.token}'};

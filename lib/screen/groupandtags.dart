@@ -7,12 +7,9 @@ import 'package:camera_app/componets/textform.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/GroupModel.dart';
 import 'package:camera_app/model/TagModel.dart';
-import 'package:camera_app/model/tagpostmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
-import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 
 class GroupAndTags extends StatefulWidget {
@@ -31,20 +28,20 @@ class _GroupAndTagsState extends State<GroupAndTags> {
   String? errorMessage;
   String? errorMessageTag;
 
-  Future<bool> isInternetConnected() async {
-    try {
-      // Try to lookup google.com or any reliable host
-      final result = await InternetAddress.lookup('google.com');
-
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        print('Internet Available');
-        return true;
-      }
-    } catch (e) {
-      print('No Internet: $e');
-    }
-    return false;
-  }
+  // Future<bool> isInternetConnected() async {
+  //   try {
+  //     // Try to lookup google.com or any reliable host
+  //     final result = await InternetAddress.lookup('google.com');
+  //
+  //     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+  //       print('Internet Available');
+  //       return true;
+  //     }
+  //   } catch (e) {
+  //     print('No Internet: $e');
+  //   }
+  //   return false;
+  // }
 
   Future<void> fetchGroups() async {
     try {
@@ -69,6 +66,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
 
 
   Future <void> fetchTag()async{
+    isTagLoading = true;
     try{
       TagModel tagModel = await TagApi.getTag();
       if(tagModel.success == 1 && tagModel.data != null){
@@ -176,6 +174,7 @@ TextEditingController tagcontroller = TextEditingController();
     return Scaffold(
       backgroundColor: screenBGColor,
       appBar: AppBar(
+        centerTitle:true,
         // elevation: 10,
         backgroundColor: screenBGColor,
         // shadowColor: Colors.black12,
@@ -237,8 +236,8 @@ TextEditingController tagcontroller = TextEditingController();
                                    // labelColor: ,
                                    labeltext: 'Group Name',
                                    obsecureText: false,
-                               validator: (valuee){
-                                   if(valuee == null|| valuee.isEmpty ){
+                               validator: (value){
+                                   if(value == null|| value.isEmpty ){
                                      return "Please Enter GroupName";
                                    }
                                },
@@ -280,7 +279,7 @@ TextEditingController tagcontroller = TextEditingController();
                       Expanded(
                         flex: 2,
                         child:
-                        groups.isEmpty
+                       isGroupLoading
                             ? Container(
                           // color: Colors.red,
                           width: width *0.3,
@@ -459,7 +458,7 @@ TextEditingController tagcontroller = TextEditingController();
                         height: height * 0.1,
                         child:
 
-                            tags.isEmpty?
+                        isTagLoading?
                                 ListView.builder(
                                   scrollDirection: Axis.horizontal,
                                     itemCount: 3,

@@ -28,12 +28,12 @@ class AddManual extends StatefulWidget {
 
 class _AddManualState extends State<AddManual> {
 
-  TextEditingController  designationController = TextEditingController();
   TextEditingController  nameController        = TextEditingController();
+  TextEditingController  designationController = TextEditingController();
   TextEditingController  phoneController       = TextEditingController();
   TextEditingController  emailController       = TextEditingController();
-  TextEditingController  companyemailController       = TextEditingController();
   TextEditingController  companynameController = TextEditingController();
+  TextEditingController  companyemailController       = TextEditingController();
   TextEditingController  addressController     = TextEditingController();
   TextEditingController  webController         = TextEditingController();
   TextEditingController  noteController        = TextEditingController();
@@ -371,7 +371,7 @@ class _AddManualState extends State<AddManual> {
                                       DropdownButton<Datatag>(
                                      style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
                                           isExpanded: true,
-                                          hint: Text("SELECT Tag"),
+                                          hint: Text("Select Tag",style:GoogleFonts.poppins(),),
                                           value: selectedTag,
                                           items:taglist.map((tag){
                                             return DropdownMenuItem<Datatag>(

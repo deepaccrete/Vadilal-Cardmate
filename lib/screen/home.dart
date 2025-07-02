@@ -12,7 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String? token;
+  final String? token ;
 
   const HomeScreen({super.key, this.token});
 
@@ -50,9 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // // List<CardDetails> _cards = [];
 
   List<DataCard> _cardapi = [];
-   List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
-
-  bool isCardLoading = true;
+   // List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
+  // bool isCardLoading = true;
   String? errormessage;
 
   Uint8List? decodeBase64Image(String base64String) {
@@ -142,7 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> FetchCard() async {
     setState(() {
-      isCardLoading = true;
+      // isCardLoading = true;
+      appStore.isLoading = true;
       errormessage = null;
     });
     try {
@@ -150,7 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (cardModel.success == 1 && cardModel.data != null) {
         setState(() {
           _cardapi = cardModel.data!;
-          isCardLoading = false;
+          appStore.isLoading = false;
+
         });
       }
     } catch (e) {
@@ -245,11 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
 */
   @override
   Widget build(BuildContext context) {
+    // print('============>rebuild <===============');
     List<DataCard> fillterCard = [];
     if (searchController.text.toString().isEmpty) {
-      fillterCard = _reversedCardApi;
+      fillterCard = _cardapi;
     } else {
-      fillterCard = _reversedCardApi.where((_element){
+      fillterCard = _cardapi.where((_element){
         final companyName =  _element.companyName?.toLowerCase() ?? '';
         return companyName.contains(searchController.text.toLowerCase());
       }
@@ -356,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         Expanded(
                           child:
-                              isCardLoading
+                              appStore.isLoading == true
                                   // ? Center(child: CircularProgressIndicator())
 
                               ?ListView.builder(
@@ -369,11 +371,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               })
                               : ListView.builder(
-                                    // itemCount: _cardapi.length,
+
+                                // reverse: true,
+                                //     itemCount: _cardapi.length,
                                     itemCount: fillterCard.length,
                                     itemBuilder: (context, index) {
-                                      // final card = _cardapi[index];
-                                      final card = fillterCard[index];
+                                      final card = fillterCard.reversed.toList()[index];
+                                      // final card = _reversedCardApi.[index];
+                                      // final card = fillterCard[index];
                                       final frontImageBytes =
                                           card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
                                               ? decodeBase64Image(card.cardFrontImageBase64!)
