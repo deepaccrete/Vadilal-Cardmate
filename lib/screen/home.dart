@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return FetchCard();
           },
           child:
-          SingleChildScrollView(
+            SingleChildScrollView(
             child: Container(
               // color: Colors.red,
               // height: height,
@@ -455,40 +455,40 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         ],
                                                       ),
 
-                                                      Row(
-                                                        children: [
-                                                          Container(
-                                                            padding: EdgeInsets.all(5),
-                                                            decoration: BoxDecoration(
-                                                              color: Colors.blue,
-                                                              borderRadius: BorderRadius.circular(10),
+                                                            Row(
+                                                              children: [
+                                                                Container(
+                                                                  padding: EdgeInsets.all(5),
+                                                                  decoration: BoxDecoration(
+                                                                    color: Colors.blue,
+                                                                    borderRadius: BorderRadius.circular(10),
+                                                                  ),
+                                                                  child: Text(
+                                                                    'General',
+                                                                    style: GoogleFonts.poppins(
+                                                                      color: Colors.white,
+                                                                      fontSize: 10,
+                                                                      fontWeight: FontWeight.w600,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Icon(Icons.more_vert_outlined),
+                                                              ],
                                                             ),
-                                                            child: Text(
-                                                              'General',
-                                                              style: GoogleFonts.poppins(
-                                                                color: Colors.white,
-                                                                fontSize: 10,
-                                                                fontWeight: FontWeight.w600,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Icon(Icons.more_vert_outlined),
-                                                        ],
-                                                      ),
-                                                    ],
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
-                                                ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
+                                      );
+                                      },
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
                         ),
                       ],
                     ),
@@ -512,6 +512,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // ),
       ),
     );
+
   }
 
 

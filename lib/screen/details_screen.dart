@@ -252,9 +252,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 child: Container(
                   alignment: Alignment.center,
                   // color: Colors.grey.shade300,
-                  height: height * 0.4,
+                  // height: height * 0.4,
                   // color:Colors.red,
-                  width: width * 0.85,
+                  // width: width * 0.85,
                   child:
                       images.isNotEmpty
                           ? CarouselSlider(
@@ -265,7 +265,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   _currentIndex = index;
                                 });
                               },
-                              height: height * 0.4,
+                              // height: height * 0.4,
                               enlargeCenterPage: true,
                               enableInfiniteScroll: false,
                               autoPlay: false,

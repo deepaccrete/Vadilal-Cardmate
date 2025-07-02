@@ -54,8 +54,7 @@ class _MyAppState extends State<MyApp> {
 navigatorKey: navigatorKey,
       // home:GroupAndTags()
     // home:AddDetails()
-    home: SplashScreen(),
-
+    home: SplashScreen()
     );
   }
 }

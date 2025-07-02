@@ -83,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/images/bgimage.png'), fit: BoxFit.cover)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [Container(height: 200, width: 200, child: Image.asset('assets/images/bg.png', fit: BoxFit.contain))],
+              children: [Container(height: 200, width: 200, child: Image.asset('assets/images/Frame 2.png', fit: BoxFit.contain))],
             ),
           ),
 
