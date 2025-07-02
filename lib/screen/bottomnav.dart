@@ -110,7 +110,7 @@ class _BottomnavState extends State<Bottomnav> {
                         children: [
                           buildNavItem(Icons.shopping_basket_outlined, "Cart", 3),
                           SizedBox(width: 40),
-                          buildNavItem(Icons.person_outline, "Profile", 4),
+                          buildNavItem(Icons.logout, "Logout ", 4),
                         ],
                       ),
                     ],

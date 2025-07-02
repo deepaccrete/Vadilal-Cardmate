@@ -38,8 +38,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // home:GroupAndTags()
-    home:AddDetails()
-    // home: SplashScreen()
+    // home:AddDetails()
+    home: SplashScreen()
     );
   }
 }
