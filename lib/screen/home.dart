@@ -5,14 +5,24 @@ import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
+import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
+// import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+// import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:universal_html/html.dart' as web;
+// web
 import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String? token ;
+  final String? token;
 
   const HomeScreen({super.key, this.token});
 
@@ -50,8 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // // List<CardDetails> _cards = [];
 
   List<DataCard> _cardapi = [];
-   // List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
-  // bool isCardLoading = true;
+  List<DataCard> get _reversedCardApi => List.from(_cardapi.reversed);
+
+  bool isCardLoading = true;
   String? errormessage;
 
   Uint8List? decodeBase64Image(String base64String) {
@@ -141,8 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> FetchCard() async {
     setState(() {
-      // isCardLoading = true;
-      appStore.isLoading = true;
+      isCardLoading = true;
       errormessage = null;
     });
     try {
@@ -150,8 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (cardModel.success == 1 && cardModel.data != null) {
         setState(() {
           _cardapi = cardModel.data!;
-          appStore.isLoading = false;
-
+          isCardLoading = false;
         });
       }
     } catch (e) {
@@ -246,16 +255,15 @@ class _HomeScreenState extends State<HomeScreen> {
 */
   @override
   Widget build(BuildContext context) {
-    // print('============>rebuild <===============');
     List<DataCard> fillterCard = [];
     if (searchController.text.toString().isEmpty) {
-      fillterCard = _cardapi;
+      fillterCard = _reversedCardApi;
     } else {
-      fillterCard = _cardapi.where((_element){
+      fillterCard = _reversedCardApi.where((_element){
         final companyName =  _element.companyName?.toLowerCase() ?? '';
         return companyName.contains(searchController.text.toLowerCase());
       }
-      // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
+        // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
       ).toList();}
 
     final width = MediaQuery.of(context).size.width * 1;
@@ -273,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return FetchCard();
           },
           child:
-            SingleChildScrollView(
+          SingleChildScrollView(
             child: Container(
               // color: Colors.red,
               // height: height,
@@ -358,33 +366,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         Expanded(
                           child:
-                              appStore.isLoading == true
-                                  // ? Center(child: CircularProgressIndicator())
-
-                              ?ListView.builder(
-                                itemCount: 4,
-                                  itemBuilder: (context,index){
-                                return Shimmer.fromColors(
-                                    child: _buildShimmerCarde(context),
-                                    baseColor: Colors.grey[100]!,
-                                    highlightColor:Colors.grey[100]!
-                                );
-                              })
-                              : ListView.builder(
-
-                                // reverse: true,
-                                //     itemCount: _cardapi.length,
-                                    itemCount: fillterCard.length,
-                                    itemBuilder: (context, index) {
-                                      final card = fillterCard.reversed.toList()[index];
-                                      // final card = _reversedCardApi.[index];
-                                      // final card = fillterCard[index];
-                                      final frontImageBytes =
-                                          card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
-                                              ? decodeBase64Image(card.cardFrontImageBase64!)
-                                              : null;
-
-                                      return Padding(
+                          isCardLoading
+                              ? Center(child: CircularProgressIndicator())
+                              : AnimationLimiter(
+                            child: ListView.builder(
+                              // itemCount: _cardapi.length,
+                              itemCount: fillterCard.length,
+                              itemBuilder: (context, index) {
+                                // final card = _cardapi[index];
+                                final card = fillterCard[index];
+                                final frontImageBytes =
+                                card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
+                                    ? decodeBase64Image(card.cardFrontImageBase64!)
+                                    : null;
+                                return AnimationConfiguration.staggeredList(
+                                  position: index,
+                                  duration: const Duration(seconds:2),
+                                  child: SlideAnimation(
+                                    verticalOffset: 50.0,
+                                    child: FadeInAnimation(
+                                      child:Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Card(
                                           elevation: 10,
@@ -403,12 +404,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         width: width * 0.2,
                                                         decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
                                                         child:
-                                                            frontImageBytes != null
-                                                                ? ClipRRect(
-                                                                  borderRadius: BorderRadius.circular(8),
-                                                                  child: Image.memory(frontImageBytes, fit: BoxFit.cover),
-                                                                )
-                                                                : Icon(Icons.image, color: Colors.white, size: 40),
+                                                        frontImageBytes != null
+                                                            ? ClipRRect(
+                                                          borderRadius: BorderRadius.circular(8),
+                                                          child: Image.memory(frontImageBytes, fit: BoxFit.cover),
+                                                        )
+                                                            : Icon(Icons.image, color: Colors.white, size: 40),
                                                       ),
                                                       SizedBox(width: 20),
                                                       Expanded(
@@ -426,8 +427,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             Text(
                                                               card.companyAddress!.join(',') ?? "No Data",
                                                               style: GoogleFonts.raleway(
-                                                                fontWeight: FontWeight.w500,
-                                                                fontSize: 12,
+                                                                fontWeight: FontWeight.w400,
+                                                                fontSize: 11,
                                                                 color: subtext,
                                                               ),
                                                             ),
@@ -481,9 +482,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ),
                                   ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -507,7 +512,6 @@ class _HomeScreenState extends State<HomeScreen> {
         // ),
       ),
     );
-
   }
 
 
@@ -519,99 +523,99 @@ class _HomeScreenState extends State<HomeScreen> {
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
 
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Card(
-            elevation: 10,
-            child: Container(
-              padding: EdgeInsets.all(16),
-              child: Column(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        elevation: 10,
+        child: Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    height: height * 0.1,
+                    width: width * 0.2,
+                    decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child:  Icon(Icons.image, color: Colors.white, size: 40),
+                    ),),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '',
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          '',
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 11,
+                            color: subtext,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Container(
-                        height: height * 0.1,
-                        width: width * 0.2,
-                        decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child:  Icon(Icons.image, color: Colors.white, size: 40),
-                      ),),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '',
-                              style: GoogleFonts.raleway(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                           '',
-                              style: GoogleFonts.raleway(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 11,
-                                color: subtext,
-                              ),
-                            ),
-                          ],
+                      Icon(Icons.date_range, color: Colors.grey),
+                      Text(
+                        '',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ],
                   ),
-                  Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.date_range, color: Colors.grey),
-                          Text(
-                           '',
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
 
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              'General',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'General',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                           ),
-                          Icon(Icons.more_vert_outlined),
-                        ],
+                        ),
                       ),
+                      Icon(Icons.more_vert_outlined),
                     ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-        );
+        ),
+      ),
+    );
   }
 
 
-  // card_list_screen.dart or export_helper.dart
+// card_list_screen.dart or export_helper.dart
 }
 
 // list
