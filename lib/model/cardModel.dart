@@ -37,8 +37,9 @@ class DataCard {
   int? createdBy;
   String? createdAt;
   String? extractedJSON;
+  int? isBase64;
 
-  DataCard({this.cardID, this.companyName, this.personDetails, this.companyPhoneNumber, this.companyAddress, this.companyEmail, this.webAddress, this.companySWorkDetails, this.gSTIN, this.cardFrontImageBase64, this.cardBackImageBase64, this.createdBy, this.createdAt, this.extractedJSON});
+  DataCard({this.cardID, this.companyName, this.personDetails, this.companyPhoneNumber, this.companyAddress, this.companyEmail, this.webAddress, this.companySWorkDetails, this.gSTIN, this.cardFrontImageBase64, this.cardBackImageBase64, this.createdBy, this.createdAt, this.extractedJSON, this.isBase64});
 
   DataCard.fromJson(Map<String, dynamic> json) {
     cardID = json['Card ID'];
@@ -60,6 +61,7 @@ class DataCard {
     createdBy = json['Created By'];
     createdAt = json['Created At']?.toString();
     extractedJSON = json['Extracted JSON']?.toString();
+    isBase64 = json['Is Base64'];
   }
 
 
@@ -81,6 +83,7 @@ class DataCard {
     data['Created By'] = this.createdBy;
     data['Created At'] = this.createdAt;
     data['Extracted JSON'] = this.extractedJSON;
+    data['Is Base64']= this.isBase64;
     return data;
   }
 }

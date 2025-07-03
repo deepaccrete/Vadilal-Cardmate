@@ -55,6 +55,8 @@ dependencies:
   persistent_bottom_nav_bar_v2: ^6.0.1
   url_launcher: ^6.3.1
   carousel_slider: ^5.0.0
+#  contacts_service: ^0.6.1
+  contacts_service_plus: ^0.0.2
    #excel data
 
   flutter_doc_scanner:

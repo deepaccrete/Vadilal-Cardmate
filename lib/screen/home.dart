@@ -65,7 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isCardLoading = true;
   String? errormessage;
 
+
+
   Uint8List? decodeBase64Image(String base64String) {
+
     try {
       print('Attempting to decode base64 string...');
 
@@ -149,6 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return null;
     }
   }
+
+
 
   Future<void> FetchCard() async {
     setState(() {
@@ -246,6 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
     FetchCard();
   }
 
+
+
+
   /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
@@ -255,6 +263,8 @@ class _HomeScreenState extends State<HomeScreen> {
 */
   @override
   Widget build(BuildContext context) {
+
+
     List<DataCard> fillterCard = [];
     if (searchController.text.toString().isEmpty) {
       fillterCard = _reversedCardApi;
@@ -375,10 +385,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 // final card = _cardapi[index];
                                 final card = fillterCard[index];
-                                final frontImageBytes =
-                                card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
+
+
+
+                                final frontImageBytes = card.isBase64==1 && card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
                                     ? decodeBase64Image(card.cardFrontImageBase64!)
                                     : null;
+
+
                                 return AnimationConfiguration.staggeredList(
                                   position: index,
                                   duration: const Duration(seconds:2),
@@ -403,13 +417,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         height: height * 0.1,
                                                         width: width * 0.2,
                                                         decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
-                                                        child:
-                                                        frontImageBytes != null
+                                                        child:card.isBase64 == 1?
+                                                       ( frontImageBytes != null
                                                             ? ClipRRect(
                                                           borderRadius: BorderRadius.circular(8),
                                                           child: Image.memory(frontImageBytes, fit: BoxFit.cover),
                                                         )
-                                                            : Icon(Icons.image, color: Colors.white, size: 40),
+                                                            : Icon(Icons.image, color: Colors.white, size: 40))
+
+                                                            :  ClipRRect(
+                                                          borderRadius: BorderRadius.circular(8),
+                                                          child: Image.network(card.cardFrontImageBase64 ?? '',
+                                                          fit: BoxFit.cover,
+                                                            errorBuilder: (context,error , stackTrace)=> Icon(Icons.image,size: 40,),
+                                                          )
+                                                        )
+
+
                                                       ),
                                                       SizedBox(width: 20),
                                                       Expanded(
@@ -516,7 +540,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+Widget BuildImage(DataCard dataCard){
+    final imagestr = dataCard.cardFrontImageBase64 ?? '';
+    final isBase64 = dataCard.isBase64?? 0;
 
+    if(isBase64 == 1){
+      final byte = decodeBase64Image(imagestr);
+      if(byte != null){
+        return Image.memory(byte, fit: BoxFit.cover,);
+
+      }else{
+        return Icon(Icons.image);
+      }
+    }
+
+
+    return Image.network(imagestr
+     ,fit: BoxFit.cover,
+
+    );
+
+
+
+}
 
   Widget _buildShimmerCarde(BuildContext context) {
     // Get screen dimensions. Replace 'height' and 'width' variables if they are global
@@ -1076,4 +1122,4 @@ class _HomeScreenState extends State<HomeScreen> {
 //       ),
 //     ),
 //   ),
-// ),
+// ),`

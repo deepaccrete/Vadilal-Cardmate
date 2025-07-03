@@ -1,17 +1,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
+// import 'package:contacts_service/contacts_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
 import 'package:camera_app/screen/EditCard.dart';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:contacts_service_plus/contacts_service_plus.dart';
+import 'package:flutter/services.dart';
 
 class DetailsScreen extends StatefulWidget {
 
@@ -28,7 +31,7 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-List<CardDetails> _cards = [];
+// List<CardDetails> _cards = [];
 
 Future<void> callNumber(String number)async{
   try{
@@ -88,6 +91,55 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 */
 
+Future<void> RequestPermission() async {
+  if (await Permission.contacts.isGranted) {
+    print('Contacts permission already granted');
+    return;
+  }
+
+  PermissionStatus status = await Permission.contacts.request();
+
+  if (status.isGranted) {
+    print('Contacts permission granted');
+  } else if (status.isDenied) {
+    print('Contacts permission denied');
+  } else if (status.isPermanentlyDenied) {
+    openAppSettings(); // guide user to manually enable permission
+  }
+}
+Future<void> SaveContact({
+  required String firstname,
+  String? lastName,
+  String? phone,
+  String? email,
+}) async {
+  await RequestPermission();
+
+  // Handle multiple phone numbers
+  List<Item> phoneItems = [];
+  if (phone != null && phone.isNotEmpty) {
+    final phoneList = phone.split(',').map((p) => p.trim()).toList();
+    phoneItems = phoneList.map(( number) => Item(label: "mobile", value: number)).toList();
+  }
+
+  // Handle email
+  List<Item> emailItems = [];
+  if (email != null && email.isNotEmpty) {
+    emailItems = [Item(label: "work", value: email)];
+  }
+
+  final newContact = Contact(
+    givenName: firstname,
+    familyName: lastName,
+    phones: phoneItems,
+    emails: emailItems,
+  );
+
+  await ContactsService.addContact(newContact);
+  print('Contact Saved: $newContact');
+}
+
+
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -95,6 +147,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final height = MediaQuery.of(context).size.height * 1;
 
     List<Uint8List> images = [];
+    List<dynamic> imagesurl = [];
     Uint8List? decodeBase64Image(String base64String) {
       try {
         print('Attempting to decode base64 string...');
@@ -186,8 +239,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
       }
     }
 
+
     print('\nProcessing front image...');
-    if (widget.dataCard.cardFrontImageBase64 != null &&
+    if (  widget.dataCard.isBase64 == 1 &&
+        widget.dataCard.cardFrontImageBase64 != null &&
         widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
       final frontImage = decodeBase64Image(
         widget.dataCard.cardFrontImageBase64!,
@@ -198,12 +253,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
       } else {
         print('Failed to decode front image');
       }
-    } else {
+    }else if (widget.dataCard.cardFrontImageBase64 != null && widget.dataCard.cardFrontImageBase64!.isNotEmpty){
+      imagesurl.add(widget.dataCard.cardFrontImageBase64);
+      print('front Image Store in ImageUrl');
+
+    }
+
+    else {
       print('No front image data available');
     }
 
     print('\nProcessing back image...');
-    if (widget.dataCard.cardBackImageBase64 != null &&
+    if (widget.dataCard.isBase64 == 1 &&
+        widget.dataCard.cardBackImageBase64 != null &&
         widget.dataCard.cardBackImageBase64!.isNotEmpty) {
       final backImage = decodeBase64Image(widget.dataCard.cardBackImageBase64!);
       if (backImage != null) {
@@ -212,8 +274,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
       } else {
         print('Failed to decode back image');
       }
-    } else {
+    }else if (widget.dataCard.cardBackImageBase64 != null && widget.dataCard.cardBackImageBase64!.isNotEmpty){
+      imagesurl.add(widget.dataCard.cardBackImageBase64);
+      print('Back Image Store in ImageUrl');
+    }
+
+    else {
       print('No back image data available');
+
     }
 
     print('\nFinal results:');
@@ -256,7 +324,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   // color:Colors.red,
                   // width: width * 0.85,
                   child:
-                      images.isNotEmpty
+                     ( widget.dataCard.isBase64== 1
+                         ? images.isNotEmpty
+                         : imagesurl.isEmpty)
                           ? CarouselSlider(
                             carouselController: CarouselSliderController(),
                             options: CarouselOptions(
@@ -271,8 +341,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               autoPlay: false,
                               viewportFraction: 0.9,
                             ),
-                            items:
-                                images.map((imgBytes) {
+                            items:widget.dataCard.isBase64 == 1
+
+                              ?  images.map((imgBytes) {
                                   return Builder(
                                     builder: (BuildContext context) {
                                       return Container(
@@ -303,6 +374,39 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                       );
                                     },
                                   );
+                                }).toList()
+
+                               : imagesurl.map((url) {
+                                  return Builder(
+                                    builder: (BuildContext context) {
+                                      return Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 5.0,
+                                        ),
+                                        // decoration: BoxDecoration(
+                                        //   color: Colors.grey[200],
+                                        //   borderRadius: BorderRadius.circular(
+                                        //     10,
+                                        //   ),
+                                        // ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child: InteractiveViewer(
+                                            minScale: 0.5,
+                                            maxScale: 5.0,
+                                            child: Image.network(
+                                              url,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
                                 }).toList(),
                           )
                           : Icon(Icons.image, color: Colors.grey),
@@ -310,11 +414,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
               ),
 
               // DotIndicator(pageController: pageController, pages: items),
-              if (images.isNotEmpty)
+              if ((widget.dataCard.isBase64==1 && images.isNotEmpty)
+              ||
+                  (widget.dataCard.isBase64 != 1 && images.isNotEmpty ))
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: DotsIndicator(
-                    dotsCount: images.length,
+                    dotsCount: widget.dataCard.isBase64== 1 ?images.length : imagesurl.length,
                     position: _currentIndex.toDouble(),
                     decorator: DotsDecorator(
                       color: Colors.grey,
@@ -341,29 +447,44 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Add button
-                    Column(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade100,
-                            shape: BoxShape.circle,
+                    InkWell(
+                      onTap: () async {
+                        try {
+                          await SaveContact(
+                            firstname: widget.dataCard.companyName ?? '',
+                            email: widget.dataCard.companyEmail ?? '',
+                            phone: widget.dataCard.companyPhoneNumber ?? '',
+                            // lastName: widget.dataCard.ownerName ?? ''
+                          );
+                        } catch (e) {
+                          print("Error during contact save: $e");
+                        }
+                      },
+
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.person_add_alt_outlined,
+                              color: Colors.green,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.person_add_alt_outlined,
-                            color: Colors.green,
+                          Text(
+                            'Add',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#639766'),
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Add',
-                          style: GoogleFonts.raleway(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                            color: HexColor('#639766'),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     // Share button
@@ -656,6 +777,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                //    callNumber('1234567890');
                                //    child: Text('Test Call');
                                 },
+                                    onLongPress: ()async{
+                                  await Clipboard.setData(ClipboardData(text: phone.trim()));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Copied To ClipBoard'))
+                                  );
+                                    },
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 8,
@@ -697,7 +824,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               widget.dataCard.companyAddress!.isNotEmpty)
                             ListTile(
                               onTap: () {
-                                // Handle address tap
+
+                              },
+                              onLongPress: ()async{
+                                await Clipboard.setData(ClipboardData(text: widget.dataCard.companyAddress!.join(', '),));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Copied To ClipBoard'))
+                                );
                               },
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -975,6 +1108,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                               onTap: () {
                                                 callNumber(person.phoneNumber.toString());
 
+                                              },
+                                              onLongPress: ()async{
+                                                await Clipboard.setData(ClipboardData(text: person.phoneNumber!,));
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('Copied To ClipBoard'))
+                                                );
                                               },
                                               contentPadding: EdgeInsets.zero,
                                               leading: Container(
