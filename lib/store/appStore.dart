@@ -23,6 +23,16 @@ abstract class _AppStore with Store {
   @observable
   UserData? userData;
 
+  @observable
+  bool isRememberMe = false;
+
+
+  @observable
+  String? email;
+
+  @observable
+  String? password;
+
   @action
   void setIsLoading(getIsLoading) {
     isLoading = getIsLoading;
@@ -37,8 +47,25 @@ abstract class _AppStore with Store {
   void setUserToken(getIsUserToken) {
     userToken = getIsUserToken;
   }
+
   @action
   void setUser(getUser) {
     userData = getUser;
   }
+
+  @action
+  void setIsRememberMe (getRememberme){
+    isRememberMe = getRememberme;
+  }
+
+  @action
+  void setEmail(getEmail){
+    email = getEmail;
+  }
+
+  @action
+  void setPassword(getPassword){
+    password = getPassword;
+  }
+
 }

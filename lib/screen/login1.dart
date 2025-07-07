@@ -6,6 +6,7 @@ import 'package:camera_app/screen/home.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/AuthAPI.dart';
@@ -71,6 +72,12 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadUserEmailPass();
+  }
   @override
   Widget build(BuildContext context) {
     // print('Rebuild ');
@@ -216,13 +223,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Checkbox(
+                          side: BorderSide(color: Colors.white),
+                          //     activeColor: Colors.red,
+                          // focusColor: Colors.green,
+                          // checkColor: Colors.white,
 
                               value: rememberme,
-                              onChanged: (value) {
-                                setState(() {
-                                  rememberme = value!;
-                                });
-                              }),
+                              onChanged: _handleRemember),
+                                //   (value) {
+                                // setState(() {
+                                //   rememberme = value!;});}),
                           Text('Remember Me', style: GoogleFonts.poppins(
                               color: Colors.white),),
                         ],
@@ -282,13 +292,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (loginResponse.success == 1) {
 
-          if (rememberme) {
+
             SharedPreferences pref = await SharedPreferences.getInstance();
             await pref.setString(TOKEN, loginResponse.userData?.token ?? '');
             await pref.setBool(IS_LOGGED_IN, true);
             String userDetailsString = jsonEncode(loginResponse.userData);
             await pref.setString(USER_DETAIL, userDetailsString);
-          }
+
+
+
 
           appStore.setUserToken(loginResponse.userData?.token);
           appStore.setIsLogin(true);
@@ -327,14 +339,98 @@ class _LoginScreenState extends State<LoginScreen> {
         // setState(() {
         //   isLoading = false;
         // });
-        // appStore.isLoading = false;
         appStore.setIsLoading(false);
+// appStore.isLoading = false;
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred. Please try again.')),
         );
       }
     }
+  }
+
+
+  void _handleRemember (bool? value)async{
+
+   try{
+
+     print('Handle Remember Me');
+     rememberme = value!;
+     SharedPreferences pref = await SharedPreferences.getInstance();
+     await pref.setBool("Remember_Me_Key", value);
+     if(rememberme){
+
+       await pref.setString("Saved_Email", emailController.text);
+       await pref.setString("Saved_Password", passwordController.text);
+
+
+       appStore.setIsRememberMe(true);
+       appStore.setEmail(emailController.text);
+       appStore.setPassword(passwordController.text);
+
+
+
+     }else{
+       pref.remove(Saved_Email);
+       pref.remove(Saved_Password);
+       
+       appStore.setEmail(null);
+       appStore.setPassword(null);
+     }
+     appStore.setIsRememberMe(value);
+     setState(() {
+       rememberme = value;
+     });
+
+
+   }catch(e){
+     print('Handle Remember ==>');
+   }
+  }
+
+
+  void loadUserEmailPass()async{
+    print("Load Email and Password");
+
+
+    try{
+      SharedPreferences pref = await SharedPreferences.getInstance();
+
+      var _rememberme = pref.getBool("Remember_Me_Key")  ?? false;
+      var _email =      pref.getString("Saved_Email") ?? '';
+      var _password =      pref.getString("Saved_Password") ?? '';
+
+
+
+      if(_rememberme){
+        setState(() {
+          rememberme = true;
+        });
+
+
+        emailController.text = _email?? "";
+        passwordController.text = _password ?? "";
+        
+        appStore.setEmail(_email);
+        appStore.setPassword(_password);
+
+      }else{
+        setState(() {
+          rememberme = false;
+        });
+        emailController.text = '';
+        passwordController.text = '';
+
+        appStore.setEmail(null);
+        appStore.setPassword(null);
+      }
+
+
+    }catch(e){
+      print('Error Load Email And Pass =>> $e');
+    }
+
+
   }
 
 }

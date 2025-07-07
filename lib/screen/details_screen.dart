@@ -15,6 +15,10 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service_plus/contacts_service_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+
+
+
 
 class DetailsScreen extends StatefulWidget {
 
@@ -139,6 +143,41 @@ Future<void> SaveContact({
   print('Contact Saved: $newContact');
 }
 
+
+// This function will generate and share ALL card details
+void _shareAllCardDetails() async {
+  // 1. Get the formatted string from your DataCard object
+  final String textToShare = widget.dataCard.toShareString();
+
+  // 2. Optional: Add a check to ensure there's meaningful content to share
+  // This checks if the string is empty or only contains the header/footer
+  if (textToShare.trim().length <= ('--- Business Card Details ---' + '\n' + '\n' + '--- End of Details ---').length) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No details found to share for this card.')),
+    );
+    return;
+  }
+
+  try {
+    // 3. Get the RenderBox for iPad popover (important for tablets)
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+
+    // 4. Use share_plus to open the native share sheet
+    await SharePlus.instance.share(
+      ShareParams(
+        text: textToShare,
+        subject: 'Business Card Details: ${widget.dataCard.companyName}', // A descriptive subject
+        // sharePositionOrigin is important for iPads to show a popover
+        sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+      ),
+    );
+  } catch (e) {
+    print('Error sharing card details: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to share card details: $e')),
+    );
+  }
+}
 
   int _currentIndex = 0;
   @override
@@ -456,9 +495,30 @@ Future<void> SaveContact({
                             phone: widget.dataCard.companyPhoneNumber ?? '',
                             // lastName: widget.dataCard.ownerName ?? ''
                           );
+                          showDialog(context: context,
+                              builder: (context){
+                                return AlertDialog(
+                                  title: Text('Contact Saved',textAlign: TextAlign.center,style: GoogleFonts.poppins(fontSize: 16,fontWeight: FontWeight.w500),),
+                                  content: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        shape: BoxShape.circle,
+
+                                      ),
+                                      child: Icon(Icons.check,color: Colors.white,size: 100,)),
+                                  actions: [Center(
+                                    child: TextButton(onPressed: (){
+                                      Navigator.pop(context);
+                                    },
+                                        child: Text('OK',style: GoogleFonts.poppins(fontSize: 18),)),
+                                  )
+                                  ],
+                                );
+                              });
                         } catch (e) {
                           print("Error during contact save: $e");
                         }
+
                       },
 
                       child: Column(
@@ -488,26 +548,35 @@ Future<void> SaveContact({
                     ),
 
                     // Share button
-                    Column(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade100,
-                            shape: BoxShape.circle,
+                    InkWell(
+                      onTap: (){
+
+
+                        _shareAllCardDetails();
+
+
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.share, color: HexColor('#3380B6')),
                           ),
-                          child: Icon(Icons.share, color: HexColor('#3380B6')),
-                        ),
-                        Text(
-                          'Share',
-                          style: GoogleFonts.raleway(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                            color: HexColor('#3380B6'),
+                          Text(
+                            'Share',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#3380B6'),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     // Edit button
@@ -960,7 +1029,9 @@ Future<void> SaveContact({
                           ],
                         ),
                       ),
+
                       SizedBox(height: 12),
+
                       ...widget.dataCard.personDetails!.map(
                         (person) => Container(
                           margin: const EdgeInsets.only(bottom: 12.0),
@@ -1057,8 +1128,9 @@ Future<void> SaveContact({
                                             //     color: Colors.grey[800],
                                             //   ),
                                             // ),
-                                            if (person.position != null)
-                                              Container(
+                                            (person.position== null || person.position!.trim().isEmpty || person.position!.toLowerCase()=='null')
+                                              ?SizedBox()
+                                              :Container(
                                                 margin: EdgeInsets.only(top: 4),
                                                 padding: EdgeInsets.symmetric(
                                                   horizontal: 8,
@@ -1107,6 +1179,7 @@ Future<void> SaveContact({
                                             ListTile(
                                               onTap: () {
                                                 callNumber(person.phoneNumber.toString());
+
 
                                               },
                                               onLongPress: ()async{

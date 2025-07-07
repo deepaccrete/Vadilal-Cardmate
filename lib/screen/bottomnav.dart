@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
+import '../util/const.dart';
 import 'groupandtags.dart';
 import 'login1.dart';
 
@@ -24,9 +25,13 @@ class _BottomnavState extends State<Bottomnav> {
 
   Future<void>logout()async{
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    prefs.remove(TOKEN);
+    prefs.setBool(IS_LOGGED_IN, false);
+    prefs.remove('loginResponse');
+    // prefs.remove()
+    // await prefs.clear();
 
-    appStore.setUser(null);
+    // appStore.setUser(null);
     appStore.setIsLogin(false);
     appStore.setUserToken(null);
 

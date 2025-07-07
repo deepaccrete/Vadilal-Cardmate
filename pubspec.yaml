@@ -57,6 +57,7 @@ dependencies:
   carousel_slider: ^5.0.0
 #  contacts_service: ^0.6.1
   contacts_service_plus: ^0.0.2
+  share_plus: ^11.0.0
    #excel data
 
   flutter_doc_scanner:
