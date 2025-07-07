@@ -344,7 +344,8 @@ void _shareAllCardDetails() async {
           icon: Icon(Icons.arrow_back_ios),
         ),
         title: Text(
-          widget.dataCard.companyName.toString(),
+          // widget.dataCard.companyName.toString(),
+          'Card Details',
           style: GoogleFonts.raleway(fontSize: 14, fontWeight: FontWeight.w700),
         ),
       ),
@@ -783,6 +784,55 @@ void _shareAllCardDetails() async {
                       ),
                       child: Column(
                         children: [
+
+                          ListTile(
+                            onTap: () {
+                              // if(widget.dataCard.companyEmail!= null&&
+                              //     widget.dataCard.companyEmail!.isNotEmpty){
+                              //   sendmail(toEmail: widget.dataCard.companyEmail
+                              //       .toString());
+                              // }
+                              // if(widget.dataCard.companyEmail==null){
+                              //   sendmail(toEmail: widget.dataCard.companyEmail
+                              //       .toString());
+                              // }
+                              // Handle company email tap
+                            },
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.business,
+                                color: Colors.blue[700],
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              'Company Name',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.companyName!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+
                           if (widget.dataCard.companyEmail != null &&
                               widget.dataCard.companyEmail!.isNotEmpty)
                             ListTile(
