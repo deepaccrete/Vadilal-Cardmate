@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/ImageUploadApi.dart';
 import '../componets/button.dart';
 import 'bottomnav.dart';
+import 'details_screen.dart';
 
 /// This function should be placed in the same file as your Bottom Navigation Bar.
 /// Your "Scan" button should call this method.
@@ -110,6 +111,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
 
   /// The Save button's logic remains mostly the same.
   Future<void> _saveAndUploadImages() async {
+print("-----------==================> 2");
     if (_frontImagePath == null) {
       _showError("No image to save.");
       return;
@@ -133,14 +135,15 @@ class _CameraScreen2State extends State<CameraScreen2> {
         // _showSnackBarAndNavigate(uploaded, isTwoSided: false);
       }
       if(cardjson != null){
-        final newcard = DataCard.fromJson(cardjson);
+        final newcard = DataCard.fromJson(cardjson['carddata']);
 
       //   Navigate to next
         // Show success & navigate
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Image uploaded successfully!')),
         );
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> EditCard(dataCard: newcard,)));
+
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> DetailsScreen(dataCard: newcard))) ;
 
       }else{
         _showError("Upload Faild");
@@ -222,12 +225,11 @@ class _CameraScreen2State extends State<CameraScreen2> {
                     Expanded(
                       child:
 
-                      OutlinedButton(
-                        onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                        child: Text("Retake"),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
+                      CommonButton(
+                        onTap: _isLoading ? null : () => Navigator.of(context).pop(),
+                        bordercircular: 10,
+                        bgcolor: Colors.transparent,
+                        child: Text("Cancel"),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -235,6 +237,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
                       child: CommonButton(
                         onTap: (){
                           if(canSave){
+                            print("=------------------------------------ 1");
                             _saveAndUploadImages();
                           }else{
                             null;
@@ -267,7 +270,7 @@ class _CameraScreen2State extends State<CameraScreen2> {
             children: [
               CircularProgressIndicator(color: Colors.white),
               SizedBox(height: 20),
-              Text("Saving...", style: TextStyle(color: Colors.white, fontSize: 18))
+              Text("Uploading...", style: TextStyle(color: Colors.white, fontSize: 18))
             ],
           )
       ),

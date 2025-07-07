@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
-// import 'package:contacts_service/contacts_service.dart';
+import 'package:camera_app/screen/tempscreen/newEditScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
@@ -35,7 +35,7 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-// List<CardDetails> _cards = [];
+List<CardDetails> _cards = [];
 
 Future<void> callNumber(String number)async{
   try{
@@ -186,7 +186,6 @@ void _shareAllCardDetails() async {
     final height = MediaQuery.of(context).size.height * 1;
 
     List<Uint8List> images = [];
-    List<dynamic> imagesurl = [];
     Uint8List? decodeBase64Image(String base64String) {
       try {
         print('Attempting to decode base64 string...');
@@ -278,10 +277,8 @@ void _shareAllCardDetails() async {
       }
     }
 
-
     print('\nProcessing front image...');
-    if (  widget.dataCard.isBase64 == 1 &&
-        widget.dataCard.cardFrontImageBase64 != null &&
+    if (widget.dataCard.cardFrontImageBase64 != null &&
         widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
       final frontImage = decodeBase64Image(
         widget.dataCard.cardFrontImageBase64!,
@@ -292,19 +289,12 @@ void _shareAllCardDetails() async {
       } else {
         print('Failed to decode front image');
       }
-    }else if (widget.dataCard.cardFrontImageBase64 != null && widget.dataCard.cardFrontImageBase64!.isNotEmpty){
-      imagesurl.add(widget.dataCard.cardFrontImageBase64);
-      print('front Image Store in ImageUrl');
-
-    }
-
-    else {
+    } else {
       print('No front image data available');
     }
 
     print('\nProcessing back image...');
-    if (widget.dataCard.isBase64 == 1 &&
-        widget.dataCard.cardBackImageBase64 != null &&
+    if (widget.dataCard.cardBackImageBase64 != null &&
         widget.dataCard.cardBackImageBase64!.isNotEmpty) {
       final backImage = decodeBase64Image(widget.dataCard.cardBackImageBase64!);
       if (backImage != null) {
@@ -313,14 +303,8 @@ void _shareAllCardDetails() async {
       } else {
         print('Failed to decode back image');
       }
-    }else if (widget.dataCard.cardBackImageBase64 != null && widget.dataCard.cardBackImageBase64!.isNotEmpty){
-      imagesurl.add(widget.dataCard.cardBackImageBase64);
-      print('Back Image Store in ImageUrl');
-    }
-
-    else {
+    } else {
       print('No back image data available');
-
     }
 
     print('\nFinal results:');
@@ -364,9 +348,7 @@ void _shareAllCardDetails() async {
                   // color:Colors.red,
                   // width: width * 0.85,
                   child:
-                     ( widget.dataCard.isBase64== 1
-                         ? images.isNotEmpty
-                         : imagesurl.isEmpty)
+                      images.isNotEmpty
                           ? CarouselSlider(
                             carouselController: CarouselSliderController(),
                             options: CarouselOptions(
@@ -381,9 +363,8 @@ void _shareAllCardDetails() async {
                               autoPlay: false,
                               viewportFraction: 0.9,
                             ),
-                            items:widget.dataCard.isBase64 == 1
-
-                              ?  images.map((imgBytes) {
+                            items:
+                                images.map((imgBytes) {
                                   return Builder(
                                     builder: (BuildContext context) {
                                       return Container(
@@ -414,39 +395,6 @@ void _shareAllCardDetails() async {
                                       );
                                     },
                                   );
-                                }).toList()
-
-                               : imagesurl.map((url) {
-                                  return Builder(
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: 5.0,
-                                        ),
-                                        // decoration: BoxDecoration(
-                                        //   color: Colors.grey[200],
-                                        //   borderRadius: BorderRadius.circular(
-                                        //     10,
-                                        //   ),
-                                        // ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          child: InteractiveViewer(
-                                            minScale: 0.5,
-                                            maxScale: 5.0,
-                                            child: Image.network(
-                                              url,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
                                 }).toList(),
                           )
                           : Icon(Icons.image, color: Colors.grey),
@@ -454,13 +402,11 @@ void _shareAllCardDetails() async {
               ),
 
               // DotIndicator(pageController: pageController, pages: items),
-              if ((widget.dataCard.isBase64==1 && images.isNotEmpty)
-              ||
-                  (widget.dataCard.isBase64 != 1 && images.isNotEmpty ))
+              if (images.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: DotsIndicator(
-                    dotsCount: widget.dataCard.isBase64== 1 ?images.length : imagesurl.length,
+                    dotsCount: images.length,
                     position: _currentIndex.toDouble(),
                     decorator: DotsDecorator(
                       color: Colors.grey,
@@ -585,7 +531,7 @@ void _shareAllCardDetails() async {
                       onTap: () async {
 
 
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=> EditCard(dataCard: widget.dataCard,)));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> NewEditCard(dataCard: widget.dataCard,)));
                         // final result =  await
                         // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
                         //     index:widget.index)));
@@ -684,6 +630,7 @@ void _shareAllCardDetails() async {
                 ),
               ),
 
+
               SizedBox(height: 20),
               // Card Details And Genral
               Row(
@@ -725,6 +672,7 @@ void _shareAllCardDetails() async {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // bussiness
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 16,
@@ -755,6 +703,8 @@ void _shareAllCardDetails() async {
                               ),
                             ],
                           ),
+
+
                           Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: 8,
@@ -776,7 +726,9 @@ void _shareAllCardDetails() async {
                         ],
                       ),
                     ),
+
                     SizedBox(height: 12),
+
                     Card(
                       elevation: 2,
                       shape: RoundedRectangleBorder(
@@ -833,9 +785,15 @@ void _shareAllCardDetails() async {
                             ),
                           ),
 
-                          if (widget.dataCard.companyEmail != null &&
-                              widget.dataCard.companyEmail!.isNotEmpty)
-                            ListTile(
+                          // (person.email== null || person.email!.trim().isEmpty || person.email!.toLowerCase()=='null')
+
+                          // if (widget.dataCard.companyEmail != null &&
+                          //     widget.dataCard.companyEmail!.isNotEmpty
+                          // // &&  widget.dataCard.companyEmail!.toLowerCase()=='null'
+                          // )
+                          (widget.dataCard.companyEmail == null || widget.dataCard.companyEmail!.trim().isEmpty || widget.dataCard.companyEmail!.toLowerCase()=='null')
+                          ?SizedBox()
+                            :ListTile(
                               onTap: () {
                                 // if(widget.dataCard.companyEmail!= null&&
                                 //     widget.dataCard.companyEmail!.isNotEmpty){
@@ -883,7 +841,7 @@ void _shareAllCardDetails() async {
                               ),
                             ),
 
-                          if (widget.dataCard.companyPhoneNumber != null && widget.dataCard.companyPhoneNumber!.isNotEmpty)
+                          if (widget.dataCard.companyPhoneNumber != null && widget.dataCard.companyPhoneNumber!.isNotEmpty && widget.dataCard.companyPhoneNumber!.toLowerCase()!= null)
                             ...widget.dataCard.companyPhoneNumber!
                                 .split(',')
                                 .map(
@@ -941,7 +899,9 @@ void _shareAllCardDetails() async {
 
                           if (widget.dataCard.companyAddress != null &&
                               widget.dataCard.companyAddress!.isNotEmpty)
-                            ListTile(
+                          // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
+                          //  ?SizedBox():
+                                 ListTile(
                               onTap: () {
 
                               },
@@ -986,43 +946,47 @@ void _shareAllCardDetails() async {
                               ),
                             ),
 
-                          if (widget.dataCard.companySWorkDetails != null &&
-                              widget.dataCard.companySWorkDetails!.isNotEmpty)
-                            ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+
+                          // if (widget.dataCard.companySWorkDetails != null &&
+                          //
+
+                          (widget.dataCard.companySWorkDetails== null || widget.dataCard.companySWorkDetails!.trim().isEmpty || widget.dataCard.companySWorkDetails!.toLowerCase()=='null')
+                          ? SizedBox()
+                              :ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              leading: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.purple.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.work_outline,
-                                  color: Colors.purple[700],
-                                  size: 20,
-                                ),
-                              ),
-                              title: Text(
-                                'Company Work',
-                                style: GoogleFonts.raleway(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              subtitle: Text(
-                                widget.dataCard.companySWorkDetails!,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 14,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Icon(
+                                Icons.work_outline,
+                                color: Colors.purple[700],
+                                size: 20,
                               ),
                             ),
+                            title: Text(
+                              'Company Work',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.companySWorkDetails!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -1034,7 +998,7 @@ void _shareAllCardDetails() async {
               // People Section
               if (widget.dataCard.personDetails != null &&
                   widget.dataCard.personDetails!.isNotEmpty)
-                Container(
+             Container(
                   margin: EdgeInsets.symmetric(vertical: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1079,9 +1043,7 @@ void _shareAllCardDetails() async {
                           ],
                         ),
                       ),
-
                       SizedBox(height: 12),
-
                       ...widget.dataCard.personDetails!.map(
                         (person) => Container(
                           margin: const EdgeInsets.only(bottom: 12.0),
@@ -1178,9 +1140,8 @@ void _shareAllCardDetails() async {
                                             //     color: Colors.grey[800],
                                             //   ),
                                             // ),
-                                            (person.position== null || person.position!.trim().isEmpty || person.position!.toLowerCase()=='null')
-                                              ?SizedBox()
-                                              :Container(
+                                            if (person.position != null)
+                                              Container(
                                                 margin: EdgeInsets.only(top: 4),
                                                 padding: EdgeInsets.symmetric(
                                                   horizontal: 8,
@@ -1214,9 +1175,12 @@ void _shareAllCardDetails() async {
                                       ),
                                     ],
                                   ),
-                                  if (person.phoneNumber != null ||
-                                      person.email != null)
-                                    Container(
+                                  // if (person.phoneNumber != null ||
+                                  //     person.email != null)
+
+                                  (person.phoneNumber== null || person.phoneNumber!.trim().isEmpty || person.phoneNumber!.toLowerCase()=='null')
+                                  ?SizedBox()
+                                  :Container(
                                       margin: EdgeInsets.only(top: 16),
                                       padding: EdgeInsets.all(12),
                                       decoration: BoxDecoration(
@@ -1229,7 +1193,6 @@ void _shareAllCardDetails() async {
                                             ListTile(
                                               onTap: () {
                                                 callNumber(person.phoneNumber.toString());
-
 
                                               },
                                               onLongPress: ()async{
