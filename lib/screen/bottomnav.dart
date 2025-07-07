@@ -65,42 +65,18 @@ class _BottomnavState extends State<Bottomnav> {
   void _onTap(int index) {
     if (index == 3) {
       // Show confirmation dialog instead of navigating
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.grey.shade300,
-          title: Text('Logout',textAlign: TextAlign.center,),
-          content: Text('Are you sure you want to Logout?',textAlign: TextAlign.center),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap:(){
-                    Navigator.pop(context);
-                  } ,
-                  child: Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: primarycolor
-                    ),
-                    child: Text('Cancel',style: GoogleFonts.poppins(color: Colors.white),)
-                  ),
-                ),
-                InkWell(
-                  onTap:() => logout(),
-                  child: Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: primarycolor
-                    ),
-                    child: Text('LogOut',style: GoogleFonts.poppins(color: Colors.white),)
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      showConfirmDialogCustom(
+        context,
+        title: "Do you want to logout from the app?",
+        dialogType: DialogType.CONFIRMATION,
+        centerImage: 'URL',
+        onAccept:(p0) {
+          logout();
+        },
+        onCancel: (p0) {
+        },
+        height: 300,
+        width: 400,
       );
     } else {
       setState(() {
@@ -128,7 +104,7 @@ class _BottomnavState extends State<Bottomnav> {
       ),
       child: Center(
         child: Icon(
-          Icons.qr_code,
+          Icons.document_scanner,
           color: Colors.white,
           size: buttonSize * 0.4,
         ),
@@ -174,8 +150,7 @@ class _BottomnavState extends State<Bottomnav> {
                       // SizedBox(width: 5,),
                       Row(
                         children: [
-                          buildNavItem(Icons.search, "Group", 2),
-
+                          buildNavItem(Icons.sell_outlined, "Tags", 2),
                           SizedBox(width: 30),
                           buildNavItem(Icons.logout, "LogOut", 3),
                         ],

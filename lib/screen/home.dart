@@ -65,10 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isCardLoading = true;
   String? errormessage;
 
-
-
   Uint8List? decodeBase64Image(String base64String) {
-
     try {
       print('Attempting to decode base64 string...');
 
@@ -153,8 +150,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   Future<void> FetchCard() async {
     setState(() {
       isCardLoading = true;
@@ -166,6 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _cardapi = cardModel.data!;
           isCardLoading = false;
+        });
+      }else if(cardModel.success == 0){
+        isCardLoading = false;
+        _cardapi = [];
+        setState(() {
+
         });
       }
     } catch (e) {
@@ -251,9 +252,6 @@ class _HomeScreenState extends State<HomeScreen> {
     FetchCard();
   }
 
-
-
-
   /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
     setState(() {
@@ -263,18 +261,19 @@ class _HomeScreenState extends State<HomeScreen> {
 */
   @override
   Widget build(BuildContext context) {
-
-
     List<DataCard> fillterCard = [];
     if (searchController.text.toString().isEmpty) {
       fillterCard = _reversedCardApi;
     } else {
-      fillterCard = _reversedCardApi.where((_element){
-        final companyName =  _element.companyName?.toLowerCase() ?? '';
-        return companyName.contains(searchController.text.toLowerCase());
-      }
-        // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
-      ).toList();}
+      fillterCard =
+          _reversedCardApi.where(
+            (_element) {
+              final companyName = _element.companyName?.toLowerCase() ?? '';
+              return companyName.contains(searchController.text.toLowerCase());
+            },
+            // => (_element.companyName!.toLowerCase().contains(searchController.text.toLowerCase()))
+          ).toList();
+    }
 
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
@@ -286,12 +285,10 @@ class _HomeScreenState extends State<HomeScreen> {
         body: RefreshIndicator(
           color: primarycolor,
           backgroundColor: Colors.grey.shade300,
-
           onRefresh: () {
             return FetchCard();
           },
-          child:
-            SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Container(
               // color: Colors.red,
               // height: height,
@@ -306,7 +303,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
-                        child: Text('${appStore.userData?.firstname![0]}', style: TextStyle(color: Colors.white, fontSize: 20)),
+                        child: Text(
+                          '${appStore.userData?.firstname![0]}',
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
                       ),
                       SizedBox(width: 10),
                       Text(
@@ -315,13 +315,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-
                   Divider(),
-
                   Card(
                     elevation: 10,
                     child: Container(
-                      width: width ,
+                      width: width,
                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                       child: TextFormField(
                         onChanged: (v) {
@@ -341,31 +339,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-
-                  // Row(
-                  //   children: [
-                  //
-                  //     // InkWell(
-                  //     //   onTap: () {
-                  //     //     List<Map<String, dynamic>> exportableData = _cardapi.map((card) => dataCardToExportableMap(card)).toList();
-                  //     //
-                  //     //     exportDataToExcel(context,exportableData);
-                  //     //   },
-                  //     //   child: Card(
-                  //     //
-                  //     //     elevation: 10,
-                  //     //     child: Container(
-                  //     //       height: height * 0.05,
-                  //     //       width: width * 0.1,
-                  //     //       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(1)),
-                  //     //       child: Image.asset('assets/images/csvicon.png'),
-                  //     //     ),
-                  //     //   ),
-                  //     // ),
-                  //   ],
-                  // ),
-
-
                   Container(
                     // color: Colors.blue,  // Removing blue background
                     width: width,
@@ -373,143 +346,160 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         SizedBox(height: 10),
-
                         Expanded(
                           child:
-                          isCardLoading
-                              ? Center(child: CircularProgressIndicator())
-                              : AnimationLimiter(
-                            child: ListView.builder(
-                              // itemCount: _cardapi.length,
-                              itemCount: fillterCard.length,
-                              itemBuilder: (context, index) {
-                                // final card = _cardapi[index];
-                                final card = fillterCard[index];
+                              isCardLoading
+                                  ? Center(child: CircularProgressIndicator())
+                                  : _cardapi.isEmpty?Container(
+                                child: Image.asset('assets/images/no card found .png'),
+                              ):AnimationLimiter(
+                                    child: ListView.builder(
+                                      // itemCount: _cardapi.length,
+                                      itemCount: fillterCard.length,
+                                      itemBuilder: (context, index) {
+                                        // final card = _cardapi[index];
+                                        final card = fillterCard[index];
 
+                                        final frontImageBytes =
+                                            card.isBase64 == 1 &&
+                                                    card.cardFrontImageBase64 != null &&
+                                                    card.cardFrontImageBase64!.isNotEmpty
+                                                ? decodeBase64Image(card.cardFrontImageBase64!)
+                                                : null;
 
-
-                                final frontImageBytes = card.isBase64==1 && card.cardFrontImageBase64 != null && card.cardFrontImageBase64!.isNotEmpty
-                                    ? decodeBase64Image(card.cardFrontImageBase64!)
-                                    : null;
-
-
-                                return AnimationConfiguration.staggeredList(
-                                  position: index,
-                                  duration: const Duration(seconds:2),
-                                  child: SlideAnimation(
-                                    verticalOffset: 50.0,
-                                    child: FadeInAnimation(
-                                      child:Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Card(
-                                          elevation: 10,
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => DetailsScreen(dataCard: card)));
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.all(16),
-                                              child: Column(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Container(
-                                                        height: height * 0.1,
-                                                        width: width * 0.2,
-                                                        decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
-                                                        child:card.isBase64 == 1?
-                                                       ( frontImageBytes != null
-                                                            ? ClipRRect(
-                                                          borderRadius: BorderRadius.circular(8),
-                                                          child: Image.memory(frontImageBytes, fit: BoxFit.cover),
-                                                        )
-                                                            : Icon(Icons.image, color: Colors.white, size: 40))
-
-                                                            :  ClipRRect(
-                                                          borderRadius: BorderRadius.circular(8),
-                                                          child: Image.network(card.cardFrontImageBase64 ?? '',
-                                                          fit: BoxFit.cover,
-                                                            errorBuilder: (context,error , stackTrace)=> Icon(Icons.image,size: 40,),
-                                                          )
-                                                        )
-
-
-                                                      ),
-                                                      SizedBox(width: 20),
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              card.companyName?.toString() ?? 'No data',
-                                                              style: GoogleFonts.raleway(
-                                                                fontWeight: FontWeight.w600,
-                                                                fontSize: 14,
-                                                                color: Colors.black,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              card.companyAddress!.join(',') ?? "No Data",
-                                                              style: GoogleFonts.raleway(
-                                                                fontWeight: FontWeight.w400,
-                                                                fontSize: 11,
-                                                                color: subtext,
-                                                              ),
-                                                            ),
-                                                          ],
+                                        return AnimationConfiguration.staggeredList(
+                                          position: index,
+                                          duration: const Duration(seconds: 2),
+                                          child: SlideAnimation(
+                                            verticalOffset: 50.0,
+                                            child: FadeInAnimation(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Card(
+                                                  elevation: 10,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) => DetailsScreen(dataCard: card),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      Row(
+                                                      );
+                                                    },
+                                                    child: Container(
+                                                      padding: EdgeInsets.all(16),
+                                                      child: Column(
                                                         children: [
-                                                          Icon(Icons.date_range, color: Colors.grey),
-                                                          Text(
-                                                            card.createdAt!.substring(0, 10),
-                                                            style: GoogleFonts.inter(
-                                                              fontWeight: FontWeight.w700,
-                                                              fontSize: 12,
-                                                              color: Colors.grey.shade700,
-                                                            ),
+                                                          Row(
+                                                            children: [
+                                                              Container(
+                                                                height: height * 0.1,
+                                                                width: width * 0.2,
+                                                                decoration: BoxDecoration(
+                                                                  color: darkcolor,
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                                child:
+                                                                    card.isBase64 == 1
+                                                                        ? (frontImageBytes != null
+                                                                            ? ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(8),
+                                                                              child: Image.memory(
+                                                                                frontImageBytes,
+                                                                                fit: BoxFit.cover,
+                                                                              ),
+                                                                            )
+                                                                            : Icon(
+                                                                              Icons.image,
+                                                                              color: Colors.white,
+                                                                              size: 40,
+                                                                            ))
+                                                                        : ClipRRect(
+                                                                          borderRadius: BorderRadius.circular(8),
+                                                                          child: Image.network(
+                                                                            card.cardFrontImageBase64 ?? '',
+                                                                            fit: BoxFit.cover,
+                                                                            errorBuilder:
+                                                                                (context, error, stackTrace) =>
+                                                                                    Icon(Icons.image, size: 40),
+                                                                          ),
+                                                                        ),
+                                                              ),
+                                                              SizedBox(width: 20),
+                                                              Expanded(
+                                                                child: Column(
+                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                  children: [
+                                                                    Text(
+                                                                      card.companyName?.toString() ?? 'No data',
+                                                                      style: GoogleFonts.raleway(
+                                                                        fontWeight: FontWeight.w600,
+                                                                        fontSize: 14,
+                                                                        color: Colors.black,
+                                                                      ),
+                                                                    ),
+                                                                    Text(
+                                                                      card.companyAddress!.join(',') ?? "No Data",
+                                                                      style: GoogleFonts.raleway(
+                                                                        fontWeight: FontWeight.w400,
+                                                                        fontSize: 11,
+                                                                        color: subtext,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Divider(),
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              Row(
+                                                                children: [
+                                                                  Icon(Icons.date_range, color: Colors.grey),
+                                                                  Text(
+                                                                    card.createdAt!.substring(0, 10),
+                                                                    style: GoogleFonts.inter(
+                                                                      fontWeight: FontWeight.w700,
+                                                                      fontSize: 12,
+                                                                      color: Colors.grey.shade700,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+
+                                                              Row(
+                                                                children: [
+                                                                  Container(
+                                                                    padding: EdgeInsets.all(5),
+                                                                    decoration: BoxDecoration(
+                                                                      color: Colors.blue,
+                                                                      borderRadius: BorderRadius.circular(10),
+                                                                    ),
+                                                                    child: Text(
+                                                                      'General',
+                                                                      style: GoogleFonts.poppins(
+                                                                        color: Colors.white,
+                                                                        fontSize: 10,
+                                                                        fontWeight: FontWeight.w600,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  Icon(Icons.more_vert_outlined),
+                                                                ],
+                                                              ),
+                                                            ],
                                                           ),
                                                         ],
                                                       ),
-
-                                                            Row(
-                                                              children: [
-                                                                Container(
-                                                                  padding: EdgeInsets.all(5),
-                                                                  decoration: BoxDecoration(
-                                                                    color: Colors.blue,
-                                                                    borderRadius: BorderRadius.circular(10),
-                                                                  ),
-                                                                  child: Text(
-                                                                    'General',
-                                                                    style: GoogleFonts.poppins(
-                                                                      color: Colors.white,
-                                                                      fontSize: 10,
-                                                                      fontWeight: FontWeight.w600,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Icon(Icons.more_vert_outlined),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      );
+                                        );
                                       },
                                     ),
                                   ),
@@ -517,52 +507,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-
-                  SizedBox(height: 10,),
-
-
+                  SizedBox(height: 10),
                 ],
               ),
             ),
           ),
         ),
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () async {
-        //     Navigator.push(context, MaterialPageRoute(builder: (context) => AddDetails()));
-        //     // _loadCard();
-        //   },
-        //   child: Icon(Icons.add, color: Colors.white),
-        //   backgroundColor: Colors.blue,
-        // ),
       ),
     );
-
   }
 
-
-Widget BuildImage(DataCard dataCard){
+  Widget BuildImage(DataCard dataCard) {
     final imagestr = dataCard.cardFrontImageBase64 ?? '';
-    final isBase64 = dataCard.isBase64?? 0;
+    final isBase64 = dataCard.isBase64 ?? 0;
 
-    if(isBase64 == 1){
+    if (isBase64 == 1) {
       final byte = decodeBase64Image(imagestr);
-      if(byte != null){
-        return Image.memory(byte, fit: BoxFit.cover,);
-
-      }else{
+      if (byte != null) {
+        return Image.memory(byte, fit: BoxFit.cover);
+      } else {
         return Icon(Icons.image);
       }
     }
 
-
-    return Image.network(imagestr
-     ,fit: BoxFit.cover,
-
-    );
-
-
-
-}
+    return Image.network(imagestr, fit: BoxFit.cover);
+  }
 
   Widget _buildShimmerCarde(BuildContext context) {
     // Get screen dimensions. Replace 'height' and 'width' variables if they are global
@@ -586,8 +555,9 @@ Widget BuildImage(DataCard dataCard){
                     decoration: BoxDecoration(color: darkcolor, borderRadius: BorderRadius.circular(8)),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child:  Icon(Icons.image, color: Colors.white, size: 40),
-                    ),),
+                      child: Icon(Icons.image, color: Colors.white, size: 40),
+                    ),
+                  ),
                   SizedBox(width: 20),
                   Expanded(
                     child: Column(
@@ -595,20 +565,9 @@ Widget BuildImage(DataCard dataCard){
                       children: [
                         Text(
                           '',
-                          style: GoogleFonts.raleway(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: Colors.black,
-                          ),
+                          style: GoogleFonts.raleway(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.black),
                         ),
-                        Text(
-                          '',
-                          style: GoogleFonts.raleway(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 11,
-                            color: subtext,
-                          ),
-                        ),
+                        Text('', style: GoogleFonts.raleway(fontWeight: FontWeight.w400, fontSize: 11, color: subtext)),
                       ],
                     ),
                   ),
@@ -636,17 +595,10 @@ Widget BuildImage(DataCard dataCard){
                     children: [
                       Container(
                         padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        decoration: BoxDecoration(color: Colors.blue, borderRadius: BorderRadius.circular(10)),
                         child: Text(
                           'General',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
                         ),
                       ),
                       Icon(Icons.more_vert_outlined),
@@ -660,9 +612,6 @@ Widget BuildImage(DataCard dataCard){
       ),
     );
   }
-
-
-// card_list_screen.dart or export_helper.dart
 }
 
 // list

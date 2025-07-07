@@ -1,0 +1,84 @@
+PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
+  - connectivity_plus (0.0.1):
+    - Flutter
+  - contacts_service_plus (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_doc_scanner (0.0.1):
+    - Flutter
+  - fluttertoast (0.0.2):
+    - Flutter
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - nb_utils (0.0.1):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_ios (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
+  - contacts_service_plus (from `.symlinks/plugins/contacts_service_plus/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_doc_scanner (from `.symlinks/plugins/flutter_doc_scanner/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - nb_utils (from `.symlinks/plugins/nb_utils/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+
+EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
+  contacts_service_plus:
+    :path: ".symlinks/plugins/contacts_service_plus/ios"
+  Flutter:
+    :path: Flutter
+  flutter_doc_scanner:
+    :path: ".symlinks/plugins/flutter_doc_scanner/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  nb_utils:
+    :path: ".symlinks/plugins/nb_utils/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+
+SPEC CHECKSUMS:
+  camera_avfoundation: adb0207d868b2d873e895371d88448399ab78d87
+  connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
+  contacts_service_plus: 1a1e1263aeac992b7f204d38f8ef0d8ed54fe8e5
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_doc_scanner: cd7ad8a27227cd7e8ccce50951623678cbde0ec6
+  fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
+  image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
+  nb_utils: 68f1f405e47c19c92dbd4bbf4528dae7dd0fb257
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
+  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
+
+PODFILE CHECKSUM: cf7cc565313fef0c0d08e44589c4145a3f9e6e64
+
+COCOAPODS: 1.16.2

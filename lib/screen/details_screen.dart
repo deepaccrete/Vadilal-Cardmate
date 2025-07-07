@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
-// import 'package:contacts_service/contacts_service.dart';
+import 'package:camera_app/screen/tempscreen/newEditScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
@@ -31,7 +31,7 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-// List<CardDetails> _cards = [];
+List<CardDetails> _cards = [];
 
 Future<void> callNumber(String number)async{
   try{
@@ -91,55 +91,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 */
 
-Future<void> RequestPermission() async {
-  if (await Permission.contacts.isGranted) {
-    print('Contacts permission already granted');
-    return;
-  }
-
-  PermissionStatus status = await Permission.contacts.request();
-
-  if (status.isGranted) {
-    print('Contacts permission granted');
-  } else if (status.isDenied) {
-    print('Contacts permission denied');
-  } else if (status.isPermanentlyDenied) {
-    openAppSettings(); // guide user to manually enable permission
-  }
-}
-Future<void> SaveContact({
-  required String firstname,
-  String? lastName,
-  String? phone,
-  String? email,
-}) async {
-  await RequestPermission();
-
-  // Handle multiple phone numbers
-  List<Item> phoneItems = [];
-  if (phone != null && phone.isNotEmpty) {
-    final phoneList = phone.split(',').map((p) => p.trim()).toList();
-    phoneItems = phoneList.map(( number) => Item(label: "mobile", value: number)).toList();
-  }
-
-  // Handle email
-  List<Item> emailItems = [];
-  if (email != null && email.isNotEmpty) {
-    emailItems = [Item(label: "work", value: email)];
-  }
-
-  final newContact = Contact(
-    givenName: firstname,
-    familyName: lastName,
-    phones: phoneItems,
-    emails: emailItems,
-  );
-
-  await ContactsService.addContact(newContact);
-  print('Contact Saved: $newContact');
-}
-
-
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -147,7 +98,6 @@ Future<void> SaveContact({
     final height = MediaQuery.of(context).size.height * 1;
 
     List<Uint8List> images = [];
-    List<dynamic> imagesurl = [];
     Uint8List? decodeBase64Image(String base64String) {
       try {
         print('Attempting to decode base64 string...');
@@ -239,10 +189,8 @@ Future<void> SaveContact({
       }
     }
 
-
     print('\nProcessing front image...');
-    if (  widget.dataCard.isBase64 == 1 &&
-        widget.dataCard.cardFrontImageBase64 != null &&
+    if (widget.dataCard.cardFrontImageBase64 != null &&
         widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
       final frontImage = decodeBase64Image(
         widget.dataCard.cardFrontImageBase64!,
@@ -253,19 +201,12 @@ Future<void> SaveContact({
       } else {
         print('Failed to decode front image');
       }
-    }else if (widget.dataCard.cardFrontImageBase64 != null && widget.dataCard.cardFrontImageBase64!.isNotEmpty){
-      imagesurl.add(widget.dataCard.cardFrontImageBase64);
-      print('front Image Store in ImageUrl');
-
-    }
-
-    else {
+    } else {
       print('No front image data available');
     }
 
     print('\nProcessing back image...');
-    if (widget.dataCard.isBase64 == 1 &&
-        widget.dataCard.cardBackImageBase64 != null &&
+    if (widget.dataCard.cardBackImageBase64 != null &&
         widget.dataCard.cardBackImageBase64!.isNotEmpty) {
       final backImage = decodeBase64Image(widget.dataCard.cardBackImageBase64!);
       if (backImage != null) {
@@ -274,14 +215,8 @@ Future<void> SaveContact({
       } else {
         print('Failed to decode back image');
       }
-    }else if (widget.dataCard.cardBackImageBase64 != null && widget.dataCard.cardBackImageBase64!.isNotEmpty){
-      imagesurl.add(widget.dataCard.cardBackImageBase64);
-      print('Back Image Store in ImageUrl');
-    }
-
-    else {
+    } else {
       print('No back image data available');
-
     }
 
     print('\nFinal results:');
@@ -324,9 +259,7 @@ Future<void> SaveContact({
                   // color:Colors.red,
                   // width: width * 0.85,
                   child:
-                     ( widget.dataCard.isBase64== 1
-                         ? images.isNotEmpty
-                         : imagesurl.isEmpty)
+                      images.isNotEmpty
                           ? CarouselSlider(
                             carouselController: CarouselSliderController(),
                             options: CarouselOptions(
@@ -341,9 +274,8 @@ Future<void> SaveContact({
                               autoPlay: false,
                               viewportFraction: 0.9,
                             ),
-                            items:widget.dataCard.isBase64 == 1
-
-                              ?  images.map((imgBytes) {
+                            items:
+                                images.map((imgBytes) {
                                   return Builder(
                                     builder: (BuildContext context) {
                                       return Container(
@@ -374,39 +306,6 @@ Future<void> SaveContact({
                                       );
                                     },
                                   );
-                                }).toList()
-
-                               : imagesurl.map((url) {
-                                  return Builder(
-                                    builder: (BuildContext context) {
-                                      return Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: 5.0,
-                                        ),
-                                        // decoration: BoxDecoration(
-                                        //   color: Colors.grey[200],
-                                        //   borderRadius: BorderRadius.circular(
-                                        //     10,
-                                        //   ),
-                                        // ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          child: InteractiveViewer(
-                                            minScale: 0.5,
-                                            maxScale: 5.0,
-                                            child: Image.network(
-                                              url,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
                                 }).toList(),
                           )
                           : Icon(Icons.image, color: Colors.grey),
@@ -414,13 +313,11 @@ Future<void> SaveContact({
               ),
 
               // DotIndicator(pageController: pageController, pages: items),
-              if ((widget.dataCard.isBase64==1 && images.isNotEmpty)
-              ||
-                  (widget.dataCard.isBase64 != 1 && images.isNotEmpty ))
+              if (images.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: DotsIndicator(
-                    dotsCount: widget.dataCard.isBase64== 1 ?images.length : imagesurl.length,
+                    dotsCount: images.length,
                     position: _currentIndex.toDouble(),
                     decorator: DotsDecorator(
                       color: Colors.grey,
@@ -447,44 +344,29 @@ Future<void> SaveContact({
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Add button
-                    InkWell(
-                      onTap: () async {
-                        try {
-                          await SaveContact(
-                            firstname: widget.dataCard.companyName ?? '',
-                            email: widget.dataCard.companyEmail ?? '',
-                            phone: widget.dataCard.companyPhoneNumber ?? '',
-                            // lastName: widget.dataCard.ownerName ?? ''
-                          );
-                        } catch (e) {
-                          print("Error during contact save: $e");
-                        }
-                      },
-
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.person_add_alt_outlined,
-                              color: Colors.green,
-                            ),
+                    Column(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            shape: BoxShape.circle,
                           ),
-                          Text(
-                            'Add',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#639766'),
-                            ),
+                          child: Icon(
+                            Icons.person_add_alt_outlined,
+                            color: Colors.green,
                           ),
-                        ],
-                      ),
+                        ),
+                        Text(
+                          'Add',
+                          style: GoogleFonts.raleway(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16,
+                            color: HexColor('#639766'),
+                          ),
+                        ),
+                      ],
                     ),
 
                     // Share button
@@ -515,7 +397,7 @@ Future<void> SaveContact({
                       onTap: () async {
 
 
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=> EditCard(dataCard: widget.dataCard,)));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=> NewEditCard(dataCard: widget.dataCard,)));
                         // final result =  await
                         // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
                         //     index:widget.index)));
@@ -777,12 +659,6 @@ Future<void> SaveContact({
                                //    callNumber('1234567890');
                                //    child: Text('Test Call');
                                 },
-                                    onLongPress: ()async{
-                                  await Clipboard.setData(ClipboardData(text: phone.trim()));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Copied To ClipBoard'))
-                                  );
-                                    },
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 8,
@@ -824,13 +700,7 @@ Future<void> SaveContact({
                               widget.dataCard.companyAddress!.isNotEmpty)
                             ListTile(
                               onTap: () {
-
-                              },
-                              onLongPress: ()async{
-                                await Clipboard.setData(ClipboardData(text: widget.dataCard.companyAddress!.join(', '),));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Copied To ClipBoard'))
-                                );
+                                // Handle address tap
                               },
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -1108,12 +978,6 @@ Future<void> SaveContact({
                                               onTap: () {
                                                 callNumber(person.phoneNumber.toString());
 
-                                              },
-                                              onLongPress: ()async{
-                                                await Clipboard.setData(ClipboardData(text: person.phoneNumber!,));
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Copied To ClipBoard'))
-                                                );
                                               },
                                               contentPadding: EdgeInsets.zero,
                                               leading: Container(

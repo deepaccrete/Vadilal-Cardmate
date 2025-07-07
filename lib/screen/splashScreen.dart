@@ -42,20 +42,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   getData() async {
     try {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final bool? isLogin = prefs.getBool(IS_LOGGED_IN);
-    appStore.setIsLogin(isLogin ?? false);
+      final bool? isLogin = prefs.getBool(IS_LOGGED_IN);
+      appStore.setIsLogin(isLogin ?? false);
 
-    if (isLogin == true) {
-      appStore.setUserToken(prefs.getString(TOKEN) ?? "");
-      Map<String, dynamic> userDetailsString = jsonDecode(prefs.getString(USER_DETAIL)!);
-      UserData userDetails = UserData.fromJson(userDetailsString);
-      appStore.setUser(userDetails);
-    }
+      if (isLogin == true) {
+        appStore.setUserToken(prefs.getString(TOKEN) ?? "");
+        Map<String, dynamic> userDetailsString = jsonDecode(prefs.getString(USER_DETAIL)!);
+        UserData userDetails = UserData.fromJson(userDetailsString);
+        appStore.setUser(userDetails);
+      }
     } catch (e) {
       print(
-          "this is the following error ------------------------------------------------------------------------------------->\n ${e}");
+        "this is the following error ------------------------------------------------------------------------------------->\n ${e}",
+      );
     }
   }
 
@@ -80,10 +81,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             width: MediaQuery.sizeOf(context).width,
             height: MediaQuery.sizeOf(context).height,
             // color: Colors.white,
-            decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/images/bgimage.png'), fit: BoxFit.cover)),
+            decoration: BoxDecoration(
+              image: DecorationImage(image: AssetImage('assets/images/bgimage.png'), fit: BoxFit.cover),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [Container(height: 200, width: 200, child: Image.asset('assets/images/Frame 2.png', fit: BoxFit.contain))],
+              children: [
+                Container(
+                  height: 200,
+                  width: 200,
+                  child: Image.asset('assets/images/Frame 2.png', fit: BoxFit.contain),
+                ),
+                Text("EasyCard",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),textScaler: TextScaler.linear(4.2),),
+                Text("Snap Store Simplify",style: TextStyle(fontWeight: FontWeight.w300,color: Colors.white),textScaler: TextScaler.linear(1.4),)
+              ],
             ),
           ),
 
@@ -93,7 +104,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: Animate(
                 onComplete: (_) {},
                 effects: [
-                  MoveEffect(begin: Offset(0, -screenSize.height / 2), end: Offset.zero, duration: 800.ms, curve: Curves.easeOutBack),
+                  MoveEffect(
+                    begin: Offset(0, -screenSize.height / 2),
+                    end: Offset.zero,
+                    duration: 800.ms,
+                    curve: Curves.easeOutBack,
+                  ),
                   ScaleEffect(
                     begin: Offset(1, 1),
                     end: Offset(maxRadius / 50, maxRadius / 50),
@@ -104,12 +120,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ],
 
-                child: Container(width: 100, height: 100, decoration: BoxDecoration(color: primarycolor, shape: BoxShape.circle)),
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(color: primarycolor, shape: BoxShape.circle),
+                ),
               ),
             ),
 
           // Final screen
-          if (showNext) (appStore.isLoggedIn?Bottomnav():LoginScreen()),
+          if (showNext) (appStore.isLoggedIn ? Bottomnav() : LoginScreen()),
         ],
       ),
     );

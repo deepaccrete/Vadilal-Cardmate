@@ -1,7 +1,10 @@
 class AppApiConst {
   ///API
-
+  //Local URL
   static String baseUrl = "http://192.168.120.144:8002/api/v1";
+
+  //Live URL
+  // static String baseUrl = "http://Vadilal-QC-Server-NLB-7c5300d13cc148cf.elb.ap-south-1.amazonaws.com:8001/api/v1";
 
   ///Login
   static String login = '$baseUrl/auth/login';
