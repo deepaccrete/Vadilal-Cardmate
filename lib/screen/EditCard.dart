@@ -220,7 +220,7 @@ void addemptyPerson(){
         backgroundColor: screenBGColor,
         elevation: 10,
         centerTitle:true,
-        title: Text('Add Detailss'),
+        title: Text('Add Details'),
       ),
       body: SingleChildScrollView(
         child: Container(

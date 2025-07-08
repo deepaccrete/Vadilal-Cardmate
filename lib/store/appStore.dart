@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:ffi';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/LoginModel.dart';
@@ -32,6 +33,31 @@ abstract class _AppStore with Store {
 
   @observable
   String? password;
+
+  @observable
+   bool? isShowAdd;
+
+  @observable
+   bool? isShowShare;
+
+  @observable
+  bool? isShowEdit;
+
+  @observable
+  bool? isShowDelete;
+
+  @observable
+  bool? isShowGroup;
+
+  @observable
+  bool? isShowTag;
+
+@observable
+  bool isShowButtons = false;
+
+
+
+
 
   @action
   void setIsLoading(getIsLoading) {
@@ -67,5 +93,40 @@ abstract class _AppStore with Store {
   void setPassword(getPassword){
     password = getPassword;
   }
+
+
+
+  @action
+  void setIsAdd(getIsAdd){
+    isShowAdd = getIsAdd;
+  }
+
+  @action
+  void setIsShare(getIsShare){
+    isShowShare = getIsShare;
+  }
+  @action
+  void setIsEdit(getIsEdit){
+    isShowEdit = getIsEdit;
+  }
+  @action
+  void setIsDelete(getIsDelete){
+    isShowDelete = getIsDelete;
+  }
+  @action
+  void setIsGroup(getIsGroup){
+    isShowGroup = getIsGroup;
+  }
+  @action
+  void setIsTag(getIsTag){
+    isShowTag= getIsTag;
+  }
+
+ @action
+  void setButtons(getISShowButtons){
+    isShowButtons = getISShowButtons;
+ }
+
+
 
 }

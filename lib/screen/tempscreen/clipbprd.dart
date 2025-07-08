@@ -444,3 +444,34 @@ class _ImageCard extends StatelessWidget {
   }
 }
 */
+
+
+
+
+//
+// {// Will be null for a new card, as backend generates it
+//   "Group": "Group1",
+//   "Tag": "Customer",
+// "Company Name": "Flutter Innovations Inc.",
+// "Person details": [
+// {
+// "Name": "Dev Guru",
+// "Phone Number": "+919876543210",
+// "Email": "dev.guru@flutterinnovations.com",
+// "Position": "Lead Developer"
+// }
+// ],
+// "Company Phone Number": "+1 (111) 222-3333",
+// "Company Address": [
+// "789 Widget Way",
+// "Code City",
+// "Dartland, FL 33001"
+// ],
+// "Company  Email": "contact@flutterinnovations.com",
+// "Web Address": "www.flutterinnovations.com",
+// "Companys Work Details": "Mobile App Development, UI/UX Design, Backend Services", // Null if not collected by UI, or "GSTIN0000000000" if collected
+// "Card Front Image": null, // Explicitly null as images are sent as files
+// "Card Back Image": null,  // Explicitly null as images are sent as files// Example User ID, or null if backend infers it from auth// Will be null for a new card, as backend generates it
+// "Extracted JSON": "{\"tag_id\":3,\"tag_name\":\"Partner\"}", // A JSON string (double-encoded)
+// "Is Base64": 0 // Indicates images are NOT Base64 in this JSON payload
+// }

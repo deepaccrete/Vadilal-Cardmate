@@ -39,6 +39,9 @@ class DataCard {
   String? extractedJSON;
   int? isBase64;
 
+  int? tag_id;
+  int? group_id;
+
   DataCard({
     this.cardID,
     this.companyName,
@@ -55,6 +58,8 @@ class DataCard {
     this.createdAt,
     this.extractedJSON,
     this.isBase64,
+    this.tag_id,
+    this.group_id
   });
 
   DataCard.fromJson(Map<String, dynamic> json) {
@@ -104,6 +109,9 @@ class DataCard {
     createdAt = json['Created At']?.toString();
     extractedJSON = json['Extracted JSON']?.toString();
     isBase64 = json['Is Base64'] as int?;
+    tag_id: json['tag_id'] as int?;
+    group_id: json['group_id'] as int?;
+
   }
 
   Map<String, dynamic> toJson() {
@@ -125,6 +133,8 @@ class DataCard {
     data['Created At'] = this.createdAt;
     data['Extracted JSON'] = this.extractedJSON;
     data['Is Base64'] = this.isBase64;
+    data['tag_id'] = this.tag_id;
+    data['group_id'] = this.group_id;
     return data;
   }
 

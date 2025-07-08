@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:camera_app/api/GroupApi.dart';
 import 'package:camera_app/api/TagApi.dart';
+import 'package:camera_app/model/GroupModel.dart';
 import 'package:camera_app/model/TagModel.dart';
+import 'package:camera_app/model/cardModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,7 +15,7 @@ import 'package:shimmer/shimmer.dart';
 import '../componets/button.dart';
 import '../componets/textform.dart';
 import '../constant/colors.dart';
-
+import 'package:http/http.dart'as http ;
 class AddManual extends StatefulWidget {
   const AddManual({super.key});
 
@@ -43,7 +47,7 @@ class _AddManualState extends State<AddManual> {
   List<TextEditingController> personPositionControllers = [];
 
   FocusNode namenode = FocusNode();
-  FocusNode desinationnode = FocusNode();
+  FocusNode designationnode = FocusNode();
   FocusNode phonenode = FocusNode();
   FocusNode emailnode = FocusNode();
   FocusNode companynamenode = FocusNode();
@@ -53,15 +57,43 @@ class _AddManualState extends State<AddManual> {
 
   List<Map<String, dynamic>> listdata = [];
   final ImagePicker _picker = ImagePicker();
-  File? _selectedImage;
+  File? _selectFrontImage;
+  File? _selectBackImage;
 
   List<Datatag> taglist = [];
   Datatag ? selectedTag;
-   String? errormsg;
+
+  // List<Grou>
+  List<Data> Groups = [];
+  Data? selectedGroups;
+
+  bool isGroupLoading = true;
+  String? errormsg;
    bool istagLoading = true;
 
 
    final _formkey = GlobalKey<FormState>();
+
+
+Future<void>FatchGroup ()async{
+  try{
+    GroupModel groupModel = await GroupApi.getGroup();
+    if(groupModel.success == 1 && groupModel.data != null){
+      setState(() {
+        Groups = groupModel.data!;
+        isGroupLoading = false;
+      });
+    }else{
+      setState(() {
+        errormsg = "no Groups Found";
+        isGroupLoading = false;
+      });    }
+  }catch(e){
+    setState(() {
+      errormsg = "Something went wrong =>>>>>>>>>>> $e";
+    });
+  }
+}
 
 
   Future<void> FetchTag ()async{
@@ -93,6 +125,7 @@ class _AddManualState extends State<AddManual> {
     // TODO: implement initState
     super.initState();
   FetchTag();
+    FatchGroup();
   }
   // function to add data in hive
   // Future<void> _addcardtoHive()async{
@@ -130,7 +163,7 @@ class _AddManualState extends State<AddManual> {
     webController.dispose();
     noteController.dispose();
     namenode.dispose();
-    desinationnode.dispose();
+    designationnode.dispose();
     phonenode.dispose();
     emailnode.dispose();
     companynamenode.dispose();
@@ -146,16 +179,224 @@ class _AddManualState extends State<AddManual> {
     final  pickedFile = await _picker.pickImage(source: source);
     if(pickedFile != null){
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectFrontImage = File(pickedFile.path);
       });
     }
   }
 
   void _clearIMage(){
     setState(() {
-      _selectedImage = null;
+      _selectFrontImage = null;
     });
   }
+
+
+  //
+  // Future<void> UploadData(){
+  //   if(!_formkey.currentState!.validate()){
+  //    print('Enter Details');
+  //     return ;
+  //   }
+  //   try{
+  //     List<PersonDetails> persons = [];
+  //     if (nameController.text.isNotEmpty ||
+  //         phoneController.text.isNotEmpty ||
+  //         emailController.text.isNotEmpty ||
+  //         designationController.text.isNotEmpty) {
+  //       persons.add(
+  //         PersonDetails(
+  //           name: nameController.text,
+  //           phoneNumber: phoneController.text,
+  //           email: emailController.text,
+  //           position: designationController.text,
+  //         ),
+  //       );
+  //     }
+  //
+  //
+  //
+  //     DataCard cardTextData = DataCard(
+  //       companyName: companynameController.text,
+  //       personDetails: persons.isNotEmpty ? persons : null, // Send null if no person details
+  //       companyPhoneNumber: phoneController.text, // Assuming this is company main phone
+  //       companyAddress: addressController.text.isNotEmpty
+  //           ? [addressController.text]
+  //           : null, // Split by comma if multiple are expected
+  //       companyEmail: companyemailController.text, // Using new company email controller
+  //       webAddress: webController.text,
+  //       companySWorkDetails: noteController.text, // Assuming Note is for company work details
+  //       gSTIN: null, // Add a controller for GSTIN if needed
+  //       createdBy: null, // Replace with actual user ID if available (e.g., from auth)
+  //       isBase64: 0, // Indicate images are NOT Base64
+  //       extractedJSON: json.encode({'tag_id': selectedTag!.tagid, 'tag_name': selectedTag!.tagname}),);
+  //
+  //     String jsonTextBody = json.encode(cardTextData.toJson());
+  //
+  //     var request = http.MultipartRequest('POST', Uri.parse(''));
+  //
+  //   }catch(e){
+  //
+  //   }
+  // }
+
+  void _showSnackBar(String message) {
+    // Ensure the widget is still mounted before trying to show a SnackBar.
+    // This prevents errors if the user navigates away rapidly.
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  // --- Data Upload Function ---
+  Future<void> _uploadCardData() async {
+    print('[_uploadCardData] Function started.');
+
+    // 0. Pre-submission Validation
+    if (!_formkey.currentState!.validate()) {
+      _showSnackBar('Please fill all required text fields correctly.');
+      print('[_uploadCardData] Form validation failed.');
+      return; // Exit if form fields are invalid
+    }
+    if (_selectFrontImage == null) {
+      _showSnackBar('Please select a front image.');
+      print('[_uploadCardData] Front image not selected.');
+      return; // Exit if front image is missing
+    }
+    // _selectBackImage is optional, so no mandatory check for it here.
+    if (selectedTag == null) {
+      _showSnackBar('Please select a business tag.');
+      print('[_uploadCardData] Business tag not selected.');
+      return; // Exit if tag is not selected
+    }
+
+    setState(() {
+      // _isUploading = true;
+    });
+    print('[_uploadCardData] Validation passed. _isUploading set to true.');
+
+    try {
+      // 1. Prepare Person Details
+      List<PersonDetails> persons = [];
+      if (nameController.text.isNotEmpty ||
+          phoneController.text.isNotEmpty ||
+          emailController.text.isNotEmpty ||
+          designationController.text.isNotEmpty) {
+        persons.add(
+          PersonDetails(
+            name: nameController.text,
+            phoneNumber: phoneController.text,
+            email: emailController.text,
+            position: designationController.text,
+          ),
+        );
+      }
+
+      // 2. Prepare DataCard text data (without image Base64 fields)
+      DataCard cardTextData = DataCard(
+        group_id: selectedGroups!.groupid,
+        tag_id: selectedTag!.tagid,
+        companyName: companynameController.text,
+        personDetails: persons.isNotEmpty ? persons : null,
+        companyPhoneNumber: phoneController.text,
+        companyAddress: addressController.text.isNotEmpty
+            ? [addressController.text]
+            : null,
+        companyEmail: companyemailController.text,
+        webAddress: webController.text,
+        companySWorkDetails: noteController.text,
+        gSTIN: null,
+        createdBy: null,
+        isBase64: 0,
+        extractedJSON: json.encode({'tag_id': selectedTag!.tagid, 'tag_name': selectedTag!.tagname}),
+      );
+
+      // 3. Convert DataCard to JSON string for the multipart field
+      String jsonTextBody = json.encode(cardTextData.toJson());
+
+      // --- DEBUGGING PRINT STATEMENT HERE ---
+      print('[_uploadCardData] JSON Text Body to be sent:');
+      print(jsonTextBody);
+      // --- END DEBUGGING PRINT ---
+
+      // 4. Create a MultipartRequest
+      var request = http.MultipartRequest('POST', Uri.parse(''));
+
+      // Add Headers (e.g., Authorization token)
+      // request.headers['Authorization'] = 'Bearer YOUR_AUTH_TOKEN';
+      request.headers['Accept'] = 'application/json';
+
+      // 5. Add the JSON string as a field
+      request.fields['cardData'] = jsonTextBody;
+
+      // 6. Add image files as file parts
+      request.files.add(await http.MultipartFile.fromPath(
+        'cardFrontImage',
+        _selectFrontImage!.path,
+      ));
+      if (_selectBackImage != null) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'cardBackImage',
+          _selectBackImage!.path,
+        ));
+      }
+
+      // 7. Send the request
+      print('[_uploadCardData] Sending multipart request...');
+      final http.StreamedResponse streamedResponse = await request.send();
+      final http.Response response = await http.Response.fromStream(streamedResponse);
+      print('[_uploadCardData] Request sent. Status Code: ${response.statusCode}');
+
+      // 8. Handle API response
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSnackBar('Card details uploaded successfully!');
+        _clearForm();
+        if (mounted) Navigator.pop(context);
+      } else {
+        String errorMsg = 'Failed to upload card. Status: ${response.statusCode}';
+        if (response.body.isNotEmpty) {
+          try {
+            final errorJson = json.decode(response.body);
+            if (errorJson['message'] != null) {
+              errorMsg = '${errorJson['message']} (Status: ${response.statusCode})';
+            } else if (errorJson['error'] != null) {
+              errorMsg = '${errorJson['error']} (Status: ${response.statusCode})';
+            }
+          } catch (e) {
+            errorMsg += '\nRaw Response: ${response.body}';
+          }
+        }
+        _showSnackBar(errorMsg);
+        print('API Error: $errorMsg');
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred during upload: ${e.toString()}');
+      print('Exception during upload: $e');
+    } finally {
+      setState(() {
+        // _isUploading = false;
+      });
+      print('[_uploadCardData] Function finished. _isUploading set to false.');
+    }
+  }
+
+  void _clearForm() {
+    nameController.clear();
+    designationController.clear();
+    phoneController.clear();
+    emailController.clear();
+    companynameController.clear();
+    companyemailController.clear();
+    addressController.clear();
+    webController.clear();
+    noteController.clear();
+    setState(() {
+      _selectFrontImage = null;
+      _selectBackImage = null;
+      selectedTag = null;
+    });
+    _formkey.currentState?.reset(); // Resets form validation state
+  }
+
 
   // void _gotohome(){
   //   Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
@@ -240,11 +481,11 @@ class _AddManualState extends State<AddManual> {
                           color: Colors.grey.shade300,
 
                         ),
-                        child: _selectedImage != null
+                        child: _selectFrontImage != null
                             ?ClipRRect(
                           borderRadius: BorderRadiusGeometry.circular(8),
                               child: Image.file(
-                                                      _selectedImage!,
+                                                      _selectFrontImage!,
                                                       fit: BoxFit.cover,
                                                       height: double.infinity,
                                                       width: double.infinity,
@@ -343,6 +584,73 @@ class _AddManualState extends State<AddManual> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
+                                    'Select Group',
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+
+                                  Groups.isEmpty?
+                                      Shimmer.fromColors(child: buildShimmer(context),
+                                          baseColor: Colors.grey.shade200,
+                                          highlightColor: Colors.grey.shade200)
+
+                                  :Container(
+                                    padding:EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(width:2,color:Colors.grey.shade200),
+                                      color: Colors.white,
+                                      borderRadius:BorderRadius.circular(10)
+                  
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child:   Groups.isEmpty?
+                                      Center(child: CircularProgressIndicator(color: primarycolor,)):
+                                      DropdownButton<Data>(
+                                     style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
+                                          isExpanded: true,
+                                          hint: Text("Select Group",style:GoogleFonts.poppins(),),
+                                          value: selectedGroups,
+                                          items:Groups.map((group){
+                                            return DropdownMenuItem<Data>(
+                                              value: group,
+                                              child: Text(group.groupname.toString()),
+                                            );
+                                          }).toList() ,
+                                          onChanged: (Data? value){
+                                            setState(() {
+                                              selectedGroups = value;
+                                            });
+                                          }),
+                                    ),
+                                  )
+                  
+                                ],
+                              ),
+                            ),
+                          ),
+      
+                          SizedBox(height: 10,),
+
+                          Card(
+                            elevation: 2,
+                            shadowColor: Colors.black12,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFEF7FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
                                     'Select Tag',
                                     style: GoogleFonts.raleway(
                                       fontSize: 14,
@@ -363,7 +671,7 @@ class _AddManualState extends State<AddManual> {
                                       border: Border.all(width:2,color:Colors.grey.shade200),
                                       color: Colors.white,
                                       borderRadius:BorderRadius.circular(10)
-                  
+
                                     ),
                                     child: DropdownButtonHideUnderline(
                                       child:  taglist.isEmpty?
@@ -386,12 +694,12 @@ class _AddManualState extends State<AddManual> {
                                           }),
                                     ),
                                   )
-                  
+
                                 ],
                               ),
                             ),
                           ),
-      
+
                           SizedBox(height: 10,),
                                   // name
                                   Card(
@@ -419,11 +727,11 @@ class _AddManualState extends State<AddManual> {
                                           ),
                                           SizedBox(height: 10),
                                           CommonTextForm(
+                                            focusNode: namenode,
+                                            controller: nameController,
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: namenode,
-                                            controller: nameController,
                                             labeltext: 'Enter Name',
                                             borderc: 10,
                                             BorderColor: Colors.black26,
@@ -436,7 +744,7 @@ class _AddManualState extends State<AddManual> {
                                               return null;
                                             },
                                             onfieldsumbitted: (value) {
-                                              FocusScope.of(context).requestFocus(desinationnode);
+                                              FocusScope.of(context).requestFocus(designationnode);
                                             },
                                           )
                                         ],
@@ -473,7 +781,7 @@ class _AddManualState extends State<AddManual> {
                                             fillColor: Colors.white,
                                             labelColor: Colors.black54,
                                             contentpadding: 10,
-                                            focusNode: desinationnode,
+                                            focusNode: designationnode,
                                             controller: designationController,
                                             labeltext: 'Designation',
                                             borderc: 10,
@@ -487,7 +795,7 @@ class _AddManualState extends State<AddManual> {
                                               return null;
                                             },
                                             onfieldsumbitted: (value) {
-                                              FocusScope.of(context).nextFocus();
+                                              FocusScope.of(context).requestFocus(phonenode);
                                             },
                                           )
                                         ],
@@ -542,7 +850,7 @@ class _AddManualState extends State<AddManual> {
                                               return null;
                                             },
                                             onfieldsumbitted: (value) {
-                                              FocusScope.of(context).requestFocus(desinationnode);
+                                              FocusScope.of(context).requestFocus(emailnode);
                                             },
                                           )
                                         ],
@@ -943,13 +1251,14 @@ class _AddManualState extends State<AddManual> {
                           CommonButton(
                             height: height * 0.06,
                             bordercircular: 20,
-                            onTap: (){
+                            onTap: _uploadCardData,
+                                // (){
                               // if(_formkey.currentState!.validate()){
                               //   _addcardtoHive();
                               // }
                               // _addcardtoHive();
                               // _addData();
-                            },
+                            // },
                             child: Text(
                               'Add Details',
                               style: GoogleFonts.poppins(

@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
+import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/tempscreen/newEditScreen.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:mobx/mobx.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
@@ -426,209 +429,235 @@ void _shareAllCardDetails() async {
               SizedBox(height: 20),
 
               // buttons
-              Container(
-                // color: Colors.red,
-                width: width * 0.8,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Add button
-                    InkWell(
-                      onTap: () async {
-                        try {
-                          await SaveContact(
-                            firstname: widget.dataCard.companyName ?? '',
-                            email: widget.dataCard.companyEmail ?? '',
-                            phone: widget.dataCard.companyPhoneNumber ?? '',
-                            // lastName: widget.dataCard.ownerName ?? ''
-                          );
-                          showDialog(context: context,
-                              builder: (context){
-                                return AlertDialog(
-                                  title: Text('Contact Saved',textAlign: TextAlign.center,style: GoogleFonts.poppins(fontSize: 16,fontWeight: FontWeight.w500),),
-                                  content: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        shape: BoxShape.circle,
 
-                                      ),
-                                      child: Icon(Icons.check,color: Colors.white,size: 100,)),
-                                  actions: [Center(
-                                    child: TextButton(onPressed: (){
-                                      Navigator.pop(context);
-                                    },
-                                        child: Text('OK',style: GoogleFonts.poppins(fontSize: 18),)),
-                                  )
-                                  ],
-                                );
-                              });
-                        } catch (e) {
-                          print("Error during contact save: $e");
-                        }
+         Row(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [
 
-                      },
+             Observer(builder: (_)=>
+              TextButton(onPressed: (){
+                appStore.setButtons(true);
+              },
+                  child: Text('Show Button'))
+             ),
+             Observer(builder: (_)=>
+              TextButton(onPressed: (){
+                appStore.setButtons(false);
+              },
+                  child: Text('Hide Button'))
+             ),
 
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.person_add_alt_outlined,
-                              color: Colors.green,
-                            ),
-                          ),
-                          Text(
-                            'Add',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#639766'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+           ],
+         ),
 
-                    // Share button
-                    InkWell(
-                      onTap: (){
+         Observer(
+             builder: (_){
+           return  appStore.isShowButtons
+             ?  Container(
+             // color: Colors.red,
+             width: width * 0.8,
+             child: Row(
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+               children: [
+                 // Add button
+                 InkWell(
+                   onTap: () async {
+                     try {
+                       await SaveContact(
+                         firstname: widget.dataCard.companyName ?? '',
+                         email: widget.dataCard.companyEmail ?? '',
+                         phone: widget.dataCard.companyPhoneNumber ?? '',
+                         // lastName: widget.dataCard.ownerName ?? ''
+                       );
+                       showDialog(context: context,
+                           builder: (context){
+                             return AlertDialog(
+                               title: Text('Contact Saved',textAlign: TextAlign.center,style: GoogleFonts.poppins(fontSize: 16,fontWeight: FontWeight.w500),),
+                               content: Container(
+                                   decoration: BoxDecoration(
+                                     color: Colors.green,
+                                     shape: BoxShape.circle,
 
+                                   ),
+                                   child: Icon(Icons.check,color: Colors.white,size: 100,)),
+                               actions: [Center(
+                                 child: TextButton(onPressed: (){
+                                   Navigator.pop(context);
+                                 },
+                                     child: Text('OK',style: GoogleFonts.poppins(fontSize: 18),)),
+                               )
+                               ],
+                             );
+                           });
+                     } catch (e) {
+                       print("Error during contact save: $e");
+                     }
 
-                        _shareAllCardDetails();
+                   },
 
+                   child: Column(
+                     children: [
+                       Container(
+                         width: 50,
+                         height: 50,
+                         decoration: BoxDecoration(
+                           color: Colors.green.shade100,
+                           shape: BoxShape.circle,
+                         ),
+                         child: Icon(
+                           Icons.person_add_alt_outlined,
+                           color: Colors.green,
+                         ),
+                       ),
+                       Text(
+                         'Add',
+                         style: GoogleFonts.raleway(
+                           fontWeight: FontWeight.w400,
+                           fontSize: 16,
+                           color: HexColor('#639766'),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
 
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.share, color: HexColor('#3380B6')),
-                          ),
-                          Text(
-                            'Share',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#3380B6'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Edit button
-                    InkWell(
-                      onTap: () async {
+                 // Share button
+                 InkWell(
+                   onTap: (){
 
 
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=> NewEditCard(dataCard: widget.dataCard,)));
-                        // final result =  await
-                        // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
-                        //     index:widget.index)));
-                        // if(result == true){
-                        // Navigator.pop(context , true);
-                        // }
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade500,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.edit_outlined,
-                              color: HexColor('#000000'),
-                            ),
-                          ),
-                          Text(
-                            'Edit',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#00000'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                     _shareAllCardDetails();
 
-                    // Delete button
-                    InkWell(
-                      onTap: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text('Delete Card'),
-                                content: Text(
-                                  'Are you sure you want to delete this card?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.of(context).pop(false),
-                                    child: Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.of(context).pop(true),
-                                    child: Text(
-                                      'Delete',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                        );
 
-                        // if (confirm == true) {
-                        //   final box = await Hive.openBox<CardDetails>('cardbox');
-                        //   await box.deleteAt(widget.index); // Delete using index
-                        //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
-                        // }
-                      },
+                   },
+                   child: Column(
+                     children: [
+                       Container(
+                         width: 50,
+                         height: 50,
+                         decoration: BoxDecoration(
+                           color: Colors.blue.shade100,
+                           shape: BoxShape.circle,
+                         ),
+                         child: Icon(Icons.share, color: HexColor('#3380B6')),
+                       ),
+                       Text(
+                         'Share',
+                         style: GoogleFonts.raleway(
+                           fontWeight: FontWeight.w400,
+                           fontSize: 16,
+                           color: HexColor('#3380B6'),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
 
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.delete_outline,
-                              color: HexColor('903034'),
-                            ),
-                          ),
-                          Text(
-                            'Delete',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('903034'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                 // Edit button
+                 InkWell(
+                   onTap: () async {
+
+
+                     Navigator.push(context,MaterialPageRoute(builder: (context)=> NewEditCard(dataCard: widget.dataCard,)));
+                     // final result =  await
+                     // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
+                     //     index:widget.index)));
+                     // if(result == true){
+                     // Navigator.pop(context , true);
+                     // }
+                   },
+                   child: Column(
+                     children: [
+                       Container(
+                         width: 50,
+                         height: 50,
+                         decoration: BoxDecoration(
+                           color: Colors.grey.shade500,
+                           shape: BoxShape.circle,
+                         ),
+                         child: Icon(
+                           Icons.edit_outlined,
+                           color: HexColor('#000000'),
+                         ),
+                       ),
+                       Text(
+                         'Edit',
+                         style: GoogleFonts.raleway(
+                           fontWeight: FontWeight.w400,
+                           fontSize: 16,
+                           color: HexColor('#00000'),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+
+                 // Delete button
+                 InkWell(
+                   onTap: () async {
+                     final confirm = await showDialog<bool>(
+                       context: context,
+                       builder:
+                           (context) => AlertDialog(
+                         title: Text('Delete Card'),
+                         content: Text(
+                           'Are you sure you want to delete this card?',
+                         ),
+                         actions: [
+                           TextButton(
+                             onPressed:
+                                 () => Navigator.of(context).pop(false),
+                             child: Text('Cancel'),
+                           ),
+                           TextButton(
+                             onPressed:
+                                 () => Navigator.of(context).pop(true),
+                             child: Text(
+                               'Delete',
+                               style: TextStyle(color: Colors.red),
+                             ),
+                           ),
+                         ],
+                       ),
+                     );
+
+                     // if (confirm == true) {
+                     //   final box = await Hive.openBox<CardDetails>('cardbox');
+                     //   await box.deleteAt(widget.index); // Delete using index
+                     //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
+                     // }
+                   },
+
+                   child: Column(
+                     children: [
+                       Container(
+                         width: 50,
+                         height: 50,
+                         decoration: BoxDecoration(
+                           color: Colors.red.shade100,
+                           shape: BoxShape.circle,
+                         ),
+                         child: Icon(
+                           Icons.delete_outline,
+                           color: HexColor('903034'),
+                         ),
+                       ),
+                       Text(
+                         'Delete',
+                         style: GoogleFonts.raleway(
+                           fontWeight: FontWeight.w400,
+                           fontSize: 16,
+                           color: HexColor('903034'),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+               ],
+             ),
+           )
+               : SizedBox();
+         }),
 
 
               SizedBox(height: 20),

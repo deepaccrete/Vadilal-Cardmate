@@ -8,13 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:hive/hive.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:universal_html/js_util.dart' as personNameControllers;
 import 'package:universal_html/js_util.dart' as personMobileControllers;
 // import 'package:uuid/uuid.dart';
 
+import '../../api/GroupApi.dart';
+import '../../api/TagApi.dart';
 import '../../componets/button.dart';
 import '../../componets/textform.dart';
 import '../../constant/colors.dart';
+import '../../model/GroupModel.dart';
+import '../../model/TagModel.dart';
 import '../../model/cardModel.dart';
 import '../groupandtags.dart';
 
@@ -27,6 +32,18 @@ class NewEditCard extends StatefulWidget {
 }
 
 class _EditCardState extends State<NewEditCard> {
+
+  List<Datatag> taglist = [];
+  Datatag ? selectedTag;
+
+  // List<Grou>
+  List<Data> Groups = [];
+  Data? selectedGroups;
+
+  bool isGroupLoading = true;
+  String? errormsg;
+  bool istagLoading = true;
+
 
 
   TextEditingController  designationController = TextEditingController();
@@ -135,6 +152,8 @@ class _EditCardState extends State<NewEditCard> {
 
   @override
   void initState() {
+    FetchTag();
+    FatchGroup();
     super.initState();
     for (var person in widget.dataCard?.personDetails ?? []) {
       personNameControllers.add(TextEditingController(text:
@@ -223,6 +242,52 @@ class _EditCardState extends State<NewEditCard> {
     }
   }
 
+  Future<void>FatchGroup ()async{
+    try{
+      GroupModel groupModel = await GroupApi.getGroup();
+      if(groupModel.success == 1 && groupModel.data != null){
+        setState(() {
+          Groups = groupModel.data!;
+          isGroupLoading = false;
+        });
+      }else{
+        setState(() {
+          errormsg = "no Groups Found";
+          isGroupLoading = false;
+        });    }
+    }catch(e){
+      setState(() {
+        errormsg = "Something went wrong =>>>>>>>>>>> $e";
+      });
+    }
+  }
+
+
+  Future<void> FetchTag ()async{
+    // istagLoading = true;
+    try{
+      TagModel tagModel = await TagApi.getTag();
+      if(tagModel.success == 1 && tagModel.data != null){
+        setState(() {
+          taglist = tagModel.data!;
+          istagLoading =false;
+        });
+      }else{
+        setState(() {
+          errormsg = 'Api Not Working';
+          istagLoading = false;
+        });
+      }
+    }catch(e){
+      print('something Went Wrong => $e');
+
+    }finally{
+      setState(() {
+        istagLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -235,7 +300,7 @@ class _EditCardState extends State<NewEditCard> {
         backgroundColor: screenBGColor,
         elevation: 10,
         centerTitle:true,
-        title: Text('Add Details'),
+        title: Text('Edit Details'),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -346,8 +411,133 @@ class _EditCardState extends State<NewEditCard> {
                             children: [
 
 
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Select Group',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+
+                                      Groups.isEmpty?
+                                      Shimmer.fromColors(child: buildShimmer(context),
+                                          baseColor: Colors.grey.shade200,
+                                          highlightColor: Colors.grey.shade200)
+
+                                          :Container(
+                                        padding:EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(width:2,color:Colors.grey.shade200),
+                                            color: Colors.white,
+                                            borderRadius:BorderRadius.circular(10)
+
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child:   Groups.isEmpty?
+                                          Center(child: CircularProgressIndicator(color: primarycolor,)):
+                                          DropdownButton<Data>(
+                                              style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
+                                              isExpanded: true,
+                                              hint: Text("Select Group",style:GoogleFonts.poppins(),),
+                                              value: selectedGroups,
+                                              items:Groups.map((group){
+                                                return DropdownMenuItem<Data>(
+                                                  value: group,
+                                                  child: Text(group.groupname.toString()),
+                                                );
+                                              }).toList() ,
+                                              onChanged: (Data? value){
+                                                setState(() {
+                                                  selectedGroups = value;
+                                                });
+                                              }),
+                                        ),
+                                      )
+
+                                    ],
+                                  ),
+                                ),
+
+
+                              SizedBox(height: 10,),
+
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 15),
+
+                                decoration: BoxDecoration(
+                                    color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Select Tag',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+
+                                      taglist.isEmpty?
+                                      Shimmer.fromColors(child: buildShimmer(context),
+                                          baseColor: Colors.grey.shade200,
+                                          highlightColor: Colors.grey.shade200)
+
+                                          :Container(
+                                        padding:EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(width:2,color:Colors.grey.shade200),
+                                            color: Colors.white,
+                                            borderRadius:BorderRadius.circular(10)
+
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child:  taglist.isEmpty?
+                                          Center(child: CircularProgressIndicator(color: primarycolor,)):
+                                          DropdownButton<Datatag>(
+                                              style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
+                                              isExpanded: true,
+                                              hint: Text("Select Tag",style:GoogleFonts.poppins(),),
+                                              value: selectedTag,
+                                              items:taglist.map((tag){
+                                                return DropdownMenuItem<Datatag>(
+                                                  value: tag,
+                                                  child: Text(tag.tagname.toString()),
+                                                );
+                                              }).toList() ,
+                                              onChanged: (Datatag? value){
+                                                setState(() {
+                                                  selectedTag = value;
+                                                });
+                                              }),
+                                        ),
+                                      )
+
+                                    ],
+                                  ),
+                                ),
+
+
+                              SizedBox(height: 10,),
+
+
                              Container(
-                               padding: EdgeInsets.all(15),
+                               padding: EdgeInsets.symmetric(horizontal: 15),
+
                                decoration: BoxDecoration(
                                  // color: Color(0xFFFEF7FF),
                                  borderRadius: BorderRadius.circular(10)),
@@ -867,6 +1057,35 @@ class _EditCardState extends State<NewEditCard> {
         ),
       ),
 
+    );
+  }
+  Widget buildShimmer(BuildContext context){
+    return Container(
+      padding:EdgeInsets.all(5),
+      decoration: BoxDecoration(
+          border: Border.all(width:2,color:Colors.grey.shade200),
+          color: Colors.white,
+          borderRadius:BorderRadius.circular(10)
+
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Datatag>(
+            style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
+            isExpanded: true,
+            hint: Text("SELECT Tag"),
+            value: selectedTag,
+            items:taglist.map((tag){
+              return DropdownMenuItem<Datatag>(
+                value: tag,
+                child: Text(tag.tagname.toString()),
+              );
+            }).toList() ,
+            onChanged: (Datatag? value){
+              setState(() {
+                selectedTag = value;
+              });
+            }),
+      ),
     );
   }
 }
