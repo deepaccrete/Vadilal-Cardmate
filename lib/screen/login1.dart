@@ -298,6 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
             await pref.setBool(IS_LOGGED_IN, true);
             String userDetailsString = jsonEncode(loginResponse.userData);
             await pref.setString(USER_DETAIL, userDetailsString);
+            String appSettingString = jsonEncode(loginResponse.appsetting);
+            await pref.setString(APP_SETTING, appSettingString);
 
 
 
@@ -305,6 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
           appStore.setUserToken(loginResponse.userData?.token);
           appStore.setIsLogin(true);
           appStore.setUser(loginResponse.userData);
+          appStore.setAppSetting(loginResponse.appsetting);
     // setState(() {
     //   isLoading = false;
     // });

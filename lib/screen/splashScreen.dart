@@ -52,6 +52,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         Map<String, dynamic> userDetailsString = jsonDecode(prefs.getString(USER_DETAIL)!);
         UserData userDetails = UserData.fromJson(userDetailsString);
         appStore.setUser(userDetails);
+        Map<String, dynamic> appSettingString = jsonDecode(prefs.getString(APP_SETTING)!);
+        AppSetting appSetting = AppSetting.fromJson(appSettingString);
+        appStore.setAppSetting(appSetting);
       }
     } catch (e) {
       print(

@@ -25,6 +25,9 @@ abstract class _AppStore with Store {
   UserData? userData;
 
   @observable
+  AppSetting? appSetting;
+
+  @observable
   bool isRememberMe = false;
 
 
@@ -33,31 +36,6 @@ abstract class _AppStore with Store {
 
   @observable
   String? password;
-
-  @observable
-   bool? isShowAdd;
-
-  @observable
-   bool? isShowShare;
-
-  @observable
-  bool? isShowEdit;
-
-  @observable
-  bool? isShowDelete;
-
-  @observable
-  bool? isShowGroup;
-
-  @observable
-  bool? isShowTag;
-
-@observable
-  bool isShowButtons = false;
-
-
-
-
 
   @action
   void setIsLoading(getIsLoading) {
@@ -80,6 +58,11 @@ abstract class _AppStore with Store {
   }
 
   @action
+  void setAppSetting(getAppSetting) {
+    appSetting = getAppSetting;
+  }
+
+  @action
   void setIsRememberMe (getRememberme){
     isRememberMe = getRememberme;
   }
@@ -93,40 +76,4 @@ abstract class _AppStore with Store {
   void setPassword(getPassword){
     password = getPassword;
   }
-
-
-
-  @action
-  void setIsAdd(getIsAdd){
-    isShowAdd = getIsAdd;
-  }
-
-  @action
-  void setIsShare(getIsShare){
-    isShowShare = getIsShare;
-  }
-  @action
-  void setIsEdit(getIsEdit){
-    isShowEdit = getIsEdit;
-  }
-  @action
-  void setIsDelete(getIsDelete){
-    isShowDelete = getIsDelete;
-  }
-  @action
-  void setIsGroup(getIsGroup){
-    isShowGroup = getIsGroup;
-  }
-  @action
-  void setIsTag(getIsTag){
-    isShowTag= getIsTag;
-  }
-
- @action
-  void setButtons(getISShowButtons){
-    isShowButtons = getISShowButtons;
- }
-
-
-
 }

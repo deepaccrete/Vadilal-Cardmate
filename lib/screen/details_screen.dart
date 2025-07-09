@@ -20,19 +20,12 @@ import 'package:contacts_service_plus/contacts_service_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-
-
-
 class DetailsScreen extends StatefulWidget {
-
   // final CardDetails cardDetails;
   DataCard dataCard;
 
   // final int index;
-  DetailsScreen({
-    super.key,
-    required this.dataCard,
-  });
+  DetailsScreen({super.key, required this.dataCard});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -40,34 +33,22 @@ class DetailsScreen extends StatefulWidget {
 
 List<CardDetails> _cards = [];
 
-Future<void> callNumber(String number)async{
-  try{
-    final Uri phoneUri = Uri(scheme: 'tel',path: number);
-    if( await canLaunchUrl(phoneUri)){
+Future<void> callNumber(String number) async {
+  try {
+    final Uri phoneUri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(phoneUri)) {
       await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
-    }else{
+    } else {
       throw Exception('Could Not Luanch $number');
     }
-  }catch(e){
+  } catch (e) {
     print('Error on CallNumber $e');
   }
-
 }
 
-Future<void> sendmail({
-  required String toEmail,
-  String subject = '',
-  String body = '',
-}) async {
+Future<void> sendmail({required String toEmail, String subject = '', String body = ''}) async {
   try {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: toEmail,
-      queryParameters: {
-        'subject': subject,
-        'body': body,
-      },
-    );
+    final Uri emailUri = Uri(scheme: 'mailto', path: toEmail, queryParameters: {'subject': subject, 'body': body});
 
     print("Generated Mail URL: $emailUri");
 
@@ -82,7 +63,6 @@ Future<void> sendmail({
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
-
   //Hive Load Card
   /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
@@ -91,96 +71,85 @@ class _DetailsScreenState extends State<DetailsScreen> {
     });
   }*/
 
-//   Delete Card
-/*
+  //   Delete Card
+  /*
   void _deleteCardhive(dynamic id) async {
     await HiveBoxes.deleteCard(id);
   }
 */
 
-Future<void> RequestPermission() async {
-  if (await Permission.contacts.isGranted) {
-    print('Contacts permission already granted');
-    return;
+  Future<void> RequestPermission() async {
+    if (await Permission.contacts.isGranted) {
+      print('Contacts permission already granted');
+      return;
+    }
+
+    PermissionStatus status = await Permission.contacts.request();
+
+    if (status.isGranted) {
+      print('Contacts permission granted');
+    } else if (status.isDenied) {
+      print('Contacts permission denied');
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings(); // guide user to manually enable permission
+    }
   }
 
-  PermissionStatus status = await Permission.contacts.request();
+  Future<void> SaveContact({required String firstname, String? lastName, String? phone, String? email}) async {
+    await RequestPermission();
 
-  if (status.isGranted) {
-    print('Contacts permission granted');
-  } else if (status.isDenied) {
-    print('Contacts permission denied');
-  } else if (status.isPermanentlyDenied) {
-    openAppSettings(); // guide user to manually enable permission
-  }
-}
-Future<void> SaveContact({
-  required String firstname,
-  String? lastName,
-  String? phone,
-  String? email,
-}) async {
-  await RequestPermission();
+    // Handle multiple phone numbers
+    List<Item> phoneItems = [];
+    if (phone != null && phone.isNotEmpty) {
+      final phoneList = phone.split(',').map((p) => p.trim()).toList();
+      phoneItems = phoneList.map((number) => Item(label: "mobile", value: number)).toList();
+    }
 
-  // Handle multiple phone numbers
-  List<Item> phoneItems = [];
-  if (phone != null && phone.isNotEmpty) {
-    final phoneList = phone.split(',').map((p) => p.trim()).toList();
-    phoneItems = phoneList.map(( number) => Item(label: "mobile", value: number)).toList();
+    // Handle email
+    List<Item> emailItems = [];
+    if (email != null && email.isNotEmpty) {
+      emailItems = [Item(label: "work", value: email)];
+    }
+
+    final newContact = Contact(givenName: firstname, familyName: lastName, phones: phoneItems, emails: emailItems);
+
+    await ContactsService.addContact(newContact);
+    print('Contact Saved: $newContact');
   }
 
-  // Handle email
-  List<Item> emailItems = [];
-  if (email != null && email.isNotEmpty) {
-    emailItems = [Item(label: "work", value: email)];
+  // This function will generate and share ALL card details
+  void _shareAllCardDetails() async {
+    // 1. Get the formatted string from your DataCard object
+    final String textToShare = widget.dataCard.toShareString();
+
+    // 2. Optional: Add a check to ensure there's meaningful content to share
+    // This checks if the string is empty or only contains the header/footer
+    if (textToShare.trim().length <=
+        ('--- Business Card Details ---' + '\n' + '\n' + '--- End of Details ---').length) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No details found to share for this card.')));
+      return;
+    }
+
+    try {
+      // 3. Get the RenderBox for iPad popover (important for tablets)
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+
+      // 4. Use share_plus to open the native share sheet
+      await SharePlus.instance.share(
+        ShareParams(
+          text: textToShare,
+          subject: 'Business Card Details: ${widget.dataCard.companyName}', // A descriptive subject
+          // sharePositionOrigin is important for iPads to show a popover
+          sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+        ),
+      );
+    } catch (e) {
+      print('Error sharing card details: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to share card details: $e')));
+    }
   }
-
-  final newContact = Contact(
-    givenName: firstname,
-    familyName: lastName,
-    phones: phoneItems,
-    emails: emailItems,
-  );
-
-  await ContactsService.addContact(newContact);
-  print('Contact Saved: $newContact');
-}
-
-
-// This function will generate and share ALL card details
-void _shareAllCardDetails() async {
-  // 1. Get the formatted string from your DataCard object
-  final String textToShare = widget.dataCard.toShareString();
-
-  // 2. Optional: Add a check to ensure there's meaningful content to share
-  // This checks if the string is empty or only contains the header/footer
-  if (textToShare.trim().length <= ('--- Business Card Details ---' + '\n' + '\n' + '--- End of Details ---').length) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No details found to share for this card.')),
-    );
-    return;
-  }
-
-  try {
-    // 3. Get the RenderBox for iPad popover (important for tablets)
-    final RenderBox? box = context.findRenderObject() as RenderBox?;
-
-    // 4. Use share_plus to open the native share sheet
-    await SharePlus.instance.share(
-      ShareParams(
-        text: textToShare,
-        subject: 'Business Card Details: ${widget.dataCard.companyName}', // A descriptive subject
-        // sharePositionOrigin is important for iPads to show a popover
-        sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
-      ),
-    );
-  } catch (e) {
-    print('Error sharing card details: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to share card details: $e')),
-    );
-  }
-}
 
   int _currentIndex = 0;
   @override
@@ -199,9 +168,7 @@ void _shareAllCardDetails() async {
         }
 
         // Print the first part of the string to see what format we're dealing with
-        print(
-          'Original string starts with: ${base64String.substring(0, min(50, base64String.length))}',
-        );
+        print('Original string starts with: ${base64String.substring(0, min(50, base64String.length))}');
 
         String cleanBase64 = base64String;
 
@@ -251,10 +218,7 @@ void _shareAllCardDetails() async {
               return bytes;
             }
             // Check for PNG header (89 50 4E 47)
-            if (bytes[0] == 0x89 &&
-                bytes[1] == 0x50 &&
-                bytes[2] == 0x4E &&
-                bytes[3] == 0x47) {
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
               print('Detected PNG image format');
               return bytes;
             }
@@ -281,11 +245,8 @@ void _shareAllCardDetails() async {
     }
 
     print('\nProcessing front image...');
-    if (widget.dataCard.cardFrontImageBase64 != null &&
-        widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
-      final frontImage = decodeBase64Image(
-        widget.dataCard.cardFrontImageBase64!,
-      );
+    if (widget.dataCard.cardFrontImageBase64 != null && widget.dataCard.cardFrontImageBase64!.isNotEmpty) {
+      final frontImage = decodeBase64Image(widget.dataCard.cardFrontImageBase64!);
       if (frontImage != null) {
         images.add(frontImage);
         print('Successfully added front image');
@@ -297,8 +258,7 @@ void _shareAllCardDetails() async {
     }
 
     print('\nProcessing back image...');
-    if (widget.dataCard.cardBackImageBase64 != null &&
-        widget.dataCard.cardBackImageBase64!.isNotEmpty) {
+    if (widget.dataCard.cardBackImageBase64 != null && widget.dataCard.cardBackImageBase64!.isNotEmpty) {
       final backImage = decodeBase64Image(widget.dataCard.cardBackImageBase64!);
       if (backImage != null) {
         images.add(backImage);
@@ -371,11 +331,8 @@ void _shareAllCardDetails() async {
                                   return Builder(
                                     builder: (BuildContext context) {
                                       return Container(
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.symmetric(
-                                          horizontal: 5.0,
-                                        ),
+                                        width: MediaQuery.of(context).size.width,
+                                        margin: EdgeInsets.symmetric(horizontal: 5.0),
                                         // decoration: BoxDecoration(
                                         //   color: Colors.grey[200],
                                         //   borderRadius: BorderRadius.circular(
@@ -383,16 +340,11 @@ void _shareAllCardDetails() async {
                                         //   ),
                                         // ),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                           child: InteractiveViewer(
                                             minScale: 0.5,
                                             maxScale: 5.0,
-                                            child: Image.memory(
-                                              imgBytes,
-                                              fit: BoxFit.contain,
-                                            ),
+                                            child: Image.memory(imgBytes, fit: BoxFit.contain),
                                           ),
                                         ),
                                       );
@@ -416,9 +368,7 @@ void _shareAllCardDetails() async {
                       activeColor: Colors.blueAccent,
                       size: Size.square(9.0),
                       // activeSize: Size(12.0, 9.0),
-                      activeShape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
+                      activeShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                       spacing: EdgeInsets.all(4.0),
                     ),
                     // onTap: (postion){
@@ -427,251 +377,184 @@ void _shareAllCardDetails() async {
                   ),
                 ),
               SizedBox(height: 20),
+              Container(
+                // color: Colors.red,
+                width: width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Add button
+                    if (appStore.appSetting!.isadd ?? false)InkWell(
+                      onTap: () async {
+                        try {
+                          await SaveContact(
+                            firstname: widget.dataCard.companyName ?? '',
+                            email: widget.dataCard.companyEmail ?? '',
+                            phone: widget.dataCard.companyPhoneNumber ?? '',
+                            // lastName: widget.dataCard.ownerName ?? ''
+                          );
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text(
+                                  'Contact Saved',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+                                ),
+                                content: Container(
+                                  decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                                  child: Icon(Icons.check, color: Colors.white, size: 100),
+                                ),
+                                actions: [
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('OK', style: GoogleFonts.poppins(fontSize: 18)),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } catch (e) {
+                          print("Error during contact save: $e");
+                        }
+                      },
 
-              // buttons
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
+                            child: Icon(Icons.person_add_alt_outlined, color: Colors.green),
+                          ),
+                          Text(
+                            'Add',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#639766'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Share button
+                    if(appStore.appSetting!.isshare??false)InkWell(
+                      onTap: () {
+                        _shareAllCardDetails();
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
+                            child: Icon(Icons.share, color: HexColor('#3380B6')),
+                          ),
+                          Text(
+                            'Share',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#3380B6'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Edit button
+                    if(appStore.appSetting!.isedit??false)InkWell(
+                      onTap: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => NewEditCard(dataCard: widget.dataCard)),
+                        );
+                        // final result =  await
+                        // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
+                        //     index:widget.index)));
+                        // if(result == true){
+                        // Navigator.pop(context , true);
+                        // }
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(color: Colors.grey.shade500, shape: BoxShape.circle),
+                            child: Icon(Icons.edit_outlined, color: HexColor('#000000')),
+                          ),
+                          Text(
+                            'Edit',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('#00000'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Delete button
+                    if(appStore.appSetting!.isdeletecard??false)InkWell(
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text('Delete Card'),
+                                content: Text('Are you sure you want to delete this card?'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('Cancel')),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(true),
+                                    child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              ),
+                        );
 
-         Row(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
+                        // if (confirm == true) {
+                        //   final box = await Hive.openBox<CardDetails>('cardbox');
+                        //   await box.deleteAt(widget.index); // Delete using index
+                        //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
+                        // }
+                      },
 
-             Observer(builder: (_)=>
-              TextButton(onPressed: (){
-                appStore.setButtons(true);
-              },
-                  child: Text('Show Button'))
-             ),
-             Observer(builder: (_)=>
-              TextButton(onPressed: (){
-                appStore.setButtons(false);
-              },
-                  child: Text('Hide Button'))
-             ),
-
-           ],
-         ),
-
-         Observer(
-             builder: (_){
-           return  appStore.isShowButtons
-             ?  Container(
-             // color: Colors.red,
-             width: width * 0.8,
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: [
-                 // Add button
-                 InkWell(
-                   onTap: () async {
-                     try {
-                       await SaveContact(
-                         firstname: widget.dataCard.companyName ?? '',
-                         email: widget.dataCard.companyEmail ?? '',
-                         phone: widget.dataCard.companyPhoneNumber ?? '',
-                         // lastName: widget.dataCard.ownerName ?? ''
-                       );
-                       showDialog(context: context,
-                           builder: (context){
-                             return AlertDialog(
-                               title: Text('Contact Saved',textAlign: TextAlign.center,style: GoogleFonts.poppins(fontSize: 16,fontWeight: FontWeight.w500),),
-                               content: Container(
-                                   decoration: BoxDecoration(
-                                     color: Colors.green,
-                                     shape: BoxShape.circle,
-
-                                   ),
-                                   child: Icon(Icons.check,color: Colors.white,size: 100,)),
-                               actions: [Center(
-                                 child: TextButton(onPressed: (){
-                                   Navigator.pop(context);
-                                 },
-                                     child: Text('OK',style: GoogleFonts.poppins(fontSize: 18),)),
-                               )
-                               ],
-                             );
-                           });
-                     } catch (e) {
-                       print("Error during contact save: $e");
-                     }
-
-                   },
-
-                   child: Column(
-                     children: [
-                       Container(
-                         width: 50,
-                         height: 50,
-                         decoration: BoxDecoration(
-                           color: Colors.green.shade100,
-                           shape: BoxShape.circle,
-                         ),
-                         child: Icon(
-                           Icons.person_add_alt_outlined,
-                           color: Colors.green,
-                         ),
-                       ),
-                       Text(
-                         'Add',
-                         style: GoogleFonts.raleway(
-                           fontWeight: FontWeight.w400,
-                           fontSize: 16,
-                           color: HexColor('#639766'),
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
-
-                 // Share button
-                 InkWell(
-                   onTap: (){
-
-
-                     _shareAllCardDetails();
-
-
-                   },
-                   child: Column(
-                     children: [
-                       Container(
-                         width: 50,
-                         height: 50,
-                         decoration: BoxDecoration(
-                           color: Colors.blue.shade100,
-                           shape: BoxShape.circle,
-                         ),
-                         child: Icon(Icons.share, color: HexColor('#3380B6')),
-                       ),
-                       Text(
-                         'Share',
-                         style: GoogleFonts.raleway(
-                           fontWeight: FontWeight.w400,
-                           fontSize: 16,
-                           color: HexColor('#3380B6'),
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
-
-                 // Edit button
-                 InkWell(
-                   onTap: () async {
-
-
-                     Navigator.push(context,MaterialPageRoute(builder: (context)=> NewEditCard(dataCard: widget.dataCard,)));
-                     // final result =  await
-                     // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
-                     //     index:widget.index)));
-                     // if(result == true){
-                     // Navigator.pop(context , true);
-                     // }
-                   },
-                   child: Column(
-                     children: [
-                       Container(
-                         width: 50,
-                         height: 50,
-                         decoration: BoxDecoration(
-                           color: Colors.grey.shade500,
-                           shape: BoxShape.circle,
-                         ),
-                         child: Icon(
-                           Icons.edit_outlined,
-                           color: HexColor('#000000'),
-                         ),
-                       ),
-                       Text(
-                         'Edit',
-                         style: GoogleFonts.raleway(
-                           fontWeight: FontWeight.w400,
-                           fontSize: 16,
-                           color: HexColor('#00000'),
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
-
-                 // Delete button
-                 InkWell(
-                   onTap: () async {
-                     final confirm = await showDialog<bool>(
-                       context: context,
-                       builder:
-                           (context) => AlertDialog(
-                         title: Text('Delete Card'),
-                         content: Text(
-                           'Are you sure you want to delete this card?',
-                         ),
-                         actions: [
-                           TextButton(
-                             onPressed:
-                                 () => Navigator.of(context).pop(false),
-                             child: Text('Cancel'),
-                           ),
-                           TextButton(
-                             onPressed:
-                                 () => Navigator.of(context).pop(true),
-                             child: Text(
-                               'Delete',
-                               style: TextStyle(color: Colors.red),
-                             ),
-                           ),
-                         ],
-                       ),
-                     );
-
-                     // if (confirm == true) {
-                     //   final box = await Hive.openBox<CardDetails>('cardbox');
-                     //   await box.deleteAt(widget.index); // Delete using index
-                     //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
-                     // }
-                   },
-
-                   child: Column(
-                     children: [
-                       Container(
-                         width: 50,
-                         height: 50,
-                         decoration: BoxDecoration(
-                           color: Colors.red.shade100,
-                           shape: BoxShape.circle,
-                         ),
-                         child: Icon(
-                           Icons.delete_outline,
-                           color: HexColor('903034'),
-                         ),
-                       ),
-                       Text(
-                         'Delete',
-                         style: GoogleFonts.raleway(
-                           fontWeight: FontWeight.w400,
-                           fontSize: 16,
-                           color: HexColor('903034'),
-                         ),
-                       ),
-                     ],
-                   ),
-                 ),
-               ],
-             ),
-           )
-               : SizedBox();
-         }),
-
-
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(color: Colors.red.shade100, shape: BoxShape.circle),
+                            child: Icon(Icons.delete_outline, color: HexColor('903034')),
+                          ),
+                          Text(
+                            'Delete',
+                            style: GoogleFonts.raleway(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 16,
+                              color: HexColor('903034'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               SizedBox(height: 20),
               // Card Details And Genral
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Card Details',
-                    style: GoogleFonts.raleway(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
+                  Text('Card Details', style: GoogleFonts.raleway(fontWeight: FontWeight.w700, fontSize: 18)),
 
                   Container(
                     padding: EdgeInsets.all(5),
@@ -683,17 +566,12 @@ void _shareAllCardDetails() async {
                     ),
                     child: Text(
                       'General',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 10),
-
 
               // Company Section
               Container(
@@ -703,24 +581,14 @@ void _shareAllCardDetails() async {
                   children: [
                     // bussiness
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.business_outlined,
-                                size: 20,
-                                color: Colors.indigo[700],
-                              ),
+                              Icon(Icons.business_outlined, size: 20, color: Colors.indigo[700]),
                               SizedBox(width: 8),
                               Text(
                                 'Company Details',
@@ -733,12 +601,8 @@ void _shareAllCardDetails() async {
                             ],
                           ),
 
-
                           Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.indigo.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
@@ -760,12 +624,9 @@ void _shareAllCardDetails() async {
 
                     Card(
                       elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         children: [
-
                           ListTile(
                             onTap: () {
                               // if(widget.dataCard.companyEmail!= null&&
@@ -779,10 +640,7 @@ void _shareAllCardDetails() async {
                               // }
                               // Handle company email tap
                             },
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             leading: Container(
                               width: 40,
                               height: 40,
@@ -790,11 +648,7 @@ void _shareAllCardDetails() async {
                                 color: Colors.blue.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Icon(
-                                Icons.business,
-                                color: Colors.blue[700],
-                                size: 20,
-                              ),
+                              child: Icon(Icons.business, color: Colors.blue[700], size: 20),
                             ),
                             title: Text(
                               'Company Name',
@@ -820,94 +674,34 @@ void _shareAllCardDetails() async {
                           //     widget.dataCard.companyEmail!.isNotEmpty
                           // // &&  widget.dataCard.companyEmail!.toLowerCase()=='null'
                           // )
-                          (widget.dataCard.companyEmail == null || widget.dataCard.companyEmail!.trim().isEmpty || widget.dataCard.companyEmail!.toLowerCase()=='null')
-                          ?SizedBox()
-                            :ListTile(
-                              onTap: () {
-                                // if(widget.dataCard.companyEmail!= null&&
-                                //     widget.dataCard.companyEmail!.isNotEmpty){
-                                //   sendmail(toEmail: widget.dataCard.companyEmail
-                                //       .toString());
-                                // }
-                                if(widget.dataCard.companyEmail==null){
-                                  sendmail(toEmail: widget.dataCard.companyEmail
-                                            .toString());
-                                }
-                                // Handle company email tap
-                              },
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              leading: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.email_outlined,
-                                  color: Colors.blue[700],
-                                  size: 20,
-                                ),
-                              ),
-                              title: Text(
-                                'Email',
-                                style: GoogleFonts.raleway(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              subtitle: Text(
-                                widget.dataCard.companyEmail!,
-                                style: GoogleFonts.raleway(
-                                  fontSize: 14,
-                                  color: Colors.grey[800],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-
-                          if (widget.dataCard.companyPhoneNumber != null && widget.dataCard.companyPhoneNumber!.isNotEmpty && widget.dataCard.companyPhoneNumber!.toLowerCase()!= null)
-                            ...widget.dataCard.companyPhoneNumber!
-                                .split(',')
-                                .map(
-                                  (phone) => ListTile(
+                          (widget.dataCard.companyEmail == null ||
+                                  widget.dataCard.companyEmail!.trim().isEmpty ||
+                                  widget.dataCard.companyEmail!.toLowerCase() == 'null')
+                              ? SizedBox()
+                              : ListTile(
                                 onTap: () {
-                              callNumber(phone.toString());
-
-                               // callNumber(phone.split('+91-').toString());
-                               //    callNumber(phone.replaceAll('+91-', '').trim());
-                               //    callNumber('1234567890');
-                               //    child: Text('Test Call');
+                                  // if(widget.dataCard.companyEmail!= null&&
+                                  //     widget.dataCard.companyEmail!.isNotEmpty){
+                                  //   sendmail(toEmail: widget.dataCard.companyEmail
+                                  //       .toString());
+                                  // }
+                                  if (widget.dataCard.companyEmail == null) {
+                                    sendmail(toEmail: widget.dataCard.companyEmail.toString());
+                                  }
+                                  // Handle company email tap
                                 },
-                                    onLongPress: ()async{
-                                  await Clipboard.setData(ClipboardData(text: phone.trim()));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Copied To ClipBoard'))
-                                  );
-                                    },
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 leading: Container(
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
+                                    color: Colors.blue.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(
-                                    Icons.phone_outlined,
-                                    color: Colors.green[700],
-                                    size: 20,
-                                  ),
+                                  child: Icon(Icons.email_outlined, color: Colors.blue[700], size: 20),
                                 ),
                                 title: Text(
-                                  'Phone',
+                                  'Email',
                                   style: GoogleFonts.raleway(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -915,7 +709,7 @@ void _shareAllCardDetails() async {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  phone.trim(),
+                                  widget.dataCard.companyEmail!,
                                   style: GoogleFonts.raleway(
                                     fontSize: 14,
                                     color: Colors.grey[800],
@@ -923,27 +717,72 @@ void _shareAllCardDetails() async {
                                   ),
                                 ),
                               ),
-                            )
+
+                          if (widget.dataCard.companyPhoneNumber != null &&
+                              widget.dataCard.companyPhoneNumber!.isNotEmpty &&
+                              widget.dataCard.companyPhoneNumber!.toLowerCase() != null)
+                            ...widget.dataCard.companyPhoneNumber!
+                                .split(',')
+                                .map(
+                                  (phone) => ListTile(
+                                    onTap: () {
+                                      callNumber(phone.toString());
+
+                                      // callNumber(phone.split('+91-').toString());
+                                      //    callNumber(phone.replaceAll('+91-', '').trim());
+                                      //    callNumber('1234567890');
+                                      //    child: Text('Test Call');
+                                    },
+                                    onLongPress: () async {
+                                      await Clipboard.setData(ClipboardData(text: phone.trim()));
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                                    },
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    leading: Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 20),
+                                    ),
+                                    title: Text(
+                                      'Phone',
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      phone.trim(),
+                                      style: GoogleFonts.raleway(
+                                        fontSize: 14,
+                                        color: Colors.grey[800],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
 
-                          if (widget.dataCard.companyAddress != null &&
-                              widget.dataCard.companyAddress!.isNotEmpty)
-                          // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
-                          //  ?SizedBox():
-                                 ListTile(
-                              onTap: () {
-
-                              },
-                              onLongPress: ()async{
-                                await Clipboard.setData(ClipboardData(text: widget.dataCard.companyAddress!.join(', '),));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Copied To ClipBoard'))
+                          if (widget.dataCard.companyAddress != null && widget.dataCard.companyAddress!.isNotEmpty)
+                            // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
+                            //  ?SizedBox():
+                            ListTile(
+                              onTap: () {},
+                              onLongPress: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
                                 );
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
                               },
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               leading: Container(
                                 width: 40,
                                 height: 40,
@@ -951,11 +790,7 @@ void _shareAllCardDetails() async {
                                   color: Colors.orange.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(
-                                  Icons.location_on_outlined,
-                                  color: Colors.orange[700],
-                                  size: 20,
-                                ),
+                                child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
                               ),
                               title: Text(
                                 'Address',
@@ -975,47 +810,40 @@ void _shareAllCardDetails() async {
                               ),
                             ),
 
-
                           // if (widget.dataCard.companySWorkDetails != null &&
                           //
-
-                          (widget.dataCard.companySWorkDetails== null || widget.dataCard.companySWorkDetails!.trim().isEmpty || widget.dataCard.companySWorkDetails!.toLowerCase()=='null')
-                          ? SizedBox()
-                              :ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.purple.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                          (widget.dataCard.companySWorkDetails == null ||
+                                  widget.dataCard.companySWorkDetails!.trim().isEmpty ||
+                                  widget.dataCard.companySWorkDetails!.toLowerCase() == 'null')
+                              ? SizedBox()
+                              : ListTile(
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.purple.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(Icons.work_outline, color: Colors.purple[700], size: 20),
+                                ),
+                                title: Text(
+                                  'Company Work',
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  widget.dataCard.companySWorkDetails!,
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 14,
+                                    color: Colors.grey[800],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
-                              child: Icon(
-                                Icons.work_outline,
-                                color: Colors.purple[700],
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              'Company Work',
-                              style: GoogleFonts.raleway(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            subtitle: Text(
-                              widget.dataCard.companySWorkDetails!,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14,
-                                color: Colors.grey[800],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          )
                         ],
                       ),
                     ),
@@ -1023,34 +851,22 @@ void _shareAllCardDetails() async {
                 ),
               ),
 
-
               // People Section
-              if (widget.dataCard.personDetails != null &&
-                  widget.dataCard.personDetails!.isNotEmpty)
-             Container(
+              if (widget.dataCard.personDetails != null && widget.dataCard.personDetails!.isNotEmpty)
+                Container(
                   margin: EdgeInsets.symmetric(vertical: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
-                                Icon(
-                                  Icons.people_outline,
-                                  size: 20,
-                                  color: Colors.blue[700],
-                                ),
+                                Icon(Icons.people_outline, size: 20, color: Colors.blue[700]),
                                 SizedBox(width: 8),
                                 Text(
                                   'People',
@@ -1064,10 +880,7 @@ void _shareAllCardDetails() async {
                             ),
                             Text(
                               '${widget.dataCard.personDetails!.length} contacts',
-                              style: GoogleFonts.raleway(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
+                              style: GoogleFonts.raleway(fontSize: 12, color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -1078,9 +891,7 @@ void _shareAllCardDetails() async {
                           margin: const EdgeInsets.only(bottom: 12.0),
                           child: Card(
                             elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Column(
@@ -1094,23 +905,13 @@ void _shareAllCardDetails() async {
                                             width: 48,
                                             height: 48,
                                             decoration: BoxDecoration(
-                                              color: Colors.blue.withOpacity(
-                                                0.1,
-                                              ),
+                                              color: Colors.blue.withOpacity(0.1),
                                               shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.blue.withOpacity(
-                                                  0.2,
-                                                ),
-                                                width: 2,
-                                              ),
+                                              border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
                                             ),
                                             child: Center(
                                               child: Text(
-                                                person.name?.isNotEmpty == true
-                                                    ? person.name![0]
-                                                        .toUpperCase()
-                                                    : '?',
+                                                person.name?.isNotEmpty == true ? person.name![0].toUpperCase() : '?',
                                                 style: GoogleFonts.raleway(
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w600,
@@ -1128,16 +929,9 @@ void _shareAllCardDetails() async {
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
                                                   shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: Colors.grey[200]!,
-                                                    width: 2,
-                                                  ),
+                                                  border: Border.all(color: Colors.grey[200]!, width: 2),
                                                 ),
-                                                child: Icon(
-                                                  Icons.work_outline,
-                                                  size: 12,
-                                                  color: Colors.blue[700],
-                                                ),
+                                                child: Icon(Icons.work_outline, size: 12, color: Colors.blue[700]),
                                               ),
                                             ),
                                         ],
@@ -1145,21 +939,21 @@ void _shareAllCardDetails() async {
                                       SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-
-                                            (person.name== null || person.name!.trim().isEmpty || person.name!.toLowerCase()=='null')
+                                            (person.name == null ||
+                                                    person.name!.trim().isEmpty ||
+                                                    person.name!.toLowerCase() == 'null')
                                                 ? SizedBox()
                                                 : Text(
-                                              person.name!,
-                                              // person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
-                                              style: GoogleFonts.raleway(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.grey[800],
-                                              ),
-                                            ),
+                                                  person.name!,
+                                                  // person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
+                                                  style: GoogleFonts.raleway(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.grey[800],
+                                                  ),
+                                                ),
                                             // Text(
                                             //   // person.name ?? 'N/A',
                                             //   person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
@@ -1172,146 +966,111 @@ void _shareAllCardDetails() async {
                                             if (person.position != null)
                                               Container(
                                                 margin: EdgeInsets.only(top: 4),
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 2,
-                                                ),
+                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.blue
-                                                      .withOpacity(0.1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
+                                                  color: Colors.blue.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(4),
                                                 ),
                                                 child: Text(
                                                   person.position!,
-                                                  style: GoogleFonts.raleway(
-                                                    fontSize: 12,
-                                                    color: Colors.blue[700],
-                                                  ),
+                                                  style: GoogleFonts.raleway(fontSize: 12, color: Colors.blue[700]),
                                                 ),
                                               ),
                                           ],
                                         ),
                                       ),
                                       IconButton(
-                                        icon: Icon(
-                                          Icons.more_vert,
-                                          color: Colors.grey[600],
-                                        ),
+                                        icon: Icon(Icons.more_vert, color: Colors.grey[600]),
                                         onPressed: () {
                                           // Show options menu
                                         },
                                       ),
                                     ],
                                   ),
+
                                   // if (person.phoneNumber != null ||
                                   //     person.email != null)
-
-                                  (person.phoneNumber== null || person.phoneNumber!.trim().isEmpty || person.phoneNumber!.toLowerCase()=='null')
-                                  ?SizedBox()
-                                  :Container(
-                                      margin: EdgeInsets.only(top: 16),
-                                      padding: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[50],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          if (person.phoneNumber != null)
-                                            ListTile(
-                                              onTap: () {
-                                                callNumber(person.phoneNumber.toString());
-
-                                              },
-                                              onLongPress: ()async{
-                                                await Clipboard.setData(ClipboardData(text: person.phoneNumber!,));
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Copied To ClipBoard'))
-                                                );
-                                              },
-                                              contentPadding: EdgeInsets.zero,
-                                              leading: Container(
-                                                width: 32,
-                                                height: 32,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.green
-                                                      .withOpacity(0.1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: Icon(
-                                                  Icons.phone_outlined,
-                                                  color: Colors.green[700],
-                                                  size: 18,
-                                                ),
-                                              ),
-                                              title: Text(
-                                                person.phoneNumber!,
-                                                style: GoogleFonts.raleway(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[800],
-                                                ),
-                                              ),
-                                            ),
-                                           (person.email== null || person.email!.trim().isEmpty || person.email!.toLowerCase()=='null')
-                                          ?SizedBox()
-
-                                            :ListTile(
-                                              onTap: () {
-                                                // Handle email tap
-                                              },
-                                              contentPadding: EdgeInsets.zero,
-                                              leading: Container(
-                                                width: 32,
-                                                height: 32,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red.withOpacity(
-                                                    0.1,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: Icon(
-                                                  Icons.email_outlined,
-                                                  color: Colors.red[700],
-                                                  size: 18,
-                                                ),
-                                              ),
-                                              title: Text(
-                                                person.email!,
-                                                style: GoogleFonts.raleway(
-                                                  fontSize: 14,
-                                                  color: Colors.grey[800],
-                                                ),
-                                              ),
-                                              trailing: IconButton(
-                                                icon: Icon(
-                                                  Icons.open_in_new,
-                                                  color: Colors.grey[600],
-                                                  size: 20,
-                                                ),
-                                                onPressed: () {
-
-                                                  // if(person.email==null){
-                                                  //   sendmail(toEmail: person.email.toString());
-                                                  // }
-
-
-                                               sendmail(
-                                                 subject : '',
-                                                 body: '',
-                                                 toEmail: person.email!,
-                                               // Subject: 'HelloFromVadilal',
-                                               //   body: 'Test Mail'
-                                               );
-
+                                  (person.phoneNumber == null ||
+                                          person.phoneNumber!.trim().isEmpty ||
+                                          person.phoneNumber!.toLowerCase() == 'null')
+                                      ? SizedBox()
+                                      : Container(
+                                        margin: EdgeInsets.only(top: 16),
+                                        padding: EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            if (person.phoneNumber != null)
+                                              ListTile(
+                                                onTap: () {
+                                                  callNumber(person.phoneNumber.toString());
                                                 },
+                                                onLongPress: () async {
+                                                  await Clipboard.setData(ClipboardData(text: person.phoneNumber!));
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                                                },
+                                                contentPadding: EdgeInsets.zero,
+                                                leading: Container(
+                                                  width: 32,
+                                                  height: 32,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 18),
+                                                ),
+                                                title: Text(
+                                                  person.phoneNumber!,
+                                                  style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                                ),
                                               ),
-                                            ),
-                                        ],
+                                            (person.email == null ||
+                                                    person.email!.trim().isEmpty ||
+                                                    person.email!.toLowerCase() == 'null')
+                                                ? SizedBox()
+                                                : ListTile(
+                                                  onTap: () {
+                                                    // Handle email tap
+                                                  },
+                                                  contentPadding: EdgeInsets.zero,
+                                                  leading: Container(
+                                                    width: 32,
+                                                    height: 32,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.red.withOpacity(0.1),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Icon(Icons.email_outlined, color: Colors.red[700], size: 18),
+                                                  ),
+                                                  title: Text(
+                                                    person.email!,
+                                                    style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                                  ),
+                                                  trailing: IconButton(
+                                                    icon: Icon(Icons.open_in_new, color: Colors.grey[600], size: 20),
+                                                    onPressed: () {
+                                                      // if(person.email==null){
+                                                      //   sendmail(toEmail: person.email.toString());
+                                                      // }
+
+                                                      sendmail(
+                                                        subject: '',
+                                                        body: '',
+                                                        toEmail: person.email!,
+                                                        // Subject: 'HelloFromVadilal',
+                                                        //   body: 'Test Mail'
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
                                 ],
                               ),
                             ),
@@ -1321,7 +1080,6 @@ void _shareAllCardDetails() async {
                     ],
                   ),
                 ),
-
 
               // Card
               /*  Container(
