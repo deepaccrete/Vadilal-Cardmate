@@ -30,11 +30,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Timer(Duration(seconds: 3), () {
       _startAnimation();
-      // if (appStore.isLoggedIn) {
-      //   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
-      // } else {
-      //   Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-      // }
+      if (appStore.isLoggedIn) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
+      } else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      }
 
       //
     });

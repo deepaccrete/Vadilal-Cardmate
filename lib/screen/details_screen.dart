@@ -769,7 +769,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 )
                                 .toList(),
 
-                          if (widget.dataCard.companyAddress != null && widget.dataCard.companyAddress!.isNotEmpty)
+                          if (widget.dataCard.companyAddress != null && widget.dataCard.companyAddress!.isNotEmpty && widget.dataCard.companyAddress! != "null")
                             // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
                             //  ?SizedBox():
                             ListTile(
@@ -809,7 +809,126 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 ),
                               ),
                             ),
+                          //Country
+                          if (widget.dataCard.country != null && widget.dataCard.country!.isNotEmpty && widget.dataCard.country! != "null")
+                          ListTile(
+                            onTap: () {},
+                            onLongPress: () async {
+                              await Clipboard.setData(
+                                ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
+                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                            },
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
+                            ),
+                            title: Text(
+                              'Country',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.country!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
 
+                          //State
+                          if (widget.dataCard.state != null && widget.dataCard.state!.isNotEmpty && widget.dataCard.state! != "null")
+                            ListTile(
+                              onTap: () {},
+                              onLongPress: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
+                                );
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                              },
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
+                              ),
+                              title: Text(
+                                'State',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.state??"",
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+
+
+                          //city
+                          if (widget.dataCard.city != null && widget.dataCard.city!.isNotEmpty && widget.dataCard.city! != "null")
+                            ListTile(
+                              onTap: () {},
+                              onLongPress: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
+                                );
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                              },
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
+                              ),
+                              title: Text(
+                                'City',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.city??"",
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                           // if (widget.dataCard.companySWorkDetails != null &&
                           //
                           (widget.dataCard.companySWorkDetails == null ||

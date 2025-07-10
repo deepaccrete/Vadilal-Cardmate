@@ -28,6 +28,10 @@ class DataCard {
   List<PersonDetails>? personDetails;
   String? companyPhoneNumber;
   List<String>? companyAddress;
+  String? country;
+  String? state;
+  String? city;
+  String? pincode;
   String? companyEmail;
   String? webAddress;
   String? companySWorkDetails; // Corrected from 'Companys Work Details' for consistency
@@ -59,7 +63,11 @@ class DataCard {
     this.extractedJSON,
     this.isBase64,
     this.tag_id,
-    this.group_id
+    this.group_id,
+    this.city,
+    this.country,
+    this.state,
+    this.pincode
   });
 
   DataCard.fromJson(Map<String, dynamic> json) {
@@ -96,6 +104,10 @@ class DataCard {
     // Notice the double space in 'Company  Email' from your JSON example
     companyEmail = json['Company  Email']?.toString();
     webAddress = json['Web Address']?.toString();
+    country = json['Country']?.toString();
+    state = json['State']?.toString();
+    city = json['City']?.toString();
+    pincode = json['Pincode']?.toString();
 
     // Key 'Companys Work Details' or 'Company\'s Work Details'
     // Using json['Companys Work Details'] from your `toJson` implies this key.

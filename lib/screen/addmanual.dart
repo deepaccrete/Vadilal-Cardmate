@@ -12,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../api/CardApi.dart';
+import '../api/ImageUploadApi.dart';
 import '../componets/button.dart';
 import '../componets/textform.dart';
 import '../constant/colors.dart';
@@ -304,10 +306,7 @@ Future<void>FatchGroup ()async{
         companyEmail: companyemailController.text,
         webAddress: webController.text,
         companySWorkDetails: noteController.text,
-        gSTIN: null,
-        createdBy: null,
-        isBase64: 0,
-        extractedJSON: json.encode({'tag_id': selectedTag!.tagid, 'tag_name': selectedTag!.tagname}),
+        gSTIN: null
       );
 
       // 3. Convert DataCard to JSON string for the multipart field
@@ -317,33 +316,9 @@ Future<void>FatchGroup ()async{
       print('[_uploadCardData] JSON Text Body to be sent:');
       print(jsonTextBody);
       // --- END DEBUGGING PRINT ---
-
-      // 4. Create a MultipartRequest
-      var request = http.MultipartRequest('POST', Uri.parse(''));
-
-      // Add Headers (e.g., Authorization token)
-      // request.headers['Authorization'] = 'Bearer YOUR_AUTH_TOKEN';
-      request.headers['Accept'] = 'application/json';
-
-      // 5. Add the JSON string as a field
-      request.fields['cardData'] = jsonTextBody;
-
-      // 6. Add image files as file parts
-      request.files.add(await http.MultipartFile.fromPath(
-        'cardFrontImage',
-        _selectFrontImage!.path,
-      ));
-      if (_selectBackImage != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'cardBackImage',
-          _selectBackImage!.path,
-        ));
-      }
-
       // 7. Send the request
       print('[_uploadCardData] Sending multipart request...');
-      final http.StreamedResponse streamedResponse = await request.send();
-      final http.Response response = await http.Response.fromStream(streamedResponse);
+      final http.Response response = await CardApi.addCardManually(frontImage:_selectFrontImage!, cardDetails:jsonTextBody);
       print('[_uploadCardData] Request sent. Status Code: ${response.statusCode}');
 
       // 8. Handle API response
@@ -858,130 +833,7 @@ Future<void>FatchGroup ()async{
                                     ),
                                   ),
                                   SizedBox(height: 10),
-                  
-                                  // Designation Card
-                                  //                         Card(
-                                  //                           surfaceTintColor: Colors.transparent,
-                                  //                           shadowColor: Colors.black.withValues(alpha: 1),
-                                  //                           elevation: 4,
-                                  //                           // shadowColor: Colors.black26,
-                                  //                           shape: RoundedRectangleBorder(
-                                  //                             borderRadius: BorderRadius.circular(15),
-                                  //                           ),
-                                  //                           child: Container(
-                                  //                             padding: EdgeInsets.all(20),
-                                  //                             decoration: BoxDecoration(
-                                  //                               color: Color(0xFFFEF7FF),
-                                  //                               borderRadius: BorderRadius.circular(15),
-                                  //                             ),
-                                  //                             child: Column(
-                                  //                               crossAxisAlignment: CrossAxisAlignment.start,
-                                  //                               children: [
-                                  //                                 Text(
-                                  //                                   'Designation',
-                                  //                                   style: GoogleFonts.raleway(
-                                  //                                     fontSize: 15,
-                                  //                                     color: Colors.black87,
-                                  //                                     fontWeight: FontWeight.bold,
-                                  //                                   ),
-                                  //                                 ),
-                                  //                                 SizedBox(height: 10),
-                                  //                                 CommonTextForm(
-                                  //                                   fillColor: Colors.white,
-                                  //                                   labelColor: Colors.black54,
-                                  //                                   contentpadding: 10,
-                                  //                                   focusNode: desinationnode,
-                                  //                                   controller: designationController,
-                                  //                                   labeltext: 'Enter designation',
-                                  //                                   borderc: 10,
-                                  //                                   BorderColor: Colors.black26,
-                                  //                                   icon: Icon(Icons.work_outline, color: Colors.black54),
-                                  //                                   obsecureText: false,
-                                  //                                   validator: (value) {
-                                  //                                     if (value == null || value.isEmpty) {
-                                  //                                       return "Please enter designation";
-                                  //                                     }
-                                  //                                     return null;
-                                  //                                   },
-                                  //                                   onfieldsumbitted: (value) {
-                                  //                                     FocusScope.of(context).nextFocus();
-                                  //                                   },
-                                  //                                 )
-                                  //                               ],
-                                  //                             ),
-                                  //                           ),
-                                  //                         ),
-                  
-                  
-                                  // SizedBox(height: 10),
-                                  // // Phone
-                                  // Card(
-                                  //   child: Container(
-                                  //     decoration: BoxDecoration(
-                                  //       borderRadius: BorderRadius.circular(10),
-                                  //       color: Color(0xFFA29BFE),
-                                  //
-                                  //     ),
-                                  //     padding: EdgeInsets.all(10),
-                                  //     child: Column(
-                                  //      crossAxisAlignment: CrossAxisAlignment.start,
-                                  //       children: [
-                                  //         Text(
-                                  //           'Phone Number',
-                                  //           style: GoogleFonts.raleway(
-                                  //             fontSize: 14,
-                                  //             color: Colors.grey[700],
-                                  //             fontWeight: FontWeight.w600,
-                                  //           ),
-                                  //         ),
-                                  //         // Row(
-                                  //         //   children: [
-                                  //         //     // Container(
-                                  //         //     //   width: 40,
-                                  //         //     //   height: 40,
-                                  //         //     //   decoration: BoxDecoration(
-                                  //         //     //     color: Colors.blue.withValues(alpha: 0.1),
-                                  //         //     //     borderRadius: BorderRadius.circular(8),
-                                  //         //     //   ),
-                                  //         //     //   child: Icon(
-                                  //         //     //     Icons.phone,
-                                  //         //     //     // color: Colors.blue[700],
-                                  //         //     //     color: primarycolor,
-                                  //         //     //     size: 20,
-                                  //         //     //   ),
-                                  //         //     // ),
-                                  //         //     SizedBox(width: 5,),
-                                  //         //
-                                  //         //   ],
-                                  //         // ),
-                                  //         SizedBox(height: 5),
-                                  //         CommonTextForm(  symetric: true,
-                                  //           fillColor: Colors.grey[200],
-                                  //           labelColor: Colors.grey[600],
-                                  //           contentpadding: 5,
-                                  //           focusNode: phonenode,
-                                  //           controller: phoneController,
-                                  //           // heightTextform: height * 0.06,
-                                  //           labeltext: 'MobileNo',
-                                  //           borderc: 10,
-                                  //           BorderColor: Colors.grey,
-                                  //           icon: Icon(Icons.call_outlined,color: primarycolor,),
-                                  //           obsecureText: false,
-                                  //           validator: (value) {
-                                  //             if (value == null || value.isEmpty) {
-                                  //               return "please Enter Mobile Number";
-                                  //             }
-                                  //           },
-                                  //           onfieldsumbitted: (value){
-                                  //             FocusScope.of(context).requestFocus(emailnode);
-                                  //           },
-                                  //         ),
-                                  //       ],
-                                  //     ),
-                                  //   ),
-                                  // ),
                                   SizedBox(height: 10),
-                  
                                   // email
                                   // Email Card
                                   Card(
