@@ -30,11 +30,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Timer(Duration(seconds: 3), () {
       _startAnimation();
-      // if (appStore.isLoggedIn) {
-      //   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
-      // } else {
-      //   Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-      // }
+      if (appStore.isLoggedIn) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
+      } else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      }
 
       //
     });
@@ -52,6 +52,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         Map<String, dynamic> userDetailsString = jsonDecode(prefs.getString(USER_DETAIL)!);
         UserData userDetails = UserData.fromJson(userDetailsString);
         appStore.setUser(userDetails);
+        Map<String, dynamic> appSettingString = jsonDecode(prefs.getString(APP_SETTING)!);
+        AppSetting appSetting = AppSetting.fromJson(appSettingString);
+        appStore.setAppSetting(appSetting);
       }
     } catch (e) {
       print(

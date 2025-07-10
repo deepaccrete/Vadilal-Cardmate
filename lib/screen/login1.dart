@@ -14,6 +14,7 @@ import '../main.dart';
 import '../util/const.dart';
 import 'bottomnav.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -22,7 +23,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   FocusNode emaiilFocus = FocusNode();
@@ -38,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
   );
 
   String? validateEmail(String? value) {
-
     if (value == null || value.isEmpty) {
       return 'Please enter your email address.';
     }
@@ -78,18 +77,13 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     loadUserEmailPass();
   }
+
   @override
   Widget build(BuildContext context) {
     // print('Rebuild ');
 
-    final width = MediaQuery
-        .of(context)
-        .size
-        .width * 1;
-    final height = MediaQuery
-        .of(context)
-        .size
-        .height * 1;
+    final width = MediaQuery.of(context).size.width * 1;
+    final height = MediaQuery.of(context).size.height * 1;
 
     return Scaffold(
       backgroundColor: primarycolor,
@@ -98,119 +92,101 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
             children: [
-
               // lOGO
               Container(
                 height: height * 0.1,
                 width: width * 0.5,
-                child: Image.asset(
-                  'assets/images/logovadilal.png', fit: BoxFit.fill,),
+                child: Image.asset('assets/images/logovadilal.png', fit: BoxFit.fill),
               ),
-              SizedBox(height: 10,),
-              Container(
-                height: height * 0.16,
-                width: width,
-                child: Image.asset('assets/images/Sign up (1).png'),
-              ),
-              SizedBox(height: 50,),
+              SizedBox(height: 10),
+              Container(height: height * 0.16, width: width, child: Image.asset('assets/images/Sign up (1).png')),
+              SizedBox(height: 50),
 
               // LOGInText
               Container(
                 // color: Colors.red,
                 child: Text(
-                  'Login to Your Account', textScaler: TextScaler.linear(1.2),
-                  style: GoogleFonts.openSans(
-                      color: Colors.white, fontSize: 20),),
+                  'Login to Your Account',
+                  textScaler: TextScaler.linear(1.2),
+                  style: GoogleFonts.openSans(color: Colors.white, fontSize: 20),
+                ),
               ),
-              SizedBox(height: 25,),
-
+              SizedBox(height: 25),
 
               Form(
                 key: _formkey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Email Address',
-                      style: GoogleFonts.openSans(color: Colors.white),),
-                    SizedBox(height: 10,),
+                    Text('Email Address', style: GoogleFonts.openSans(color: Colors.white)),
+                    SizedBox(height: 10),
                     Container(
                       // color: Colors.red,
                       // height: height * 0.1,
                       width: width * 0.8,
                       child: TextFormField(
-                          controller: emailController,
-                          obscureText: false,
-                          focusNode: emaiilFocus,
-                          onFieldSubmitted: (value) {
-                            FocusScope.of(
-                              context,
-                            ).requestFocus(passwordFocus);
-                          },
-                          validator: validateEmail,
-                          decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(vertical: 15,
-                                  horizontal: 15),
+                        controller: emailController,
+                        obscureText: false,
+                        focusNode: emaiilFocus,
+                        onFieldSubmitted: (value) {
+                          FocusScope.of(context).requestFocus(passwordFocus);
+                        },
+                        validator: validateEmail,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                          filled: true,
+                          hintText: 'Enter Email',
+                          fillColor: Colors.white,
+                          enabledBorder: outborder,
+                          disabledBorder: outborder,
+                          focusedBorder: outborder,
+                          errorBorder: outborder,
+                          focusedErrorBorder: outborder,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 10),
+                    Text('Password', style: GoogleFonts.openSans(color: Colors.white)),
+                    SizedBox(height: 10),
+                    ValueListenableBuilder(
+                      valueListenable: obsecurepass,
+                      builder: (context, value, child) {
+                        return Container(
+                          // color: Colors.red,
+                          // height: height * 0.1,
+                          width: width * 0.8,
+                          child: TextFormField(
+                            focusNode: passwordFocus,
+                            controller: passwordController,
+                            obscureText: obsecurepass.value,
+                            validator: (value) {
+                              if (value == null || value.isEmpty || value.length < 4) {
+                                return "Please Enter Password";
+                                // :"Please enter "
+                              }
+                            },
+
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                              hintText: 'Enter password',
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  obsecurepass.value = !obsecurepass.value;
+                                },
+                                child: obsecurepass.value == true ? Icon(Icons.visibility) : Icon(Icons.visibility_off),
+                              ),
                               filled: true,
-                              hintText: 'Enter Email',
                               fillColor: Colors.white,
                               enabledBorder: outborder,
                               disabledBorder: outborder,
                               focusedBorder: outborder,
                               errorBorder: outborder,
-                              focusedErrorBorder: outborder
-                          )
-                      ),
-                    ),
-
-                    SizedBox(height: 10,),
-                    Text('Password',
-                      style: GoogleFonts.openSans(color: Colors.white),),
-                    SizedBox(height: 10,),
-                    ValueListenableBuilder(
-
-                        valueListenable: obsecurepass,
-                        builder: ( context, value, child) {
-                          return Container(
-                            // color: Colors.red,
-                            // height: height * 0.1,
-                            width: width * 0.8,
-                            child: TextFormField(
-                              focusNode: passwordFocus,
-                              controller: passwordController,
-                              obscureText: obsecurepass.value,
-                              validator: (value) {
-                                if (value == null ||
-                                    value.isEmpty ||
-                                    value.length < 4) {
-                                  return "Please Enter Password";
-                                  // :"Please enter "
-                                }
-                              },
-
-                              decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 15),
-                                  hintText: 'Enter password',
-                                  suffixIcon: GestureDetector(
-                                    onTap: () {
-                                      obsecurepass.value = !obsecurepass.value;
-                                    },
-                                    child:
-                                    obsecurepass.value == true
-                                        ? Icon(Icons.visibility)
-                                        : Icon(Icons.visibility_off),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  enabledBorder: outborder,
-                                  disabledBorder: outborder,
-                                  focusedBorder: outborder,
-                                  errorBorder: outborder,
-                                  focusedErrorBorder: outborder
-                              ),
+                              focusedErrorBorder: outborder,
                             ),
-                          );
-                        }
+                          ),
+                        );
+                      },
                     ),
                     Container(
                       // padding:EdgeInsets.all(10),
@@ -223,53 +199,50 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Checkbox(
-                          side: BorderSide(color: Colors.white),
-                          //     activeColor: Colors.red,
-                          // focusColor: Colors.green,
-                          // checkColor: Colors.white,
+                            side: BorderSide(color: Colors.white),
 
-                              value: rememberme,
-                              onChanged: _handleRemember),
-                                //   (value) {
-                                // setState(() {
-                                //   rememberme = value!;});}),
-                          Text('Remember Me', style: GoogleFonts.poppins(
-                              color: Colors.white),),
+                            //     activeColor: Colors.red,
+                            // focusColor: Colors.green,
+                            // checkColor: Colors.white,
+                            value: rememberme,
+                            onChanged: _handleRemember,
+                          ),
+                          //   (value) {
+                          // setState(() {
+                          //   rememberme = value!;});}),
+                          Text('Remember Me', style: GoogleFonts.poppins(color: Colors.white)),
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
-              SizedBox(height: 25,),
-
+              SizedBox(height: 25),
 
               Observer(
-                builder: (_) => CommonButton(
-                  width: width * 0.8,
-                  bgcolor: Colors.indigoAccent,
-                  onTap: () {
-                    loginReq();
-                  },
-                  child: Center(
-                    child: appStore.isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('Login', style: GoogleFonts.openSans(color: Colors.white, fontSize: 20)),
-                  ),
-                ),
+                builder:
+                    (_) => CommonButton(
+                      width: width * 0.8,
+                      bgcolor: Colors.indigoAccent,
+                      onTap: () {
+                        loginReq();
+                      },
+                      child: Center(
+                        child:
+                            appStore.isLoading
+                                ? CircularProgressIndicator(color: Colors.white)
+                                : Text('Login', style: GoogleFonts.openSans(color: Colors.white, fontSize: 20)),
+                      ),
+                    ),
               ),
 
+              SizedBox(height: 10),
 
-              SizedBox(height: 10,),
-
-              Text('Forget User / Password',
-                style: GoogleFonts.openSans(fontSize: 18, color: Colors.grey),)
+              // Text('Forget User / Password', style: GoogleFonts.openSans(fontSize: 18, color: Colors.grey)),
             ],
           ),
         ),
       ),
-
     );
   }
 
@@ -291,130 +264,107 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (loginResponse.success == 1) {
-
-
-            SharedPreferences pref = await SharedPreferences.getInstance();
-            await pref.setString(TOKEN, loginResponse.userData?.token ?? '');
-            await pref.setBool(IS_LOGGED_IN, true);
-            String userDetailsString = jsonEncode(loginResponse.userData);
-            await pref.setString(USER_DETAIL, userDetailsString);
-
-
-
-
+          SharedPreferences pref = await SharedPreferences.getInstance();
+          await pref.setString(TOKEN, loginResponse.userData?.token ?? '');
+          await pref.setBool(IS_LOGGED_IN, true);
+          String userDetailsString = jsonEncode(loginResponse.userData);
+          await pref.setString(USER_DETAIL, userDetailsString);
+          String appSettingString = jsonEncode(loginResponse.appsetting);
+          await pref.setString(APP_SETTING, appSettingString);
           appStore.setUserToken(loginResponse.userData?.token);
           appStore.setIsLogin(true);
           appStore.setUser(loginResponse.userData);
-    // setState(() {
-    //   isLoading = false;
-    // });
+          appStore.setAppSetting(loginResponse.appsetting);
+          // setState(() {
+          //   isLoading = false;
+          // });
 
           // appStore.isLoading = false;
           appStore.setIsLoading(false);
 
-
           print("Login success");
           //
           // if (!context.mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Bottomnav()),
-          );
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Bottomnav()));
         } else {
-        // setState(() {
-        //   isLoading = false;
-        // });
-        //   appStore.isLoading = false;
+          // setState(() {
+          //   isLoading = false;
+          // });
+          //   appStore.isLoading = false;
           appStore.setIsLoading(false);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                backgroundColor: Colors.grey.shade100,
-                showCloseIcon: true,
-                content: Text(loginResponse.msg ?? 'Invalid credentials',textAlign:TextAlign.center ,style: GoogleFonts.poppins(color: Colors.black,
-                fontWeight: FontWeight.w500),)),);
-
+              backgroundColor: Colors.grey.shade100,
+              showCloseIcon: true,
+              content: Text(
+                loginResponse.msg ?? 'Invalid credentials',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w500),
+              ),
+            ),
+          );
         }
       } catch (e) {
         // setState(() {
         //   isLoading = false;
         // });
         appStore.setIsLoading(false);
-// appStore.isLoading = false;
+        // appStore.isLoading = false;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again.')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An error occurred. Please try again.')));
       }
     }
   }
 
+  void _handleRemember(bool? value) async {
+    try {
+      print('Handle Remember Me');
+      rememberme = value!;
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      await pref.setBool("Remember_Me_Key", value);
+      if (rememberme) {
+        await pref.setString("Saved_Email", emailController.text);
+        await pref.setString("Saved_Password", passwordController.text);
 
-  void _handleRemember (bool? value)async{
+        appStore.setIsRememberMe(true);
+        appStore.setEmail(emailController.text);
+        appStore.setPassword(passwordController.text);
+      } else {
+        pref.remove(Saved_Email);
+        pref.remove(Saved_Password);
 
-   try{
-
-     print('Handle Remember Me');
-     rememberme = value!;
-     SharedPreferences pref = await SharedPreferences.getInstance();
-     await pref.setBool("Remember_Me_Key", value);
-     if(rememberme){
-
-       await pref.setString("Saved_Email", emailController.text);
-       await pref.setString("Saved_Password", passwordController.text);
-
-
-       appStore.setIsRememberMe(true);
-       appStore.setEmail(emailController.text);
-       appStore.setPassword(passwordController.text);
-
-
-
-     }else{
-       pref.remove(Saved_Email);
-       pref.remove(Saved_Password);
-       
-       appStore.setEmail(null);
-       appStore.setPassword(null);
-     }
-     appStore.setIsRememberMe(value);
-     setState(() {
-       rememberme = value;
-     });
-
-
-   }catch(e){
-     print('Handle Remember ==>');
-   }
+        appStore.setEmail(null);
+        appStore.setPassword(null);
+      }
+      appStore.setIsRememberMe(value);
+      setState(() {
+        rememberme = value;
+      });
+    } catch (e) {
+      print('Handle Remember ==>');
+    }
   }
 
-
-  void loadUserEmailPass()async{
+  void loadUserEmailPass() async {
     print("Load Email and Password");
-
-
-    try{
+    try {
       SharedPreferences pref = await SharedPreferences.getInstance();
-
-      var _rememberme = pref.getBool("Remember_Me_Key")  ?? false;
-      var _email =      pref.getString("Saved_Email") ?? '';
-      var _password =      pref.getString("Saved_Password") ?? '';
-
-
-
-      if(_rememberme){
+      var _rememberme = pref.getBool("Remember_Me_Key") ?? false;
+      var _email = pref.getString("Saved_Email") ?? '';
+      var _password = pref.getString("Saved_Password") ?? '';
+      if (_rememberme) {
         setState(() {
           rememberme = true;
         });
 
-
-        emailController.text = _email?? "";
+        emailController.text = _email ?? "";
         passwordController.text = _password ?? "";
-        
+
         appStore.setEmail(_email);
         appStore.setPassword(_password);
-
-      }else{
+        setState(() {});
+      } else {
         setState(() {
           rememberme = false;
         });
@@ -424,13 +374,8 @@ class _LoginScreenState extends State<LoginScreen> {
         appStore.setEmail(null);
         appStore.setPassword(null);
       }
-
-
-    }catch(e){
+    } catch (e) {
       print('Error Load Email And Pass =>> $e');
     }
-
-
   }
-
 }
