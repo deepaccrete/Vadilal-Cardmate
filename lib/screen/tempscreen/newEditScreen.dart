@@ -1,18 +1,8 @@
-import 'dart:io';
-
-import 'package:camera_app/db/hive_card.dart';
-import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
+import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/screen/bottomnav.dart';
-import 'package:camera_app/screen/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hexcolor/hexcolor.dart';
-import 'package:hive/hive.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:universal_html/js_util.dart' as personNameControllers;
-import 'package:universal_html/js_util.dart' as personMobileControllers;
-// import 'package:uuid/uuid.dart';
-
 import '../../api/GroupApi.dart';
 import '../../api/TagApi.dart';
 import '../../componets/button.dart';
@@ -21,11 +11,10 @@ import '../../constant/colors.dart';
 import '../../model/GroupModel.dart';
 import '../../model/TagModel.dart';
 import '../../model/cardModel.dart';
-import '../groupandtags.dart';
 
 class NewEditCard extends StatefulWidget {
   DataCard? dataCard;
-  NewEditCard({super.key ,  this.dataCard});
+  NewEditCard({super.key , this.dataCard});
 
   @override
   State<NewEditCard> createState() => _EditCardState();
@@ -44,36 +33,37 @@ class _EditCardState extends State<NewEditCard> {
   String? errormsg;
   bool istagLoading = true;
 
-
-
-  TextEditingController  designationController = TextEditingController();
-  TextEditingController  nameController        = TextEditingController();
-  TextEditingController  phoneController       = TextEditingController();
-  TextEditingController  emailController       = TextEditingController();
+  // Controllers for company details
+  TextEditingController  companyEmailController       = TextEditingController();
   TextEditingController  companynameController = TextEditingController();
-  TextEditingController  addressController     = TextEditingController();
-  TextEditingController  webController         = TextEditingController();
-  TextEditingController  noteController        = TextEditingController();
+  TextEditingController  companyAddressController     = TextEditingController();
+  TextEditingController  companyWebController         = TextEditingController();
+  TextEditingController  companyPhoneController         = TextEditingController();
+  TextEditingController  companyNoteController        = TextEditingController();
+
+  // Controllers for dynamic person details
   List<TextEditingController> personNameControllers = [];
   List<TextEditingController> personMobileControllers = [];
   List<TextEditingController> personEmailControllers = [];
   List<TextEditingController> personPositionControllers = [];
 
+
+  FocusNode companynamenode = FocusNode();
+  FocusNode companyphonenode = FocusNode();
+  FocusNode companyemailnode = FocusNode();
+  FocusNode companyAddressnode = FocusNode();
+  FocusNode companyWebnode = FocusNode();
+  FocusNode companyNotenode = FocusNode();
+
+  // Focus Nodes for dynamic person details
   List<FocusNode> personnameNode = [];
   List<FocusNode> personMobileNode = [];
   List<FocusNode> personEmailNode = [];
   List<FocusNode> personPositionNode = [];
 
-  FocusNode namenode = FocusNode();
-  FocusNode desinationnode = FocusNode();
-  FocusNode phonenode = FocusNode();
-  FocusNode emailnode = FocusNode();
-  FocusNode companynamenode = FocusNode();
-  FocusNode addressnode = FocusNode();
-  FocusNode webnode = FocusNode();
-  FocusNode notenode = FocusNode();
 
-  List<Map<String, dynamic>> listdata = [];
+
+  // List<Map<String, dynamic>> listdata = [];
 
   final _formkey = GlobalKey<FormState>();
 
@@ -108,24 +98,27 @@ class _EditCardState extends State<NewEditCard> {
   void dispose()
   {
     // Single controllers
-    nameController.dispose();
-    designationController.dispose();
-    phoneController.dispose();
-    emailController.dispose();
+    // nameController.dispose();
+    // designationController.dispose();
+    // phoneController.dispose();
+    // emailController.dispose();
+    companyEmailController.dispose();
     companynameController.dispose();
-    addressController.dispose();
-    webController.dispose();
-    noteController.dispose();
+    companyAddressController.dispose();
+    companyWebController.dispose();
+    companyNoteController.dispose();
+    companyPhoneController.dispose();
 
     // Focus nodes
-    namenode.dispose();
-    desinationnode.dispose();
-    phonenode.dispose();
-    emailnode.dispose();
+    // namenode.dispose();
+    // desinationnode.dispose();
+    // phonenode.dispose();
+    // emailnode.dispose();
     companynamenode.dispose();
-    addressnode.dispose();
-    webnode.dispose();
-    notenode.dispose();
+    companyAddressnode.dispose();
+    companyWebnode.dispose();
+    companyNotenode.dispose();
+    companyphonenode.dispose();
 
     // Dispose dynamic lists
     for (var controller in personNameControllers) {
@@ -144,12 +137,14 @@ class _EditCardState extends State<NewEditCard> {
     super.dispose();
   }
 
-  void _gotohome(){
-    Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
-      // datalist: listdata,
-    )));
+  void _gotohome() {
+    // Use pushAndRemoveUntil to clear the navigation stack when going home
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => Bottomnav()),
+          (Route<dynamic> route) => false,
+    );
   }
-
   @override
   void initState() {
     FetchTag();
@@ -186,11 +181,24 @@ class _EditCardState extends State<NewEditCard> {
 
     }
     companynameController = TextEditingController(text: widget.dataCard!.companyName);
-    emailController = TextEditingController(text: widget.dataCard!.companyEmail);
-    addressController = TextEditingController(
+    companyEmailController = TextEditingController(text: widget.dataCard!.companyEmail);
+    companyAddressController = TextEditingController(
       text: widget.dataCard!.companyAddress?.join(', ') ?? '',
       // nameController = TextEditingController(text: widget.dataCard.personDetails)
     );
+    companyPhoneController = TextEditingController(text: widget.dataCard!.companyPhoneNumber);
+    if (widget.dataCard?.webAddress != null &&
+        widget.dataCard!.webAddress!.trim().isNotEmpty &&
+        widget.dataCard!.webAddress!.toLowerCase() != 'null') {
+      companyWebController = TextEditingController(text: widget.dataCard!.webAddress);
+    } else {
+      companyWebController = TextEditingController(); // empty controller if invalid
+    }
+
+    // if(widget.dataCard!.group_id!=null){
+ //   selectedGroups = widget.dataCard.group_id
+ // }
+
 
 
     // Initialize controllers for each person
@@ -201,46 +209,62 @@ class _EditCardState extends State<NewEditCard> {
 
   }
   void addemptyPerson(){
-    personNameControllers.add(TextEditingController());
-    personEmailControllers.add(TextEditingController());
-    personMobileControllers.add(TextEditingController());
-    personPositionControllers.add(TextEditingController());
-    personnameNode.add(FocusNode());
-    personEmailNode.add(FocusNode());
-    personMobileNode.add(FocusNode());
-    personPositionNode.add(FocusNode());
+ setState(() {
+   personNameControllers.add(TextEditingController());
+   personEmailControllers.add(TextEditingController());
+   personMobileControllers.add(TextEditingController());
+   personPositionControllers.add(TextEditingController());
+   personnameNode.add(FocusNode());
+   personEmailNode.add(FocusNode());
+   personMobileNode.add(FocusNode());
+   personPositionNode.add(FocusNode());
 
-    print('Names: ${personNameControllers.length}');
-    print('Emails: ${personEmailControllers.length}');
-    print('Mobiles: ${personMobileControllers.length}');
-    print('Positions: ${personPositionControllers.length}');
+   print('Names: ${personNameControllers.length}');
+   print('Emails: ${personEmailControllers.length}');
+   print('Mobiles: ${personMobileControllers.length}');
+   print('Positions: ${personPositionControllers.length}');
+ });
   }
 
   void removePerson(int index) {
-    if (index < personNameControllers.length) {
+    if (index < personNameControllers.length && personNameControllers.length > 1) {
       personNameControllers[index].dispose();
       personEmailControllers[index].dispose();
       personMobileControllers[index].dispose();
       personPositionControllers[index].dispose();
-
-      personNameControllers.removeAt(index);
-      personEmailControllers.removeAt(index);
-      personMobileControllers.removeAt(index);
-      personPositionControllers.removeAt(index);
 
       personnameNode[index].dispose();
       personEmailNode[index].dispose();
       personMobileNode[index].dispose();
       personPositionNode[index].dispose();
 
+      personNameControllers.removeAt(index);
+      personEmailControllers.removeAt(index);
+      personMobileControllers.removeAt(index);
+      personPositionControllers.removeAt(index);
+
+
+
       personnameNode.removeAt(index);
       personEmailNode.removeAt(index);
       personMobileNode.removeAt(index);
       personPositionNode.removeAt(index);
 
+/*
+      namenode.
+      desinationnode
+      phonenode
+      emailnode
+      companynamenode
+      addressnode
+      webnode
+      notenode
+*/
+
       print('Removed person at index $index');
     }
   }
+
 
   Future<void>FatchGroup ()async{
     try{
@@ -262,6 +286,45 @@ class _EditCardState extends State<NewEditCard> {
     }
   }
 
+  // Future<void> FatchGroup() async {
+  //   setState(() {
+  //     isGroupLoading = true;
+  //     errormsg = null; // Clear previous error messages
+  //   });
+  //   try {
+  //     GroupModel groupModel = await GroupApi.getGroup();
+  //
+  //     if (groupModel.success == 1 && groupModel.data != null) {
+  //       setState(() {
+  //         Groups = groupModel.data!; // Groups list is populated HERE
+  //
+  //         // Now that 'Groups' is populated, you can safely search within it.
+  //         if (widget.dataCard != null && widget.dataCard!.group_id != null) {
+  //           selectedGroups = Groups.firstWhere(
+  //                 (group) => group.groupid == widget.dataCard!.group_id,
+  //             orElse: () {
+  //               debugPrint('Warning: Group with ID ${widget.dataCard!.group_id} from dataCard not found in fetched groups.');
+  //               return null!; // Return null if not found
+  //             },
+  //           );
+  //           debugPrint('Selected Group after search: ${selectedGroups?.groupname ?? "None"}');
+  //         }
+  //         isGroupLoading = false; // Set loading to false after all operations
+  //       });
+  //     } else {
+  //       setState(() {
+  //         errormsg = "No Groups Found";
+  //         isGroupLoading = false;
+  //       });
+  //     }
+  //   } catch (e) {
+  //     setState(() {
+  //       errormsg = "Something went wrong while fetching groups: $e";
+  //       isGroupLoading = false; // Ensure loading is set to false even on error
+  //     });
+  //     debugPrint('Error in FatchGroup API call: $e');
+  //   }
+  // }
 
   Future<void> FetchTag ()async{
     // istagLoading = true;
@@ -278,7 +341,7 @@ class _EditCardState extends State<NewEditCard> {
           istagLoading = false;
         });
       }
-    }catch(e){
+   ; }catch(e){
       print('something Went Wrong => $e');
 
     }finally{
@@ -287,6 +350,112 @@ class _EditCardState extends State<NewEditCard> {
       });
     }
   }
+
+  List<PersonDetails> finalpersonDetails = [];
+
+Future<void> _SaveCard()async{
+    if(_formkey.currentState!.validate()){
+      finalpersonDetails.clear();
+     for(int i = 0; i< personNameControllers.length; i++){
+       if(personNameControllers[i].text.trim().isNotEmpty){
+         int? existingPersonId = (i< (widget.dataCard?.personDetails?.length ?? 0))
+         ?widget.dataCard!.personDetails![i].cardpersonsid
+         :null;
+
+
+         finalpersonDetails.add(PersonDetails(
+           cardpersonsid: existingPersonId, // Pass the existing ID or null for new
+           name: personNameControllers[i].text.trim(),
+           phoneNumber: personMobileControllers[i].text.trim(),
+           email: personEmailControllers[i].text.trim(),
+           position: personPositionControllers[i].text.trim(),
+         )
+         );
+         
+       }
+     }
+
+     if(selectedGroups == null){
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('Please select a Group.')),
+       );
+       return;
+     }
+      if (selectedTag == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a Tag.')),
+        );
+        return;
+      }
+
+
+
+     final DataCard cardtosave = DataCard(
+
+       cardID: widget.dataCard!.cardID,
+         tag_id: selectedTag!.tagid,
+         group_id: selectedGroups!.groupid,
+         companyName: companynameController.text.trim(),
+         personDetails: finalpersonDetails,
+
+       companyPhoneNumber:companyPhoneController.text.trim(),
+       companyAddress: companyAddressController.text.trim().split(',').map((s)=> s.trim()).toList(),
+       companyEmail:companyEmailController.text.trim(),
+         webAddress: companyWebController.text.trim(),
+     );
+
+
+     // Map<String, dynamic> cardjson =  cardtosave.toJson();
+    //
+    //  String prettyjson = JsonEncoder.withIndent('').convert(cardjson);
+    //
+    //  debugPrint("=================================================");
+    //  debugPrint("  Generated Card JSON (for debugging):          ");
+    //  debugPrint("=================================================");
+    //  debugPrint(prettyjson);
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Card data collected and printed to console!')),
+    //   );
+    // }else{
+    //   print('Error on save Details');
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Please correct the errors in the form.')),
+    //   );
+    //
+    // }
+
+
+    bool success = false;
+
+    try{
+      if(widget.dataCard!= null && widget.dataCard!.cardID != null){
+
+        debugPrint("Attemept To Change Card ${widget.dataCard!.cardID}");
+
+        success = await CardApi.updateCard(cardtosave);
+        if(success){
+          print('Card Updated Successfully');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Card Updated')));
+        _gotohome();
+        }else{
+          print('Card Updated Faild');
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save card. Please try again.')));
+
+        }
+      }
+
+    }
+    catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving card: $e')),
+      );
+      debugPrint('API Error: $e');
+
+    }
+
+
+}}
 
   @override
   Widget build(BuildContext context) {
@@ -571,7 +740,7 @@ class _EditCardState extends State<NewEditCard> {
                                             return null;
                                           },
                                           onfieldsumbitted: (value) {
-                                            FocusScope.of(context).requestFocus(addressnode);
+                                            FocusScope.of(context).requestFocus(companyAddressnode);
                                           },
                                         )
                                       ],
@@ -580,6 +749,52 @@ class _EditCardState extends State<NewEditCard> {
 
 
                           
+                              SizedBox(height: 6),
+                             Container(
+                               padding: EdgeInsets.symmetric(horizontal: 15),
+
+                               decoration: BoxDecoration(
+                                 // color: Color(0xFFFEF7FF),
+                                 borderRadius: BorderRadius.circular(10)),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Phone Number',
+                                          style: GoogleFonts.raleway(
+                                            fontSize: 15,
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 10),
+                                        CommonTextForm(
+                                          fillColor: Colors.white,
+                                          labelColor: Colors.black54,
+                                          contentpadding: 10,
+                                          focusNode: companyphonenode,
+                                          controller: companyPhoneController,
+                                          labeltext: 'Enter company Number',
+                                          borderc: 10,
+                                          BorderColor: Colors.black26,
+                                          icon: Icon(Icons.maps_home_work_outlined, color: Colors.black54),
+                                          obsecureText: false,
+                                          // validator: (value) {
+                                          //   if (value == null || value.isEmpty) {
+                                          //     return "Please enter company name";
+                                          //   }
+                                          //   return null;
+                                          // },
+                                          onfieldsumbitted: (value) {
+                                            FocusScope.of(context).requestFocus(companyAddressnode);
+                                          },
+                                        )
+                                      ],
+                                    ),
+                                  ),
+
+
+
                               SizedBox(height: 6),
                             Container(
                                   padding: EdgeInsets.symmetric(horizontal: 15),
@@ -603,8 +818,8 @@ class _EditCardState extends State<NewEditCard> {
                                         fillColor: Colors.white,
                                         labelColor: Colors.black54,
                                         contentpadding: 10,
-                                        focusNode: addressnode,
-                                        controller: addressController,
+                                        focusNode: companyAddressnode,
+                                        controller: companyAddressController,
                                         labeltext: 'Enter address',
                                         borderc: 10,
                                         BorderColor: Colors.black26,
@@ -617,7 +832,7 @@ class _EditCardState extends State<NewEditCard> {
                                           return null;
                                         },
                                         onfieldsumbitted: (value) {
-                                          FocusScope.of(context).requestFocus(webnode);
+                                          FocusScope.of(context).requestFocus(companyWebnode);
                                         },
                                       )
                                     ],
@@ -648,21 +863,21 @@ class _EditCardState extends State<NewEditCard> {
                                         fillColor: Colors.white,
                                         labelColor: Colors.black54,
                                         contentpadding: 10,
-                                        focusNode: webnode,
-                                        controller: webController,
+                                        focusNode: companyWebnode,
+                                        controller: companyWebController,
                                         labeltext: 'Enter website',
                                         borderc: 10,
                                         BorderColor: Colors.black26,
                                         icon: Icon(Icons.web, color: Colors.black54),
                                         obsecureText: false,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return "Please enter website";
-                                          }
-                                          return null;
-                                        },
+                                        // validator: (value) {
+                                        //   if (value == null || value.isEmpty) {
+                                        //     return "Please enter website";
+                                        //   }
+                                        //   return null;
+                                        // },
                                         onfieldsumbitted: (value) {
-                                          FocusScope.of(context).requestFocus(notenode);
+                                          FocusScope.of(context).requestFocus(companyNotenode);
                                         },
                                       )
                                     ],
@@ -693,20 +908,20 @@ class _EditCardState extends State<NewEditCard> {
                                         fillColor: Colors.white,
                                         labelColor: Colors.black54,
                                         contentpadding: 10,
-                                        focusNode: notenode,
-                                        controller: noteController,
+                                        focusNode: companyNotenode,
+                                        controller: companyNoteController,
                                         maxline: 5,
                                         labeltext: 'Enter note',
                                         borderc: 10,
                                         BorderColor: Colors.black26,
                                         icon: Icon(Icons.note_alt_outlined, color: Colors.black54),
                                         obsecureText: false,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return "Please enter note";
-                                          }
-                                          return null;
-                                        },
+                                        // validator: (value) {
+                                        //   if (value == null || value.isEmpty) {
+                                        //     return "Please enter note";
+                                        //   }
+                                        //   return null;
+                                        // },
                                       )
                                     ],
                                   ),
@@ -871,7 +1086,7 @@ class _EditCardState extends State<NewEditCard> {
                                                 return null;
                                               },
                                               onfieldsumbitted: (value) {
-                                                FocusScope.of(context).requestFocus(desinationnode);
+                                                FocusScope.of(context).requestFocus(personPositionNode[index]);
                                               },
                                             )
                                           ],
@@ -915,7 +1130,7 @@ class _EditCardState extends State<NewEditCard> {
                                                 return null;
                                               },
                                               onfieldsumbitted: (value) {
-                                                FocusScope.of(context).nextFocus();
+                                                FocusScope.of(context).requestFocus(personMobileNode[index]);
                                               },
                                             )
                                           ],
@@ -961,7 +1176,7 @@ class _EditCardState extends State<NewEditCard> {
                                                 return null;
                                               },
                                               onfieldsumbitted: (value) {
-                                                FocusScope.of(context).requestFocus(desinationnode);
+                                                FocusScope.of(context).requestFocus(personEmailNode[index]);
                                               },
                                             )
                                           ],
@@ -1000,14 +1215,14 @@ class _EditCardState extends State<NewEditCard> {
                                               BorderColor: Colors.black26,
                                               icon: Icon(Icons.email_outlined, color: Colors.black54),
                                               obsecureText: false,
-                                              validator: (value) {
+                                           /*   validator: (value) {
                                                 if (value == null || value.isEmpty) {
                                                   return "Please enter email";
                                                 }
                                                 return null;
-                                              },
+                                              },*/
                                               onfieldsumbitted: (value) {
-                                                FocusScope.of(context).requestFocus(companynamenode);
+                                                FocusScope.of(context).unfocus();
                                               },
                                             )
                                           ],
@@ -1027,14 +1242,16 @@ class _EditCardState extends State<NewEditCard> {
                         height: height * 0.06,
                         bordercircular: 20,
                         onTap: (){
-                          widget.dataCard!.companyName=companynameController.text;
-                          print("------------------->>>>>>>>>>>${widget.dataCard!.toJson()}");
-                          // Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
-                          // if(_formkey.currentState!.validate()){
-                          //   _addcardtoHive();
-                          // }
-                          // _addcardtoHive();
-                          // _addData();
+                          _SaveCard();
+
+                          // widget.dataCard!.companyName=companynameController.text;
+                          // print("------------------->>>>>>>>>>>${widget.dataCard!.toJson()}");
+                          // // Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
+                          // // if(_formkey.currentState!.validate()){
+                          // //   _addcardtoHive();
+                          // // }
+                          // // _addcardtoHive();
+                          // // _addData();
                         },
                         child: Text(
                           'Add Details',

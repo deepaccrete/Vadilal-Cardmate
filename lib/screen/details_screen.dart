@@ -805,7 +805,7 @@ void _shareAllCardDetails() async {
                               ),
                             ),
                             subtitle: Text(
-                              widget.dataCard.companyName!,
+                              widget.dataCard.companyName?? 'N/A',
                               style: GoogleFonts.raleway(
                                 fontSize: 14,
                                 color: Colors.grey[800],
@@ -978,6 +978,46 @@ void _shareAllCardDetails() async {
 
                           // if (widget.dataCard.companySWorkDetails != null &&
                           //
+
+                          (widget.dataCard.webAddress== null || widget.dataCard.webAddress!.trim().isEmpty || widget.dataCard.webAddress!.toLowerCase()=='null')
+                          ? SizedBox()
+                              :ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.work_outline,
+                                color: Colors.purple[700],
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              'Company WebSite',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.webAddress!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+
+
 
                           (widget.dataCard.companySWorkDetails== null || widget.dataCard.companySWorkDetails!.trim().isEmpty || widget.dataCard.companySWorkDetails!.toLowerCase()=='null')
                           ? SizedBox()

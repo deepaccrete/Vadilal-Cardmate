@@ -1,23 +1,34 @@
+import 'dart:convert'; // For jsonEncode, etc.
+
 class CardModel {
   int? success;
   List<DataCard>? data;
+  String? message; // Added for error messages from API response
 
-  CardModel({this.success, this.data});
+  CardModel({this.success, this.data, this.message});
 
+  // Used for parsing API responses that return a list of cards (e.g., getCard)
   CardModel.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    if (json['data'] != null) {
+    success = json['success'] as int?;
+    message = json['msg']?.toString(); // Assuming 'msg' for messages
+
+    if (json['data'] != null && json['data'] is List) {
       data = <DataCard>[];
-      json['data'].forEach((v) { data!.add(new DataCard.fromJson(v)); });
+      json['data'].forEach((v) {
+        data!.add(DataCard.fromJson(v as Map<String, dynamic>));
+      });
+    } else {
+      data = []; // Ensure data is never null
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
+    data['msg'] = message; // Include message in toJson if needed for some reason
     return data;
   }
 }
@@ -27,10 +38,10 @@ class DataCard {
   String? companyName;
   List<PersonDetails>? personDetails;
   String? companyPhoneNumber;
-  List<String>? companyAddress;
+  List<String>? companyAddress; // Stored as List<String> in Dart
   String? companyEmail;
   String? webAddress;
-  String? companySWorkDetails; // Corrected from 'Companys Work Details' for consistency
+  String? companySWorkDetails; // Corrected property name for Dart
   String? gSTIN;
   String? cardFrontImageBase64;
   String? cardBackImageBase64;
@@ -39,8 +50,8 @@ class DataCard {
   String? extractedJSON;
   int? isBase64;
 
-  int? tag_id;
-  int? group_id;
+  int? tag_id;   // Matches API: "Tag ID"
+  int? group_id; // Matches API: "Group ID"
 
   DataCard({
     this.cardID,
@@ -59,86 +70,85 @@ class DataCard {
     this.extractedJSON,
     this.isBase64,
     this.tag_id,
-    this.group_id
+    this.group_id,
   });
 
-  DataCard.fromJson(Map<String, dynamic> json) {
-    cardID = json['Card ID'] as int?;
-    companyName = json['Company Name']?.toString();
+  // Used for parsing incoming JSON from API responses (e.g., for getCard)
+  factory DataCard.fromJson(Map<String, dynamic> json) {
+    // Note: The keys here must match what your API sends IN ITS RESPONSES
+    return DataCard(
+      cardID: json['Card ID'] as int?,
+      companyName: json['Company Name']?.toString(),
 
-    // Handle 'Person details' - ensure it's a list and map correctly
-    if (json['Person details'] is List) {
-      personDetails = (json['Person details'] as List)
+      personDetails: (json['Person details'] is List)
+          ? (json['Person details'] as List)
           .map((v) => PersonDetails.fromJson(v as Map<String, dynamic>))
-          .toList();
-    } else {
-      personDetails = []; // Initialize as empty list if not present or not a list
-    }
+          .toList()
+          : [],
 
-    companyPhoneNumber = json['Company Phone Number']?.toString();
+      companyPhoneNumber: json['Company Phone Number']?.toString(),
 
-    // Handle 'Company Address' - it could be a single string or a list of strings
-    if (json['Company Address'] is List) {
-      companyAddress = (json['Company Address'] as List)
+      // Robustly handle Company Address coming as String or List
+      companyAddress: (json['Company Address'] is List)
+          ? (json['Company Address'] as List)
           .map((e) => e?.toString() ?? '')
-          .toList();
-    } else if (json['Company Address'] is String) {
-      // If it's a single string, split it by newline characters
-      companyAddress = (json['Company Address'] as String)
+          .toList()
+          : (json['Company Address'] is String)
+          ? (json['Company Address'] as String)
           .split(RegExp(r'[\n\r]+')) // Split by one or more newlines/carriage returns
           .map((e) => e.trim())
-          .where((e) => e.isNotEmpty) // Filter out empty strings from splitting
-          .toList();
-    } else {
-      companyAddress = []; // Initialize as empty list
-    }
+          .where((e) => e.isNotEmpty) // Filter out empty strings
+          .toList()
+          : [],
 
-    // Notice the double space in 'Company  Email' from your JSON example
-    companyEmail = json['Company  Email']?.toString();
-    webAddress = json['Web Address']?.toString();
+      companyEmail: json['Company  Email']?.toString(), // Keep double space if API sends it
+      webAddress: json['Web Address']?.toString(),
 
-    // Key 'Companys Work Details' or 'Company\'s Work Details'
-    // Using json['Companys Work Details'] from your `toJson` implies this key.
-    // If your actual incoming JSON uses 'Company\'s Work Details', adjust accordingly:
-    companySWorkDetails = json['Companys Work Details']?.toString() ?? json['Company\'s Work Details']?.toString();
+      // Handling potential variations for 'Companys Work Details' or 'Company's Work Details'
+      companySWorkDetails: json['Companys Work Details']?.toString() ?? json['Company\'s Work Details']?.toString(),
 
-    gSTIN = json['GSTIN']?.toString();
-    cardFrontImageBase64 = json['Card Front Image']?.toString(); // Check if your JSON key includes "Base64"
-    cardBackImageBase64 = json['Card Back Image']?.toString();   // Check if your JSON key includes "Base64"
-    createdBy = json['Created By'] as int?;
-    createdAt = json['Created At']?.toString();
-    extractedJSON = json['Extracted JSON']?.toString();
-    isBase64 = json['Is Base64'] as int?;
-    tag_id: json['tag_id'] as int?;
-    group_id: json['group_id'] as int?;
+      gSTIN: json['GSTIN']?.toString(),
+      cardFrontImageBase64: json['Card Front Image']?.toString(),
+      cardBackImageBase64: json['Card Back Image']?.toString(),
+      createdBy: json['Created By'] as int?,
+      createdAt: json['Created At']?.toString(),
+      extractedJSON: json['Extracted JSON']?.toString(),
+      isBase64: json['Is Base64'] as int?,
 
+      // Use "Group ID" and "Tag ID" as seen in your incoming JSON
+      group_id: json['Group ID'] is int ? json['Group ID'] : (json['Group ID'] is String ? int.tryParse(json['Group ID']) : null),
+      tag_id: json['Tag ID'] is int ? json['Tag ID'] : (json['Tag ID'] is String ? int.tryParse(json['Tag ID']) : null),
+    );
   }
 
+  // Used for sending JSON to the API (e.g., for createCard, updateCard)
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Card ID'] = this.cardID;
-    data['Company Name'] = this.companyName;
-    if (this.personDetails != null) {
-      data['Person details'] = this.personDetails!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    // The keys here MUST EXACTLY match what your UPDATE API expects
+    data['Card ID'] = cardID;
+    data['Group ID'] = group_id; // Matches API's "Group ID"
+    data['Tag ID'] = tag_id;     // Matches API's "Tag ID"
+    data['Company Name'] = companyName;
+    if (personDetails != null) {
+      data['Person details'] = personDetails!.map((v) => v.toJson()).toList();
     }
-    data['Company Phone Number'] = this.companyPhoneNumber;
-    data['Company Address'] = this.companyAddress;
-    data['Company  Email'] = this.companyEmail; // Retaining double space as per your json
-    data['Web Address'] = this.webAddress;
-    data['Companys Work Details'] = this.companySWorkDetails; // Retaining this key as per your toJson
-    data['GSTIN'] = this.gSTIN;
-    data['Card Front Image'] = this.cardFrontImageBase64; // Retaining this key as per your toJson
-    data['Card Back Image'] = this.cardBackImageBase64;   // Retaining this key as per your toJson
-    data['Created By'] = this.createdBy;
-    data['Created At'] = this.createdAt;
-    data['Extracted JSON'] = this.extractedJSON;
-    data['Is Base64'] = this.isBase64;
-    data['tag_id'] = this.tag_id;
-    data['group_id'] = this.group_id;
+    data['Company Phone Number'] = companyPhoneNumber;
+    // CRITICAL FIX: Join companyAddress list into a single string for the API
+    data['Company Address'] = companyAddress?.join(', '); // Send as single string
+    data['Company  Email'] = companyEmail; // Preserve double space
+    data['Web Address'] = webAddress;
+    data['Companys Work Details'] = companySWorkDetails; // Matches API's "Companys Work Details"
+    data['GSTIN'] = gSTIN;
+    data['Card Front Image'] = cardFrontImageBase64; // Matches API's "Card Front Image"
+    data['Card Back Image'] = cardBackImageBase64;   // Matches API's "Card Back Image"
+    data['Created By'] = createdBy;
+    data['Created At'] = createdAt;
+    data['Extracted JSON'] = extractedJSON;
+    data['Is Base64'] = isBase64;
     return data;
   }
 
-  /// Generates a comprehensive string containing all relevant card details for sharing.
+  // Your toShareString and helper methods are great and remain unchanged.
   String toShareString() {
     final StringBuffer buffer = StringBuffer();
 
@@ -171,14 +181,12 @@ class DataCard {
     return buffer.toString();
   }
 
-  // Helper method to add details to the buffer if not null, empty, or "null" string
   void _addDetail(StringBuffer buffer, String label, String? value) {
     if (value != null && value.isNotEmpty && value.toLowerCase() != 'null') {
       buffer.writeln('$label: $value');
     }
   }
 
-  // Helper method to add list details to the buffer
   void _addDetailList(StringBuffer buffer, String label, List<String>? values, {String separator = ', '}) {
     if (values != null && values.isNotEmpty) {
       final filteredValues = values.where((e) => e.isNotEmpty && e.toLowerCase() != 'null').toList();
@@ -190,30 +198,38 @@ class DataCard {
 }
 
 class PersonDetails {
+  int? cardpersonsid;
   String? name;
   String? phoneNumber;
   String? email;
   String? position;
 
-  PersonDetails({this.name, this.phoneNumber, this.email, this.position});
+  PersonDetails({this.name, this.phoneNumber, this.email, this.position, this.cardpersonsid});
 
-  PersonDetails.fromJson(Map<String, dynamic> json) {
-    name = json['Name']?.toString();
-    phoneNumber = json['Phone Number']?.toString();
-    email = json['Email']?.toString();
-    position = json['Position']?.toString();
+  // Used for parsing incoming JSON for person details
+  factory PersonDetails.fromJson(Map<String, dynamic> json) {
+    // Keys here must match what the API sends for person details
+    return PersonDetails(
+      cardpersonsid: json['cardpersonsid'] as int?,
+      name: json['Name']?.toString(),
+      phoneNumber: json['Phone Number']?.toString(),
+      email: json['Email']?.toString(),
+      position: json['Position']?.toString(),
+    );
   }
 
+  // Used for sending JSON for person details to the API
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Name'] = this.name;
-    data['Phone Number'] = this.phoneNumber;
-    data['Email'] = this.email;
-    data['Position'] = this.position;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    // Keys here must EXACTLY match what the API expects for person details in the update payload
+    data['cardpersonsid'] = cardpersonsid;
+    data['Name'] = name;
+    data['Phone Number'] = phoneNumber;
+    data['Email'] = email;
+    data['Position'] = position;
     return data;
   }
 }
-
 //
 // class CardModel {
 //   int? success;
