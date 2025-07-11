@@ -20,6 +20,8 @@ import 'package:contacts_service_plus/contacts_service_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'fullScreenImageViewer.dart';
+
 class DetailsScreen extends StatefulWidget {
   // final CardDetails cardDetails;
   DataCard dataCard;
@@ -331,21 +333,42 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 images.map((imgBytes) {
                                   return Builder(
                                     builder: (BuildContext context) {
-                                      return Container(
-                                        width: MediaQuery.of(context).size.width,
-                                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                                        // decoration: BoxDecoration(
-                                        //   color: Colors.grey[200],
-                                        //   borderRadius: BorderRadius.circular(
-                                        //     10,
-                                        //   ),
-                                        // ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(10),
-                                          child: InteractiveViewer(
-                                            minScale: 0.5,
-                                            maxScale: 5.0,
-                                            child: Image.memory(imgBytes, fit: BoxFit.contain),
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) =>
+                                                  FullScreenImageViewer(
+                                                    images: images,
+                                                    initialIndex: _currentIndex,
+                                                  ),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                return FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration: const Duration(milliseconds: 300),
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          width: MediaQuery.of(context).size.width,
+                                          margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                          // decoration: BoxDecoration(
+                                          //   color: Colors.grey[200],
+                                          //   borderRadius: BorderRadius.circular(
+                                          //     10,
+                                          //   ),
+                                          // ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(10),
+                                            child: InteractiveViewer(
+                                              minScale: 0.5,
+                                              maxScale: 5.0,
+                                              child: Image.memory(imgBytes, fit: BoxFit.contain),
+                                            ),
                                           ),
                                         ),
                                       );
@@ -470,7 +493,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                     ),
                     // Edit button
-                    // if(appStore.appSetting!.isedit??false)
+                    if(appStore.appSetting!.isedit??false)
                       InkWell(
                       onTap: () async {
                         Navigator.push(

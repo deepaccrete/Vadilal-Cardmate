@@ -95,8 +95,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   width: 200,
                   child: Image.asset('assets/images/Frame 2.png', fit: BoxFit.contain),
                 ),
-                Text("EasyCard",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),textScaler: TextScaler.linear(4.2),),
-                Text("Snap Store Simplify",style: TextStyle(fontWeight: FontWeight.w300,color: Colors.white),textScaler: TextScaler.linear(1.4),)
+                Text(
+                  "EasyCard",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  textScaler: TextScaler.linear(4.2),
+                ),
+                Text(
+                  "Snap Store Simplify",
+                  style: TextStyle(fontWeight: FontWeight.w300, color: Colors.white),
+                  textScaler: TextScaler.linear(1.4),
+                ),
               ],
             ),
           ),
@@ -133,6 +141,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
           // Final screen
           if (showNext) (appStore.isLoggedIn ? Bottomnav() : LoginScreen()),
+          Positioned.fill(
+            bottom: 16,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Text("V0.0.2", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300)),
+            ),
+          ),
         ],
       ),
     );
