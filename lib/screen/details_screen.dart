@@ -31,7 +31,7 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-List<CardDetails> _cards = [];
+// List<CardDetails> _cards = [];
 
 Future<void> callNumber(String number) async {
   try {
@@ -63,6 +63,7 @@ Future<void> sendmail({required String toEmail, String subject = '', String body
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
+
   //Hive Load Card
   /*Future<void> _loadCard() async {
     final box = await Hive.openBox<CardDetails>('cardbox');
@@ -141,7 +142,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         ShareParams(
           text: textToShare,
           subject: 'Business Card Details: ${widget.dataCard.companyName}', // A descriptive subject
-          // sharePositionOrigin is important for iPads to show a popover
+          // sharePositionOrigin is important for   to show a popover
           sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
         ),
       );
@@ -1083,19 +1084,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                             //     color: Colors.grey[800],
                                             //   ),
                                             // ),
-                                            if (person.position != null)
-                                              Container(
-                                                margin: EdgeInsets.only(top: 4),
-                                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue.withOpacity(0.1),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: Text(
-                                                  person.position!,
-                                                  style: GoogleFonts.raleway(fontSize: 12, color: Colors.blue[700]),
-                                                ),
-                                              ),
+
                                           ],
                                         ),
                                       ),
@@ -1110,11 +1099,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
                                   // if (person.phoneNumber != null ||
                                   //     person.email != null)
-                                  (person.phoneNumber == null ||
-                                          person.phoneNumber!.trim().isEmpty ||
-                                          person.phoneNumber!.toLowerCase() == 'null')
-                                      ? SizedBox()
-                                      : Container(
+
+                                  // (person.phoneNumber == null ||
+                                  //         person.phoneNumber!.trim().isEmpty ||
+                                  //         person.phoneNumber!.toLowerCase() == 'null')
+                                  //     ? SizedBox()
+                                  //     :
+                                  Container(
                                         margin: EdgeInsets.only(top: 16),
                                         padding: EdgeInsets.all(12),
                                         decoration: BoxDecoration(
@@ -1123,7 +1114,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         ),
                                         child: Column(
                                           children: [
-                                            if (person.phoneNumber != null)
+
+
+
+                                            (person.position == null || person.position!.trim().isEmpty || person.position!.toLowerCase() == 'null')
+                                            ?SizedBox()
+                                           : ListTile(
+                                                // onTap: () {
+                                                //   callNumber(person.position.toString());
+                                                // },
+                                                // onLongPress: () async {
+                                                //   await Clipboard.setData(ClipboardData(text: person.phoneNumber!));
+                                                //   ScaffoldMessenger.of(
+                                                //     context,
+                                                //   ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                                                // },
+                                                contentPadding: EdgeInsets.zero,
+                                                leading: Container(
+                                                  width: 32,
+                                                  height: 32,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Icon(Icons.work, color: Colors.green[700], size: 18),
+                                                ),
+                                                title: Text(
+                                                  person.position!,
+                                                  style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                                ),
+                                              ),
+
+
+                                            (person.phoneNumber == null ||
+                                                person.phoneNumber!.trim().isEmpty ||
+                                                    person.phoneNumber!.toLowerCase() == 'null')
+                                                ? SizedBox()
+                                                :
                                               ListTile(
                                                 onTap: () {
                                                   callNumber(person.phoneNumber.toString());
@@ -1149,6 +1176,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                                   style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
                                                 ),
                                               ),
+
+
+
                                             (person.email == null ||
                                                     person.email!.trim().isEmpty ||
                                                     person.email!.toLowerCase() == 'null')

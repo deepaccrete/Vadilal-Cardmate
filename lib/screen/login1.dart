@@ -379,3 +379,124 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 }
+
+//
+// Expanded(
+// child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+// children: [
+//
+// ...card.personDetails!.map(
+// (
+// person,
+// ) =>
+// Row(
+// mainAxisAlignment:
+// MainAxisAlignment.spaceBetween,
+// children: [
+// (person.name == null ||
+// person.name!.trim().isEmpty ||
+// person.name!.toLowerCase() == 'null')
+// ?      Text(
+// // card.companyAddress!.join(',') ?? "No Data",
+// card.companyName ??
+// '',
+// style: GoogleFonts.raleway(
+// fontWeight:
+// FontWeight.w600,
+// fontSize:
+// 14,
+// color:
+// Colors.black,
+// ),
+// )
+//     : Text(
+// person.name ??
+// 'No data',
+// style: GoogleFonts.raleway(
+// fontWeight:
+// FontWeight.w600,
+// fontSize:
+// 14,
+// color:
+// Colors.black,
+// ),
+// ),
+// // SizedBox(
+// //   width:
+// //       5,
+// // ),
+//
+// (person.position ==
+// null ||
+// person.position!.trim().isEmpty ||
+// person.position!.toLowerCase() ==
+// 'null')
+// ? SizedBox()
+//
+//
+//     :  Container(
+// margin: EdgeInsets.only(top: 4),
+// padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+// decoration: BoxDecoration(
+// color: Colors.blue.withAlpha(20),
+// borderRadius: BorderRadius.circular(4),
+// ),
+// child: Text(
+// person.position!.toUpperCase(),
+// style: GoogleFonts.raleway(fontSize: 12, color: Colors.blue[700]),
+// ),
+// ),
+//
+// // : Text(
+// //   person.position!.toUpperCase() ??
+// //       '',
+// //   style: GoogleFonts.raleway(
+// //     fontWeight:
+// //         FontWeight.w600,
+// //     fontSize:
+// //         12,
+// //     color:
+// //         Colors.grey.shade900,
+// //   ),
+// // ),
+// ],
+// ),
+// ),
+// SizedBox(
+// height: 5,
+// ),
+//
+//
+// ...card.personDetails!.map((person)=>
+//
+// (
+// (person.name ==
+// null ||
+// person.name!.trim().isEmpty ||
+// person.name!.toLowerCase() ==
+// 'null')
+// // (person.phoneNumber == null ||
+// //         person.phoneNumber!.trim().isEmpty ||
+// //         person.phoneNumber!.toLowerCase() == 'null')
+// //     ? SizedBox()
+// //     :))
+// ?SizedBox()
+//     :Text(
+// // card.companyAddress!.join(',') ?? "No Data",
+// card.companyName ??
+// '',
+// style: GoogleFonts.raleway(
+// fontWeight:
+// FontWeight.w500,
+// fontSize:
+// 14,
+// color:
+// subtext,
+// ),
+// ))
+//
+// )],
+// ),
+// ),
+//
+//
