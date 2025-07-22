@@ -62,7 +62,6 @@ dependencies:
 
   flutter_doc_scanner:
   universal_html: ^2.0.9
-
   web: ^1.1.1
   #database
 #  hive: ^2.2.3
@@ -104,6 +103,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animation/
+    - assets/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

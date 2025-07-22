@@ -295,8 +295,8 @@ Future<void>FatchGroup ()async{
 
       // 2. Prepare DataCard text data (without image Base64 fields)
       DataCard cardTextData = DataCard(
-        group_id: selectedGroups!.groupid,
-        tag_id: selectedTag!.tagid,
+        tagid: selectedGroups!.groupid,
+        groupid: selectedTag!.tagid,
         companyName: companynameController.text,
         personDetails: persons.isNotEmpty ? persons : null,
         companyPhoneNumber: phoneController.text,

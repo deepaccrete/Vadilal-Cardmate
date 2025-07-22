@@ -93,7 +93,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
     try {
       if (_form.currentState!.validate()) {
         // Optional: show loading
-        final groupPost = await GroupApi.postGrroup(groupname: groupcontroller.text.trim());
+        final groupPost = await GroupApi.postGroup(groupname: groupcontroller.text.trim());
 
         if (groupPost.success == 1) {
           print("GROUP ADDED");

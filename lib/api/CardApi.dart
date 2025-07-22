@@ -107,7 +107,7 @@ class CardApi {
       );
       debugPrint("API URL (UPDATE): ${AppApiConst.cardupdate}");
       debugPrint("API STATUSCODE (UPDATE): ${response.statusCode}");
-      debugPrint("API REQUEST BODY (UPDATE): ${jsonEncode(card.toJson())}");
+      debugPrint("API REQUEST BODY (UPDATE):----------------${jsonEncode(card.toJson())}");
       debugPrint("API RESPONSE (UPDATE): ${response.body}");
 
       if (response.statusCode == 200) {

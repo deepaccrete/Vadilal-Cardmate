@@ -8,6 +8,7 @@ import '../../api/TagApi.dart';
 import '../../componets/button.dart';
 import '../../componets/textform.dart';
 import '../../constant/colors.dart';
+import '../../local_package/country_state_city Picker/country_state_city_picker.dart';
 import '../../model/GroupModel.dart';
 import '../../model/TagModel.dart';
 import '../../model/cardModel.dart';
@@ -41,6 +42,10 @@ class _EditCardState extends State<NewEditCard> {
   TextEditingController  companyPhoneController         = TextEditingController();
   TextEditingController  companyNoteController        = TextEditingController();
 
+  TextEditingController country=TextEditingController();
+  TextEditingController state=TextEditingController();
+  TextEditingController city=TextEditingController();
+
   // Controllers for dynamic person details
   List<TextEditingController> personNameControllers = [];
   List<TextEditingController> personMobileControllers = [];
@@ -61,38 +66,13 @@ class _EditCardState extends State<NewEditCard> {
   List<FocusNode> personEmailNode = [];
   List<FocusNode> personPositionNode = [];
 
+  List<PersonDetails> finalpersonDetails = [];
+
 
 
   // List<Map<String, dynamic>> listdata = [];
 
   final _formkey = GlobalKey<FormState>();
-
-
-  // function to add data in hive
-  /* Future<void> _addcardtoHive()async{
-    if(_formkey.currentState!.validate()){
-      final newCard = CardDetails(
-          id: Uuid().v4().toString(),
-          fullname:nameController.text,
-          designation: designationController.text,
-          number: phoneController.text,
-          email: emailController.text,
-          companyname: companynameController.text,
-          address: addressController.text,
-          website: webController.text,
-          note: noteController.text,
-      );
-
-
-      await HiveBoxes.addCard(newCard);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Card Saved SuccessFully!'))
-      );
-      _gotohome();
-      // dispose();
-
-    }
-  }*/
 
   @override
   void dispose()
@@ -194,20 +174,17 @@ class _EditCardState extends State<NewEditCard> {
     } else {
       companyWebController = TextEditingController(); // empty controller if invalid
     }
-
-    // if(widget.dataCard!.group_id!=null){
- //   selectedGroups = widget.dataCard.group_id
- // }
-
-
-
-    // Initialize controllers for each person
-    // for (var person in widget.dataCard?.personDetails ?? []) {
-    //   personNameControllers.add(TextEditingController(text: person.name));
-    //   personMobileControllers.add(TextEditingController(text: person.phoneNumber));
-    // }
-
+    if(widget.dataCard!.country!=null && widget.dataCard!.country!=''){
+      country.text=widget.dataCard!.country!;
+    }
+    if(widget.dataCard!.state!=null && widget.dataCard!.state!=''){
+      state.text=widget.dataCard!.state!;
+    }
+    if(widget.dataCard!.city!=null && widget.dataCard!.city!=''){
+      city.text=widget.dataCard!.city!;
+    }
   }
+
   void addemptyPerson(){
  setState(() {
    personNameControllers.add(TextEditingController());
@@ -265,7 +242,6 @@ class _EditCardState extends State<NewEditCard> {
     }
   }
 
-
   Future<void>FatchGroup ()async{
     try{
       GroupModel groupModel = await GroupApi.getGroup();
@@ -273,6 +249,10 @@ class _EditCardState extends State<NewEditCard> {
         setState(() {
           Groups = groupModel.data!;
           isGroupLoading = false;
+          if(widget.dataCard!.groupid!=null){
+            int indexOfSelectedGroup= Groups.indexWhere((element) =>element.groupid==widget.dataCard!.groupid);
+            selectedGroups=Groups[indexOfSelectedGroup];
+          }
         });
       }else{
         setState(() {
@@ -286,46 +266,6 @@ class _EditCardState extends State<NewEditCard> {
     }
   }
 
-  // Future<void> FatchGroup() async {
-  //   setState(() {
-  //     isGroupLoading = true;
-  //     errormsg = null; // Clear previous error messages
-  //   });
-  //   try {
-  //     GroupModel groupModel = await GroupApi.getGroup();
-  //
-  //     if (groupModel.success == 1 && groupModel.data != null) {
-  //       setState(() {
-  //         Groups = groupModel.data!; // Groups list is populated HERE
-  //
-  //         // Now that 'Groups' is populated, you can safely search within it.
-  //         if (widget.dataCard != null && widget.dataCard!.group_id != null) {
-  //           selectedGroups = Groups.firstWhere(
-  //                 (group) => group.groupid == widget.dataCard!.group_id,
-  //             orElse: () {
-  //               debugPrint('Warning: Group with ID ${widget.dataCard!.group_id} from dataCard not found in fetched groups.');
-  //               return null!; // Return null if not found
-  //             },
-  //           );
-  //           debugPrint('Selected Group after search: ${selectedGroups?.groupname ?? "None"}');
-  //         }
-  //         isGroupLoading = false; // Set loading to false after all operations
-  //       });
-  //     } else {
-  //       setState(() {
-  //         errormsg = "No Groups Found";
-  //         isGroupLoading = false;
-  //       });
-  //     }
-  //   } catch (e) {
-  //     setState(() {
-  //       errormsg = "Something went wrong while fetching groups: $e";
-  //       isGroupLoading = false; // Ensure loading is set to false even on error
-  //     });
-  //     debugPrint('Error in FatchGroup API call: $e');
-  //   }
-  // }
-
   Future<void> FetchTag ()async{
     // istagLoading = true;
     try{
@@ -334,6 +274,10 @@ class _EditCardState extends State<NewEditCard> {
         setState(() {
           taglist = tagModel.data!;
           istagLoading =false;
+          if(widget.dataCard!.tagid!=null){
+            int indexOfSelectedTag= taglist.indexWhere((element) =>element.tagid==widget.dataCard!.tagid);
+            selectedTag=taglist[indexOfSelectedTag];
+          }
         });
       }else{
         setState(() {
@@ -351,9 +295,7 @@ class _EditCardState extends State<NewEditCard> {
     }
   }
 
-  List<PersonDetails> finalpersonDetails = [];
-
-Future<void> _SaveCard()async{
+  Future<void> _SaveCard()async{
     if(_formkey.currentState!.validate()){
       finalpersonDetails.clear();
      for(int i = 0; i< personNameControllers.length; i++){
@@ -393,11 +335,13 @@ Future<void> _SaveCard()async{
      final DataCard cardtosave = DataCard(
 
        cardID: widget.dataCard!.cardID,
-         tag_id: selectedTag!.tagid,
-         group_id: selectedGroups!.groupid,
+         tagid: selectedTag!.tagid,
+         groupid: selectedGroups!.groupid,
          companyName: companynameController.text.trim(),
          personDetails: finalpersonDetails,
-
+        country: country.text,
+       state: state.text,
+       city: city.text,
        companyPhoneNumber:companyPhoneController.text.trim(),
        companyAddress: companyAddressController.text.trim().split(',').map((s)=> s.trim()).toList(),
        companyEmail:companyEmailController.text.trim(),
@@ -578,8 +522,6 @@ Future<void> _SaveCard()async{
                             borderRadius: BorderRadius.circular(10)),
                           child: Column(
                             children: [
-
-
                                 Container(
                                   padding: EdgeInsets.all(16),
                                   decoration: BoxDecoration(
@@ -838,7 +780,115 @@ Future<void> _SaveCard()async{
                                     ],
                                   ),
                                 ),
-                          
+                              //Country
+                              SizedBox(height: 6),
+                            Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
+                                  decoration: BoxDecoration(
+                                    // color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Country',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      CountryStateCityPicker(
+                                          country: country,
+                                          state: state,
+                                          city: city,
+                                          isShowCountry: true,
+                                          dialogColor: Colors.grey.shade200,
+                                          textFieldDecoration: InputDecoration(
+                                              fillColor: Colors.white,
+                                              filled: true,
+                                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              //State
+                              SizedBox(height: 6),
+                            Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
+                                  decoration: BoxDecoration(
+                                    // color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'State',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      CountryStateCityPicker(
+                                          country: country,
+                                          state: state,
+                                          city: city,
+                                          isShowCountry: false,
+                                          isShowState:true,
+                                          isShowCity: false,
+                                          dialogColor: Colors.grey.shade200,
+                                          textFieldDecoration: InputDecoration(
+                                              fillColor: Colors.white,
+                                              filled: true,
+                                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              //City
+                              SizedBox(height: 6),
+                            Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
+                                  decoration: BoxDecoration(
+                                    // color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'City',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      CountryStateCityPicker(
+                                          country: country,
+                                          state: state,
+                                          city: city,
+                                          isShowCountry: false,
+                                          isShowState:false,
+                                          isShowCity: true,
+                                          dialogColor: Colors.grey.shade200,
+                                          textFieldDecoration: InputDecoration(
+                                              fillColor: Colors.white,
+                                              filled: true,
+                                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               SizedBox(height: 6),
                               // Company Website Card
                               Container(
@@ -1307,377 +1357,3 @@ Future<void> _SaveCard()async{
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-//list
-// import 'package:camera_app/screen/home.dart';
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-//
-// import '../componets/button.dart';
-// import '../componets/textform.dart';
-// import '../constant/colors.dart';
-// import 'groupandtags.dart';
-//
-// class AddDetails extends StatefulWidget {
-//   const AddDetails({super.key});
-//
-//   @override
-//   State<AddDetails> createState() => _AddDetailsState();
-// }
-//
-// class _AddDetailsState extends State<AddDetails> {
-//
-//
-//   final TextEditingController  nameController = TextEditingController();
-//   final TextEditingController  designationController = TextEditingController();
-//   final TextEditingController  phoneController = TextEditingController();
-//   final TextEditingController  emailController = TextEditingController();
-//   final TextEditingController  companynameController = TextEditingController();
-//   final TextEditingController  addressController = TextEditingController();
-//   final TextEditingController  webController = TextEditingController();
-//   final TextEditingController  noteController = TextEditingController();
-//
-//
-//   List<dynamic> listdata = [];
-//
-//
-//   void _addData(){
-//     if(nameController.text.isNotEmpty || designationController.text.isNotEmpty|| phoneController.text.isNotEmpty||emailController.text.isNotEmpty||
-//     companynameController.text.isNotEmpty || addressController.text.isNotEmpty
-//     ){
-//       setState(() {
-//         listdata.add({
-//           "name": nameController.text,
-//           "Designation": designationController.text,
-//           "phone": phoneController.text,
-//           "emaill": emailController.text,
-//           "companyname": companynameController.text,
-//           "address": addressController.text,
-//           "web": webController.text,
-//           "note": noteController.text
-//         });
-//       });
-//     }
-//     _gotohome();
-//   }
-//
-//
-//   void _gotohome(){
-//     Navigator.push(context,MaterialPageRoute(builder: (_)=> HomeScreen(datalist: listdata,)));
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final width = MediaQuery.of(context).size.width * 1;
-//     final height = MediaQuery.of(context).size.height * 1;
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       appBar: AppBar(
-//         surfaceTintColor: Colors.transparent, // <- This disables tinting
-//         shadowColor: Colors.black.withValues(alpha: 1), // manually define shadow
-//         backgroundColor: screenBGColor,
-//         elevation: 10,
-//         centerTitle:true,
-//         title: Text('Add Details'),
-//       ),
-//       body: SingleChildScrollView(
-//         child: Container(
-//           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-//           child: Column(
-//             mainAxisAlignment: MainAxisAlignment.start,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               //text card
-//               Text(
-//                 'Card Front',
-//                 style: GoogleFonts.raleway(
-//                   fontWeight: FontWeight.w700,
-//                   fontSize: 16,
-//                 ),
-//               ),
-//               // img
-//               Center(
-//                 child: Container(
-//                   alignment: Alignment.center,
-//                   height: height * 0.2,
-//                   width: width * 0.6,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(8),
-//                     color: Colors.grey.shade300,
-//
-//                   ),
-//                   child: Icon(Icons.image, color: Colors.grey),
-//                 ),
-//               ),
-//
-//               // Card Details
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Text(
-//                     'Card Details',
-//                     style: GoogleFonts.raleway(
-//                       fontWeight: FontWeight.w700,
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//
-//               Card(
-//                 // surfaceTintColor: Colors.transparent, // <- This disables tinting
-//                 shadowColor: Colors.black.withValues(alpha: 1,), // manually define shadow
-//                 elevation: 20,
-//                 color: Colors.black,
-//                 child: Container(
-//                   color: screenBGColor,
-//                   padding: EdgeInsets.all(5),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       // Text(
-//                       //   'Bussiness Tags',
-//                       //   style: GoogleFonts.inter(
-//                       //     fontWeight: FontWeight.w600,
-//                       //     fontSize: 14,
-//                       //   ),
-//                       // ),
-//                       //
-//                       // // General
-//                       // InkWell(
-//                       //   onTap: () {
-//                       //     Navigator.push(
-//                       //       context,
-//                       //       MaterialPageRoute(
-//                       //         builder: (context) => GroupAndTags(),
-//                       //       ),
-//                       //     );
-//                       //   },
-//                       //   child: Container(
-//                       //     padding: EdgeInsets.symmetric(
-//                       //       horizontal: 10,
-//                       //       vertical: 5,
-//                       //     ),
-//                       //     height: height * 0.06,
-//                       //     decoration: BoxDecoration(
-//                       //       borderRadius: BorderRadius.circular(10),
-//                       //       border: Border.all(color: Colors.grey),
-//                       //     ),
-//                       //     child: Row(
-//                       //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                       //       children: [
-//                       //         Text(
-//                       //           'General',
-//                       //           style: GoogleFonts.poppins(
-//                       //             fontSize: 12,
-//                       //             fontWeight: FontWeight.w500,
-//                       //           ),
-//                       //         ),
-//                       //         Icon(Icons.keyboard_arrow_down),
-//                       //       ],
-//                       //     ),
-//                       //   ),
-//                       // ),
-//
-//                       Text(
-//                         'Full Name',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: nameController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'XYZ Person',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.person_outline),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       Text(
-//                         'Designation',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: designationController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'XYZ ',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.account_box),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//                       // Phone
-//                       Text(
-//                         'Phone Number',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: phoneController,
-//                         heightTextform: height * 0.06,
-//                         hintText: '9999999999',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.call_outlined),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       // email
-//                       Text(
-//                         'Email',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: emailController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'abc@gmail.com',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.email_outlined),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       // Comapny Name
-//                       Text(
-//                         'Company Name',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: companynameController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'XYZ',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.maps_home_work_outlined),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       // Address
-//                       Text(
-//                         'Address',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: addressController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'Address',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.location_pin),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       // Company WebSite
-//                       Text(
-//                         'Comapany Website',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         controller: webController,
-//                         heightTextform: height * 0.06,
-//                         hintText: 'www.xyz.com',
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.web),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//
-//                       // Note
-//                       Text(
-//                         'Note',
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w600,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                       SizedBox(height: 5),
-//                       CommonTextForm(
-//                         contentpadding: 20,
-//                         controller: noteController,
-//                         maxline: 5,
-//
-//                         heightTextform: height * 0.1,
-//                         hintText: 'Notes',
-//
-//                         borderc: 10,
-//                         BorderColor: Colors.grey,
-//                         icon: Icon(Icons.note_alt_outlined),
-//                         obsecureText: false,
-//                       ),
-//                       SizedBox(height: 10),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//
-//               CommonButton(
-//                 height: height * 0.06,
-//                 bordercircular: 20,
-//                 onTap: (){
-//                   _addData();
-//                 },
-//                 child: Text(
-//                   'Add Details',
-//                   style: GoogleFonts.poppins(
-//                     fontWeight: FontWeight.w700,
-//                     fontSize: 16,
-//                     color: Colors.white,
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//
-//     );
-//   }
-// }
-//
-//
-//
-//
-//

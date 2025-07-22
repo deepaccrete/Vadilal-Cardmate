@@ -42,9 +42,10 @@ class DataCard {
   String? createdAt;
   String? extractedJSON;
   int? isBase64;
-
-  int? tag_id;
-  int? group_id;
+  int? tagid;
+  int? groupid;
+  String? tag;
+  String? group;
 
   DataCard({
     this.cardID,
@@ -62,8 +63,10 @@ class DataCard {
     this.createdAt,
     this.extractedJSON,
     this.isBase64,
-    this.tag_id,
-    this.group_id,
+    this.tagid,
+    this.groupid,
+    this.tag,
+    this.group,
     this.city,
     this.country,
     this.state,
@@ -121,8 +124,10 @@ class DataCard {
     createdAt = json['Created At']?.toString();
     extractedJSON = json['Extracted JSON']?.toString();
     isBase64 = json['Is Base64'] as int?;
-    tag_id: json['tag_id'] as int?;
-    group_id: json['group_id'] as int?;
+    tagid =json['tagid'] as int?;
+    groupid = json['groupid'] as int?;
+    tag = json['tag'];
+    group = json['group'];
 
   }
 
@@ -145,8 +150,14 @@ class DataCard {
     data['Created At'] = this.createdAt;
     data['Extracted JSON'] = this.extractedJSON;
     data['Is Base64'] = this.isBase64;
-    data['tag_id'] = this.tag_id;
-    data['group_id'] = this.group_id;
+    data['tagid'] = this.tagid;
+    data['groupid'] = this.groupid;
+    data['tag']=this.tag;
+    data['group']=this.group;
+    data['Country']=this.country;
+    data['State']=this.state;
+    data['City']=this.city;
+    data['Pincode']=this.pincode;
     return data;
   }
 

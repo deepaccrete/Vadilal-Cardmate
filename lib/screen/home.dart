@@ -719,31 +719,12 @@ bool ispersonvisible = true;
 
                                                                 Row(
                                                                   children: [
-                                                                    Container(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                            5,
-                                                                          ),
-                                                                      decoration: BoxDecoration(
-                                                                        color:
-                                                                            Colors
-                                                                                .blue,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              10,
-                                                                            ),
-                                                                      ),
-                                                                      child: Text(
-                                                                        'General',
-                                                                        style: GoogleFonts.poppins(
-                                                                          color:
-                                                                              Colors.white,
-                                                                          fontSize:
-                                                                              10,
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                        ),
-                                                                      ),
+                                                                    if(card.tag!=null && card.tag != '')
+                                                                    _buildSelectedItem(
+                                                                      card.tag!,
+                                                                      Icons.local_offer,
+                                                                      0,
+                                                                      true,
                                                                     ),
                                                                     Icon(
                                                                       Icons
@@ -896,463 +877,62 @@ bool ispersonvisible = true;
       ),
     );
   }
+
+  Color _getDynamicColor(int index) {
+    const List<Color> availableColors = [
+      Colors.blue,
+      Colors.green,
+      Colors.red,
+      Colors.purple,
+      Colors.orange,
+      Colors.pink,
+      Colors.indigo,
+      Colors.teal,
+      Colors.amber,
+      Colors.cyan,
+    ];
+    return availableColors[index % availableColors.length];
+  }
+
+  Widget _buildSelectedItem(String name, IconData icon, int colorIndex, bool isTag) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _getDynamicColor(colorIndex).withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Container(
+          //   width: 10,
+          //   height: 10,
+          //   decoration: BoxDecoration(
+          //     color: _getDynamicColor(colorIndex),
+          //     shape: BoxShape.circle,
+          //   ),
+          // ),
+          // SizedBox(width: 8),
+          Icon(icon, size: 16, color: _getDynamicColor(colorIndex)),
+          SizedBox(width: 6),
+          Text(
+            name,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
-
-// list
-/*  Container(
-                  width: width,
-                  height: height *0.2,
-                  child:ListView.builder(
-                      itemCount: widget.datalist!.length,
-                      itemBuilder: (context, index){
-
-                    final data  = widget.datalist![index];
-                    return   Container(
-                           color: Colors.white,
-                           width: width,
-                           height: height * 0.6,
-                           child: Column(
-                             children: [
-                               Padding(
-                                 padding: const EdgeInsets.all(8.0),
-                                 child: Card(
-                                   elevation: 10,
-                                   child: InkWell(
-                                     onTap: () {
-                                       Navigator.push(
-                                         context,
-                                         MaterialPageRoute(
-                                           builder: (context) => DetailsScreen(),
-                                         ),
-                                       );
-                                     },
-                                     child: Container(
-                                       decoration: BoxDecoration(
-                                         color: screenBGColor,
-
-
-                                         borderRadius: BorderRadius.circular(10),
-                                       ),
-                                       padding: EdgeInsets.all(5),
-                                       child: Column(
-                                         children: [
-                                           Row(
-                                             mainAxisAlignment:
-                                                 MainAxisAlignment.spaceAround,
-                                             children: [
-                                               Container(
-                                                 height: height * 0.1,
-                                                 width: width * 0.2,
-                                                 decoration: BoxDecoration(
-                                                   shape: BoxShape.circle,
-                                                   color: darkcolor,
-                                                 ),
-                                                 child: Icon(
-                                                   Icons.image,
-                                                   color: Colors.white,
-                                                   size: 40,
-                                                 ),
-                                               ),
-                                               SizedBox(width: 20),
-                                               Expanded(
-                                                 child: Container(
-                                                   width: width * 0.5,
-                                                   // color: Colors.purple,
-                                                   child: Column(
-                                                     mainAxisAlignment:
-                                                         MainAxisAlignment.start,
-                                                     crossAxisAlignment:
-                                                         CrossAxisAlignment.start,
-                                                     children: [
-                                                       Text(
-                                                         data['name'].toString(),
-                                                         textScaler: TextScaler.linear(
-                                                           1.2,
-                                                         ),
-
-                                                         style: GoogleFonts.raleway(
-                                                           fontWeight: FontWeight.w700,
-                                                           fontSize: 16,
-                                                           color: Colors.black,
-                                                         ),
-                                                       ),
-                                                       Text(
-                                                         data['note'].toString(),
-                                                         textScaler: TextScaler.linear(
-                                                           1.2,
-                                                         ),
-                                                         style: GoogleFonts.raleway(
-                                                           fontWeight: FontWeight.w400,
-                                                           fontSize: 11,
-                                                           color: subtext,
-                                                         ),
-                                                       ),
-                                                     ],
-                                                   ),
-                                                 ),
-                                               ),
-                                             ],
-                                           ),
-                                           Divider(),
-                                           Row(
-                                             mainAxisAlignment:
-                                                 MainAxisAlignment.spaceBetween,
-                                             children: [
-                                               Padding(
-                                                 padding: const EdgeInsets.only(
-                                                   left: 15,
-                                                   top: 15,
-                                                   bottom: 15,
-                                                 ),
-                                                 child: Row(
-                                                   children: [
-                                                     Icon(
-                                                       Icons.date_range,
-                                                       color: Colors.grey,
-                                                     ),
-                                                     Text(
-                                                       DateTime.now().day.toString(),
-                                                       style: GoogleFonts.inter(
-                                                         fontWeight: FontWeight.w700,
-                                                         fontSize: 12,
-                                                         color: Colors.grey.shade700,
-                                                       ),
-                                                     ),
-                                                     SizedBox(width: 2),
-                                                     Text(
-                                                       DateTime.now().month.toString(),
-                                                       style: GoogleFonts.inter(
-                                                         fontWeight: FontWeight.w700,
-                                                         fontSize: 12,
-                                                         color: Colors.grey.shade700,
-
-                                                       ),
-                                                     ),
-                                                     SizedBox(width: 2),
-
-                                                     Text(
-                                                       DateTime.now().year.toString(),
-                                                       style: GoogleFonts.inter(
-                                                         fontWeight: FontWeight.w700,
-                                                         fontSize: 12,
-                                                         color: Colors.grey.shade700,
-
-                                                       ),
-                                                     ),
-                                                   ],
-                                                 ),
-                                               ),
-
-                                               Row(
-                                                 children: [
-                                                   Container(
-                                                     padding: EdgeInsets.all(5),
-                                                     decoration: BoxDecoration(
-                                                       color: Colors.blue,
-                                                       borderRadius:
-                                                           BorderRadius.circular(10),
-                                                     ),
-                                                     child: Text(
-                                                       'General',
-                                                       style: GoogleFonts.poppins(
-                                                         color: Colors.white,
-                                                         fontSize: 10,
-                                                         fontWeight: FontWeight.w600
-                                                       ),
-                                                     ),
-                                                   ),
-                                                   Icon(Icons.more_vert_outlined),
-                                                 ],
-                                               ),
-                                             ],
-                                           ),
-                                         ],
-                                       ),
-                                     ),
-                                   ),
-                                 ),
-                               ),
-
-                               SizedBox(height: 10),
-                             ],
-                           ),
-                         );
-
-                      }),
-                )*/
-
-///hive data
-/* Expanded(
-//                         child: _cards.isEmpty
-//                             ? Center(
-//                           child: Column(
-//                             mainAxisAlignment: MainAxisAlignment.center,
-//                             children: [
-//                               Icon(Icons.person_search, size: 100, color: Colors.grey.shade300),
-//                               Text(
-//                                 'No Card Found',
-//                                 style: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
-//                               ),
-//                             ],
-//                           ),
-//                         )
-//                             : ListView.builder(
-//                           itemCount: _cards.length,
-//                           itemBuilder: (context, index) {
-//                             final card = _cards[index];
-//                             return Padding(
-//                               padding: const EdgeInsets.all(8.0),
-//                               child: Card(
-//                                 elevation: 10,
-//                                 child: InkWell(
-//                                   onTap: () {
-//                                     Navigator.push(
-//                                       context,
-//                                       MaterialPageRoute(
-//                                         builder: (context) => DetailsScreen(
-//                                             cardDetails: card,
-//                                           index: index
-//                                         ),
-//                                       ),
-//                                     ).then((result){
-//                                       if(result == true){
-//                                         _loadCard();
-//                                       }
-//                                     });
-//                                   },
-//                                   child: Container(
-//                                     padding: EdgeInsets.all(16),
-//                                     child: Column(
-//                                       children: [
-//                                         Row(
-//                                           children: [
-//                                             Container(
-//                                               height: height * 0.1,
-//                                               width: width * 0.2,
-//                                               decoration: BoxDecoration(
-//                                                 color: darkcolor,
-//                                               ),
-//                                               child: Icon(Icons.image, color: Colors.white, size: 40),
-//                                             ),
-//                                             SizedBox(width: 20),
-//                                             Expanded(
-//                                               child: Column(
-//                                                 crossAxisAlignment: CrossAxisAlignment.start,
-//                                                 children: [
-//                                                   Text(
-//                                                     card.fullname!,
-//                                                     style: GoogleFonts.raleway(
-//                                                       fontWeight: FontWeight.w700,
-//                                                       fontSize: 16,
-//                                                       color: Colors.black,
-//                                                     ),
-//                                                   ),
-//                                                   Text(
-//                                                     card.address!,
-//                                                     style: GoogleFonts.raleway(
-//                                                       fontWeight: FontWeight.w400,
-//                                                       fontSize: 11,
-//                                                       color: subtext,
-//                                                     ),
-//                                                   ),
-//                                                 ],
-//                                               ),
-//                                             ),
-//                                           ],
-//                                         ),
-//                                         Divider(),
-//                                         Row(
-//                                           mainAxisAlignment:
-//                                           MainAxisAlignment.spaceBetween,
-//                                           children: [
-//                                             Row(
-//                                               children: [
-//                                                 Icon(
-//                                                   Icons.date_range,
-//                                                   color: Colors.grey,
-//                                                 ),
-//                                                 Text(
-//                                                '23 May 2025',
-//                                                   style: GoogleFonts.inter(
-//                                                     fontWeight: FontWeight.w700,
-//                                                     fontSize: 12,
-//                                                     color: Colors.grey.shade700,
-//                                                   ),
-//                                                 ),
-//
-//                                               ],
-//                                             ),
-//
-//                                             Row(
-//                                               children: [
-//                                                 Container(
-//                                                   padding: EdgeInsets.all(5),
-//                                                   decoration: BoxDecoration(
-//                                                     color: Colors.blue,
-//                                                     borderRadius:
-//                                                     BorderRadius.circular(10),
-//                                                   ),
-//                                                   child: Text(
-//                                                     'General',
-//                                                     style: GoogleFonts.poppins(
-//                                                         color: Colors.white,
-//                                                         fontSize: 10,
-//                                                         fontWeight: FontWeight.w600
-//                                                     ),
-//                                                   ),
-//                                                 ),
-//                                                 Icon(Icons.more_vert_outlined),
-//                                               ],
-//                                             ),
-//                                           ],
-//                                         ),
-//                                       ],
-//                                     ),
-//                                   ),
-//                                 ),
-//                               ),
-//                             );
-//                           },
-//                         ),
-//                       )*/
-
-////////////////////////////////////
-// Padding(
-//   padding: const EdgeInsets.all(8.0),
-//   child: Card(
-//     elevation: 10,
-//     child: InkWell(
-//       onTap: () {
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(
-//             builder: (context) => DetailsScreen(),
-//           ),
-//         );
-//       },
-//       child: Container(
-//         decoration: BoxDecoration(
-//           // color: Colors.red,
-//           borderRadius: BorderRadius.circular(10),
-//         ),
-//         padding: EdgeInsets.all(16),
-//         child: Column(
-//           children: [
-//             Row(
-//               // crossAxisAlignment: CrossAxisAlignment.start,
-//               mainAxisAlignment:
-//                   MainAxisAlignment.spaceAround,
-//               children: [
-//                 Container(
-//                   height: height * 0.1,
-//                   width: width * 0.2,
-//                   decoration: BoxDecoration(
-//                     // shape: BoxShape.circle,
-//                     color: darkcolor,
-//                   ),
-//                   child: Icon(
-//                     Icons.image,
-//                     color: Colors.white,
-//                     size: 40,
-//                   ),
-//                 ),
-//                 SizedBox(width: 20),
-//                 Expanded(
-//                   child: Padding(
-//                     padding: const EdgeInsets.all(5.0),
-//                     child: Container(
-//                       // height: height * 0.08,
-//                       width: width * 0.5,
-//                       // color: Colors.purple,
-//                       child: Column(
-//                         mainAxisAlignment:
-//                             MainAxisAlignment.start,
-//                         crossAxisAlignment:
-//                             CrossAxisAlignment.start,
-//                         children: [
-//                           Text(
-//                             'XYZ Person',
-//                             textScaler: TextScaler.linear(
-//                               1.2,
-//                             ),
-//
-//                             style: GoogleFonts.raleway(
-//                               fontWeight: FontWeight.w700,
-//                               fontSize: 16,
-//                               color: Colors.black,
-//                             ),
-//                           ),
-//                           Text(
-//                             'Location of dummy, address of dummy, location map, directions to dummy',
-//                             textScaler: TextScaler.linear(
-//                               1.2,
-//                             ),
-//                             style: GoogleFonts.raleway(
-//                               fontWeight: FontWeight.w400,
-//                               fontSize: 11,
-//                               color: subtext,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             Divider(),
-//             Container(
-//               // color: Colors.blueGrey,
-//               child: Row(
-//                 mainAxisAlignment:
-//                     MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Row(
-//                     children: [
-//                       Icon(
-//                         Icons.date_range,
-//                         color: Colors.grey,
-//                         size: 25,
-//                       ),
-//                       Text(
-//                         "23 May 25",
-//                         style: GoogleFonts.inter(
-//                           fontWeight: FontWeight.w700,
-//                           fontSize: 14,
-//                           color: Colors.grey.shade700,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//
-//                   Row(
-//                     children: [
-//                       Container(
-//                         // margin: EdgeInsets.all(5),
-//                         padding: EdgeInsets.all(5),
-//                         decoration: BoxDecoration(
-//                           color: Colors.blue,
-//                           borderRadius:
-//                               BorderRadius.circular(10),
-//                         ),
-//                         child: Text(
-//                           'General',
-//                           style: GoogleFonts.poppins(
-//                             color: Colors.white,
-//                             fontSize: 12,
-//                             fontWeight: FontWeight.w600,
-//                           ),
-//                         ),
-//                       ),
-//                       Icon(Icons.more_vert_outlined),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     ),
-//   ),
-// ),`

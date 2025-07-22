@@ -581,19 +581,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 children: [
                   Text('Card Details', style: GoogleFonts.raleway(fontWeight: FontWeight.w700, fontSize: 18)),
 
-                  Container(
-                    padding: EdgeInsets.all(5),
-                    // width: 100,
-                    decoration: BoxDecoration(
-                      color: HexColor('#386BF6'),
-                      borderRadius: BorderRadius.circular(30),
-                      // shape: BoxShape.circle
+                  if(widget.dataCard.tag!=null && widget.dataCard.tag != '')
+                    _buildSelectedItem(
+                      widget.dataCard.tag!,
+                      Icons.local_offer,
+                      0,
+                      true,
                     ),
-                    child: Text(
-                      'General',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 10),
@@ -625,22 +619,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               ),
                             ],
                           ),
-
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.indigo.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                          if(widget.dataCard.group!=null && widget.dataCard.group != '')
+                            _buildSelectedItem(
+                              widget.dataCard.group!,
+                              Icons.group,
+                              1,
+                              false,
                             ),
-                            child: Text(
-                              'Business',
-                              style: GoogleFonts.raleway(
-                                fontSize: 12,
-                                color: Colors.indigo[700],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -1253,232 +1238,69 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                 ),
-
-              // Card
-              /*  Container(
-                // color: Colors.red,
-                child: Card(
-                  elevation: 5,
-                  child: Container(
-                    color: screenBGColor,
-                    padding: EdgeInsets.all(10),
-                    child: Column(
-                      children: [
-                        // fullName
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: 30,
-                              color: HexColor('#222222'),
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-
-                              children: [
-                                Text(
-                                  'Full Name',
-                                  style: GoogleFonts.raleway(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  // widget.cardDetails!.fullname!,
-                                  'null',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Divider(),
-                        // Email
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                          children: [
-
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  Icons.email_outlined,
-                                  size: 30,
-                                  color: HexColor('#222222'),
-                                ),
-                                SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                                  children: [
-                                    Text(
-                                      'Email Address',
-                                      style: GoogleFonts.raleway(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      // widget.cardDetails!.email!,
-
-                                      'null',
-                                      style: GoogleFonts.raleway(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w300,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                            Icon(Icons.send, color: HexColor('#5AA465')),
-                          ],
-                        ),
-                        Divider(),
-                        // companyName
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 30,
-                              width: 30,
-                              child: Image.asset(
-                                'assets/images/buildingicon.png',
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-
-                              children: [
-                                Text(
-                                  'Comapany Name',
-                                  style: GoogleFonts.raleway(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  // widget.cardDetails!.companyname!,
-                                  'null',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Divider(),
-                        // phoneNumber
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  Icons.email_outlined,
-                                  size: 30,
-                                  color: HexColor('#222222'),
-                                ),
-                                SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                                  children: [
-                                    Text(
-                                      'Phone Number',
-                                      style: GoogleFonts.raleway(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    Text(
-                                      // widget.cardDetails!.number!,
-                                      'null',
-                                      style: GoogleFonts.raleway(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w300,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  height: 20,
-                                  width: 20,
-                                  child: Image.asset('assets/images/whatsappicon.png'),),
-                                SizedBox(width: 5,),
-                                Icon(Icons.call, color: HexColor('#5AA465')),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Divider(),
-
-                        // address
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.location_on_outlined,
-                              size: 30,
-                              color: HexColor('#222222'),
-                            ),
-                            SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Address',
-                              textAlign: TextAlign.start,
-                                  style: GoogleFonts.raleway(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                // widget.cardDetails!.address!,
-                                  '',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-
-
-                      ],
-                    ),
-                  ),
-                ),
-              ),*/
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Color _getDynamicColor(int index) {
+    const List<Color> availableColors = [
+      Colors.blue,
+      Colors.green,
+      Colors.red,
+      Colors.purple,
+      Colors.orange,
+      Colors.pink,
+      Colors.indigo,
+      Colors.teal,
+      Colors.amber,
+      Colors.cyan,
+    ];
+    return availableColors[index % availableColors.length];
+  }
+
+  Widget _buildSelectedItem(String name, IconData icon, int colorIndex, bool isTag) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _getDynamicColor(colorIndex).withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Container(
+          //   width: 10,
+          //   height: 10,
+          //   decoration: BoxDecoration(
+          //     color: _getDynamicColor(colorIndex),
+          //     shape: BoxShape.circle,
+          //   ),
+          // ),
+          // SizedBox(width: 8),
+          Icon(icon, size: 16, color: _getDynamicColor(colorIndex)),
+          SizedBox(width: 6),
+          Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+
+            ),
+          )
+        ],
       ),
     );
   }

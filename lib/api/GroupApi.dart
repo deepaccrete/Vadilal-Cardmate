@@ -64,7 +64,7 @@ class GroupApi {
 
 
 
-static Future<GroupPostModel>postGrroup({required  String groupname})async{
+static Future<GroupPostModel>postGroup({required  String groupname})async{
     try{
       print("=========================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> We are here ");
       var headers1 = {
