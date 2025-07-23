@@ -1,5 +1,6 @@
 import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/screen/bottomnav.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
@@ -12,6 +13,14 @@ import '../../local_package/country_state_city Picker/country_state_city_picker.
 import '../../model/GroupModel.dart';
 import '../../model/TagModel.dart';
 import '../../model/cardModel.dart';
+
+import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:math';
+import 'package:flutter/services.dart';
+
+import '../fullScreenImageViewer.dart';
+
 
 class NewEditCard extends StatefulWidget {
   DataCard? dataCard;
@@ -39,6 +48,7 @@ class _EditCardState extends State<NewEditCard> {
   TextEditingController  companynameController = TextEditingController();
   TextEditingController  companyAddressController     = TextEditingController();
   TextEditingController  companyWebController         = TextEditingController();
+  TextEditingController  companyWorkController         = TextEditingController();
   TextEditingController  companyPhoneController         = TextEditingController();
   TextEditingController  companyNoteController        = TextEditingController();
 
@@ -58,6 +68,7 @@ class _EditCardState extends State<NewEditCard> {
   FocusNode companyemailnode = FocusNode();
   FocusNode companyAddressnode = FocusNode();
   FocusNode companyWebnode = FocusNode();
+  FocusNode companyWorknode = FocusNode();
   FocusNode companyNotenode = FocusNode();
 
   // Focus Nodes for dynamic person details
@@ -166,7 +177,16 @@ class _EditCardState extends State<NewEditCard> {
       text: widget.dataCard!.companyAddress?.join(', ') ?? '',
       // nameController = TextEditingController(text: widget.dataCard.personDetails)
     );
-    companyPhoneController = TextEditingController(text: widget.dataCard!.companyPhoneNumber);
+    if(widget.dataCard?.companyPhoneNumber != null &&
+        widget.dataCard!.companyPhoneNumber!.trim().isNotEmpty &&
+        widget.dataCard!.companyPhoneNumber!.toLowerCase() != 'null'){
+      companyPhoneController = TextEditingController(text: widget.dataCard!.companyPhoneNumber);
+    }else{
+      companyPhoneController = TextEditingController();
+
+    }
+
+
     if (widget.dataCard?.webAddress != null &&
         widget.dataCard!.webAddress!.trim().isNotEmpty &&
         widget.dataCard!.webAddress!.toLowerCase() != 'null') {
@@ -174,6 +194,18 @@ class _EditCardState extends State<NewEditCard> {
     } else {
       companyWebController = TextEditingController(); // empty controller if invalid
     }
+    companyWorkController = TextEditingController(text: widget.dataCard!.companySWorkDetails);
+
+    if (widget.dataCard?.companySWorkDetails != null &&
+        widget.dataCard!.companySWorkDetails!.trim().isNotEmpty &&
+        widget.dataCard!.companySWorkDetails!.toLowerCase() != 'null') {
+      companyWorkController = TextEditingController(text: widget.dataCard!.companySWorkDetails);
+    } else {
+      companyWorkController = TextEditingController(); // empty controller if invalid
+    }
+
+
+
     if(widget.dataCard!.country!=null && widget.dataCard!.country!=''){
       country.text=widget.dataCard!.country!;
     }
@@ -345,6 +377,7 @@ class _EditCardState extends State<NewEditCard> {
        companyPhoneNumber:companyPhoneController.text.trim(),
        companyAddress: companyAddressController.text.trim().split(',').map((s)=> s.trim()).toList(),
        companyEmail:companyEmailController.text.trim(),
+         companySWorkDetails: companyWorkController.text.trim(),
          webAddress: companyWebController.text.trim(),
      );
 
@@ -401,8 +434,132 @@ class _EditCardState extends State<NewEditCard> {
 
 }}
 
+
+
+  int _currentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
+    List<Uint8List> images = [];
+    Uint8List? decodeBase64Image(String base64String) {
+      try {
+        print('Attempting to decode base64 string...');
+
+        if (base64String.isEmpty) {
+          print('Error: base64 string is empty');
+          return null;
+        }
+
+        // Print the first part of the string to see what format we're dealing with
+        print('Original string starts with: ${base64String.substring(0, min(50, base64String.length))}');
+
+        String cleanBase64 = base64String;
+
+        // If the string starts with 'data:', extract the base64 part
+        if (cleanBase64.startsWith('data:')) {
+          int commaIndex = cleanBase64.indexOf(',');
+          if (commaIndex != -1) {
+            cleanBase64 = cleanBase64.substring(commaIndex + 1);
+            print('Removed data: prefix directly from string');
+          }
+        }
+
+        // Remove any whitespace
+        cleanBase64 = cleanBase64.replaceAll(RegExp(r'[\s\n]'), '');
+
+        // Add padding if needed
+        int paddingLength = cleanBase64.length % 4;
+        if (paddingLength > 0) {
+          cleanBase64 += '=' * (4 - paddingLength);
+        }
+
+        try {
+          // First decode attempt
+          var bytes = base64Decode(cleanBase64);
+          print('First decode successful, got ${bytes.length} bytes');
+
+          // Check if the result is another base64 string
+          String decodedString = String.fromCharCodes(bytes);
+          if (decodedString.contains('base64,')) {
+            print('Found another base64 string, decoding again...');
+            String secondBase64 = decodedString.split('base64,').last;
+            // Clean up the second base64 string
+            secondBase64 = secondBase64.replaceAll(RegExp(r'[\s\n]'), '');
+            paddingLength = secondBase64.length % 4;
+            if (paddingLength > 0) {
+              secondBase64 += '=' * (4 - paddingLength);
+            }
+            bytes = base64Decode(secondBase64);
+            print('Second decode successful, got ${bytes.length} bytes');
+          }
+
+          // Verify this is actually an image by checking for common image headers
+          if (bytes.length > 8) {
+            // Check for JPEG header (FF D8)
+            if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
+              print('Detected JPEG image format');
+              return bytes;
+            }
+            // Check for PNG header (89 50 4E 47)
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+              print('Detected PNG image format');
+              return bytes;
+            }
+            // Check for GIF header (47 49 46)
+            if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+              print('Detected GIF image format');
+              return bytes;
+            }
+
+            print(
+              'Warning: No valid image header detected. First 8 bytes: [${bytes.take(8).map((b) => '0x${b.toRadixString(16).padLeft(2, '0')}').join(', ')}]',
+            );
+          }
+
+          return bytes;
+        } catch (e) {
+          print('Base64 decoding error: $e');
+          return null;
+        }
+      } catch (e) {
+        print('Error in decodeBase64Image: $e');
+        return null;
+      }
+    }
+
+    print('\nProcessing front image...');
+    if (widget.dataCard!.cardFrontImageBase64 != null && widget.dataCard!.cardFrontImageBase64!.isNotEmpty) {
+      final frontImage = decodeBase64Image(widget.dataCard!.cardFrontImageBase64!);
+      if (frontImage != null) {
+        images.add(frontImage);
+        print('Successfully added front image');
+      } else {
+        print('Failed to decode front image');
+      }
+    } else {
+      print('No front image data available');
+    }
+
+    print('\nProcessing back image...');
+    if (widget.dataCard!.cardBackImageBase64 != null && widget.dataCard!.cardBackImageBase64!.isNotEmpty) {
+      final backImage = decodeBase64Image(widget.dataCard!.cardBackImageBase64!);
+      if (backImage != null) {
+        images.add(backImage);
+        print('Successfully added back image');
+      } else {
+        print('Failed to decode back image');
+      }
+    } else {
+      print('No back image data available');
+    }
+
+    print('\nFinal results:');
+    print('Total images decoded: ${images.length}');
+    print(Theme.of(context).cardColor);
+
+
+
+
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     return Scaffold(
@@ -416,6 +573,9 @@ class _EditCardState extends State<NewEditCard> {
         title: Text('Edit Details'),
       ),
       body: SingleChildScrollView(
+
+
+
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Column(
@@ -439,18 +599,77 @@ class _EditCardState extends State<NewEditCard> {
               // img
               Center(
                 child: Container(
-                  // alignment: Alignment.center,
-                  height: height * 0.2,
-                  width: width * 0.6,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.grey.shade300,
-
-                  ),
-                  child: Icon(Icons.image, color: Colors.grey),
+                  alignment: Alignment.center,
+                  // color: Colors.grey.shade300,
+                  // height: height * 0.4,
+                  // color:Colors.red,
+                  // width: width * 0.85,
+                  child:
+                  images.isNotEmpty
+                      ? CarouselSlider(
+                    carouselController: CarouselSliderController(),
+                    options: CarouselOptions(
+                      onPageChanged: (index, reason) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      // height: height * 0.4,
+                      enlargeCenterPage: true,
+                      enableInfiniteScroll: false,
+                      autoPlay: false,
+                      viewportFraction: 0.9,
+                    ),
+                    items:
+                    images.map((imgBytes) {
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      FullScreenImageViewer(
+                                        images: images,
+                                        initialIndex: _currentIndex,
+                                      ),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.symmetric(horizontal: 5.0),
+                              // decoration: BoxDecoration(
+                              //   color: Colors.grey[200],
+                              //   borderRadius: BorderRadius.circular(
+                              //     10,
+                              //   ),
+                              // ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: InteractiveViewer(
+                                  minScale: 0.5,
+                                  maxScale: 5.0,
+                                  child: Image.memory(imgBytes, fit: BoxFit.contain),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  )
+                      : Icon(Icons.image, color: Colors.grey),
                 ),
               ),
-
               // Card Details
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -656,7 +875,7 @@ class _EditCardState extends State<NewEditCard> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Name',
+                                          'Company Name',
                                           style: GoogleFonts.raleway(
                                             fontSize: 15,
                                             color: Colors.black87,
@@ -682,7 +901,7 @@ class _EditCardState extends State<NewEditCard> {
                                             return null;
                                           },
                                           onfieldsumbitted: (value) {
-                                            FocusScope.of(context).requestFocus(companyAddressnode);
+                                            FocusScope.of(context).requestFocus(companyphonenode);
                                           },
                                         )
                                       ],
@@ -808,11 +1027,16 @@ class _EditCardState extends State<NewEditCard> {
                                           dialogColor: Colors.grey.shade200,
                                           textFieldDecoration: InputDecoration(
                                               fillColor: Colors.white,
-                                              filled: true,
+                                              filled: true, 
+                                            contentPadding: EdgeInsets.all(10), 
                                               suffixIcon: const Icon(Icons.arrow_downward_rounded),
-                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                              border:OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color:Colors.black26
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(15)),
                                       ),
-                                    ],
+                                      )],
                                   ),
                                 ),
                               //State
@@ -843,11 +1067,17 @@ class _EditCardState extends State<NewEditCard> {
                                           isShowState:true,
                                           isShowCity: false,
                                           dialogColor: Colors.grey.shade200,
-                                          textFieldDecoration: InputDecoration(
-                                              fillColor: Colors.white,
-                                              filled: true,
-                                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
-                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                          textFieldDecoration:InputDecoration(
+                                            fillColor: Colors.white,
+                                            filled: true,
+                                            contentPadding: EdgeInsets.all(10),
+                                            suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                            border:OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color:Colors.black26
+                                                ),
+                                                borderRadius: BorderRadius.circular(15)),
+                                          ),
                                       ),
                                     ],
                                   ),
@@ -881,10 +1111,16 @@ class _EditCardState extends State<NewEditCard> {
                                           isShowCity: true,
                                           dialogColor: Colors.grey.shade200,
                                           textFieldDecoration: InputDecoration(
-                                              fillColor: Colors.white,
-                                              filled: true,
-                                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
-                                              border: const OutlineInputBorder(borderSide: BorderSide.none))
+                                            fillColor: Colors.white,
+                                            filled: true,
+                                            contentPadding: EdgeInsets.all(10),
+                                            suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                            border:OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color:Colors.black26
+                                                ),
+                                                borderRadius: BorderRadius.circular(15)),
+                                          ),
                                       ),
                                     ],
                                   ),
@@ -927,13 +1163,58 @@ class _EditCardState extends State<NewEditCard> {
                                         //   return null;
                                         // },
                                         onfieldsumbitted: (value) {
-                                          FocusScope.of(context).requestFocus(companyNotenode);
+                                          FocusScope.of(context).requestFocus(companyWorknode);
                                         },
                                       )
                                     ],
                                   ),
                                 ),
                           
+                              SizedBox(height: 6),
+                              Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 15),
+                                  decoration: BoxDecoration(
+                                    // color: Color(0xFFFEF7FF),
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Company Work Details',
+                                        style: GoogleFonts.raleway(
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      CommonTextForm(
+                                        maxline: 2,
+                                        fillColor: Colors.white,
+                                        labelColor: Colors.black54,
+                                        contentpadding: 10,
+                                        focusNode: companyWorknode,
+                                        controller: companyWorkController,
+                                        labeltext: "Enter Company's Work Details",
+                                        borderc: 10,
+                                        BorderColor: Colors.black26,
+                                        icon: Icon(Icons.web, color: Colors.black54),
+                                        obsecureText: false,
+                                        // validator: (value) {
+                                        //   if (value == null || value.isEmpty) {
+                                        //     return "Please enter website";
+                                        //   }
+                                        //   return null;
+                                        // },
+                                        onfieldsumbitted: (value) {
+                                          FocusScope.of(context).requestFocus(companyNotenode);
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ),
+
                               SizedBox(height: 6),
                               // Note Card
                              Container(

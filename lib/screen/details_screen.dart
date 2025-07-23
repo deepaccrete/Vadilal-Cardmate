@@ -19,7 +19,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service_plus/contacts_service_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-
 import 'fullScreenImageViewer.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -276,8 +275,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     print('\nFinal results:');
     print('Total images decoded: ${images.length}');
     print(Theme.of(context).cardColor);
-
+    final String? phoneNumbers = widget.dataCard.companyPhoneNumber;
     return Scaffold(
+
       backgroundColor: screenBGColor,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
@@ -493,7 +493,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                     ),
                     // Edit button
-                    if(appStore.appSetting!.isedit??false)
+                    // if(appStore.appSetting!.isedit??false)
                       InkWell(
                       onTap: () async {
                         Navigator.push(
@@ -600,7 +600,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   children: [
                     // bussiness
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -612,7 +612,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               Text(
                                 'Company Details',
                                 style: GoogleFonts.raleway(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey[800],
                                 ),
@@ -631,12 +631,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
 
                     SizedBox(height: 12),
-
                     Card(
                       elevation: 2,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         children: [
+
+
                           ListTile(
                             onTap: () {
                               // if(widget.dataCard.companyEmail!= null&&
@@ -668,6 +669,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+
                             subtitle: Text(
                               widget.dataCard.companyName!,
                               style: GoogleFonts.raleway(
@@ -728,9 +730,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 ),
                               ),
 
-                          if (widget.dataCard.companyPhoneNumber != null &&
-                              widget.dataCard.companyPhoneNumber!.isNotEmpty &&
-                              widget.dataCard.companyPhoneNumber!.toLowerCase() != null)
+
+                          if (phoneNumbers != null &&
+                              phoneNumbers.isNotEmpty &&
+                              phoneNumbers.toLowerCase() != 'null')
                             ...widget.dataCard.companyPhoneNumber!
                                 .split(',')
                                 .map(
@@ -778,6 +781,51 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   ),
                                 )
                                 .toList(),
+
+
+
+                          if (widget.dataCard.webAddress != null && widget.dataCard.webAddress!.isNotEmpty)
+                          ListTile(
+                            onTap: () {
+                              // if(widget.dataCard.companyEmail!= null&&
+                              //     widget.dataCard.companyEmail!.isNotEmpty){
+                              //   sendmail(toEmail: widget.dataCard.companyEmail
+                              //       .toString());
+                              // }
+                              // if(widget.dataCard.companyEmail==null){
+                              //   sendmail(toEmail: widget.dataCard.companyEmail
+                              //       .toString());
+                              // }
+                              // Handle company email tap
+                            },
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.business, color: Colors.blue[700], size: 20),
+                            ),
+                            title: Text(
+                              'Web Address',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            subtitle: Text(
+                              widget.dataCard.webAddress!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
 
                           if (widget.dataCard.companyAddress != null && widget.dataCard.companyAddress!.isNotEmpty && widget.dataCard.companyAddress! != "null")
                             // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
@@ -976,6 +1024,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ],
                       ),
                     ),
+
+
                   ],
                 ),
               ),
@@ -1294,8 +1344,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
             name,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
               color: Colors.black87,
 
             ),

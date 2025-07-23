@@ -62,31 +62,25 @@ class CardApi {
 
 
     try {
-      final response = await request.send();
+      final streamedResponse = await request.send();
+
+      final response = await http.Response.fromStream(streamedResponse); // ✅ Convert here
 
       if (response.statusCode == 200) {
-        // final responseBody = await response.stream.bytesToString();
-        // final cardModel = CardModel.fromJson(jsonDecode(responseBody));
-        // if(cardModel.success == 1 && cardModel.data != null && cardModel.data!.isNotEmpty){
-        //   print('API Success : DataCard object extracted');
-        //   // return cardModel.data![0];
-        // }
-
-        final responseBody = await response.stream.bytesToString();
-        final json = jsonDecode(responseBody);
-        if (json['success'] == 1) {
-          return response;
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == 1) {
+          return response; // return as http.Response
         }
-        // return true;
-      } else {
-        print(" Upload failed: ${response.statusCode}");
-        return null;
       }
+
+      return response; // Even if not 200, return the response for error handling
     } catch (e) {
-      print(" Upload error: $e");
+      print("Upload error: $e");
       return null;
     }
   }
+
+
   static Future<bool> updateCard(DataCard card) async {
 
     if (card.cardID == null) {

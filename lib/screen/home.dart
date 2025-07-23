@@ -268,6 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
 */
 
 bool ispersonvisible = true;
+
   @override
   Widget build(BuildContext context) {
     List<DataCard> fillterCard = [];
@@ -377,14 +378,15 @@ bool ispersonvisible = true;
                         ),
                       ),
                     ),
+
                     Container(
                       // color: Colors.blue,  // Removing blue background
                       width: width,
-                      height: height * 0.75,
+                      height: height * 0.7,
                       // Adjusted height to leave space for FAB
                       child: Column(
                         children: [
-                          SizedBox(height: 10),
+                          // SizedBox(height: 10),
                           Expanded(
                             child:
                                 isCardLoading
@@ -750,7 +752,7 @@ bool ispersonvisible = true;
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
+                    // SizedBox(height: 10),
                   ],
                 ),
               ),

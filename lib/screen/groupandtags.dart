@@ -281,8 +281,8 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                               ),
                             )
                             : Container(
-                              width: width * 0.5,
-                              height: height * 0.15,
+                              width: width * 0.7,
+                              height: height * 0.2,
                               // color: Colors.red,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,

@@ -11,6 +11,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../local_package/country_state_city Picker/country_state_city_picker.dart';
 
 import '../api/CardApi.dart';
 import '../api/ImageUploadApi.dart';
@@ -18,6 +19,8 @@ import '../componets/button.dart';
 import '../componets/textform.dart';
 import '../constant/colors.dart';
 import 'package:http/http.dart'as http ;
+
+import 'bottomnav.dart';
 class AddManual extends StatefulWidget {
   const AddManual({super.key});
 
@@ -43,6 +46,15 @@ class _AddManualState extends State<AddManual> {
   TextEditingController  addressController     = TextEditingController();
   TextEditingController  webController         = TextEditingController();
   TextEditingController  noteController        = TextEditingController();
+  TextEditingController  companyWorkController         = TextEditingController();
+  TextEditingController  pincodeController         = TextEditingController();
+
+  TextEditingController country=TextEditingController();
+  TextEditingController state=TextEditingController();
+  TextEditingController city=TextEditingController();
+
+
+
   List<TextEditingController> personNameControllers = [];
   List<TextEditingController> personMobileControllers = [];
   List<TextEditingController> personEmailControllers = [];
@@ -56,6 +68,8 @@ class _AddManualState extends State<AddManual> {
   FocusNode addressnode = FocusNode();
   FocusNode webnode = FocusNode();
   FocusNode notenode = FocusNode();
+  FocusNode companyWorknode = FocusNode();
+  FocusNode   pincodenode = FocusNode();
 
   List<Map<String, dynamic>> listdata = [];
   final ImagePicker _picker = ImagePicker();
@@ -295,17 +309,21 @@ Future<void>FatchGroup ()async{
 
       // 2. Prepare DataCard text data (without image Base64 fields)
       DataCard cardTextData = DataCard(
-        tagid: selectedGroups!.groupid,
-        groupid: selectedTag!.tagid,
+        tagid: selectedTag!.tagid,
+        groupid: selectedGroups!.groupid,
         companyName: companynameController.text,
         personDetails: persons.isNotEmpty ? persons : null,
         companyPhoneNumber: phoneController.text,
         companyAddress: addressController.text.isNotEmpty
             ? [addressController.text]
             : null,
+        country: country.text,
+          state: state.text,
+        city: city.text,
         companyEmail: companyemailController.text,
         webAddress: webController.text,
-        companySWorkDetails: noteController.text,
+        companySWorkDetails:companyWorkController.text,
+        pincode: pincodeController.text,
         gSTIN: null
       );
 
@@ -325,7 +343,7 @@ Future<void>FatchGroup ()async{
       if (response.statusCode == 200 || response.statusCode == 201) {
         _showSnackBar('Card details uploaded successfully!');
         _clearForm();
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.push(context, MaterialPageRoute(builder: (context)=> Bottomnav()));
       } else {
         String errorMsg = 'Failed to upload card. Status: ${response.statusCode}';
         if (response.body.isNotEmpty) {
@@ -994,8 +1012,214 @@ Future<void>FatchGroup ()async{
                             ),
                           ),
                           SizedBox(height: 10),
-                  
-                  // Company Website Card
+
+
+
+
+
+                    //Country
+                    SizedBox(height: 6),
+                    Card(
+                      elevation: 4,
+                      shadowColor: Colors.black26,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),),
+                      child: Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          // color: Color(0xFFFEF7FF),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Country',
+                              style: GoogleFonts.raleway(
+                                fontSize: 15,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            CountryStateCityPicker(
+                              country: country,
+                              state: state,
+                              city: city,
+                              isShowCountry: true,
+                              dialogColor: Colors.grey.shade200,
+                              textFieldDecoration: InputDecoration(
+                                fillColor: Colors.white,
+                                filled: true,
+                                contentPadding: EdgeInsets.all(10),
+                                suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                border:OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color:Colors.black
+                                    ),
+                                    borderRadius: BorderRadius.circular(15)),
+                              ),
+                            )],
+                        ),
+                      ),
+                    ),
+                    //State
+                    SizedBox(height: 6),
+                    Card(
+                      elevation: 4,
+                      shadowColor: Colors.black26,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Container(
+                        padding: EdgeInsets.all(20),
+
+                        decoration: BoxDecoration(
+                          // color: Color(0xFFFEF7FF),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'State',
+                              style: GoogleFonts.raleway(
+                                fontSize: 15,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            CountryStateCityPicker(
+                              country: country,
+                              state: state,
+                              city: city,
+                              isShowCountry: false,
+                              isShowState:true,
+                              isShowCity: false,
+                              dialogColor: Colors.grey.shade200,
+                              textFieldDecoration: InputDecoration(
+                              fillColor: Colors.white,
+                              filled: true,
+                              contentPadding: EdgeInsets.all(10),
+                              suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                              border:OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color:Colors.black
+                                  ),
+                                  borderRadius: BorderRadius.circular(15)),
+                            ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    //City
+                    SizedBox(height: 6),
+                    Card(
+                      elevation: 4,
+                      shadowColor: Colors.black26,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Container(
+                        padding: EdgeInsets.all(20),
+
+                        decoration: BoxDecoration(
+                          // color: Color(0xFFFEF7FF),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'City',
+                              style: GoogleFonts.raleway(
+                                fontSize: 15,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            CountryStateCityPicker(
+                              country: country,
+                              state: state,
+                              city: city,
+                              isShowCountry: false,
+                              isShowState:false,
+                              isShowCity: true,
+                              dialogColor: Colors.grey.shade200,
+                              textFieldDecoration: InputDecoration(
+                                fillColor: Colors.white,
+                                filled: true,
+                                contentPadding: EdgeInsets.all(10),
+                                suffixIcon: const Icon(Icons.arrow_downward_rounded),
+                                border:OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color:Colors.black
+                                    ),
+                                    borderRadius: BorderRadius.circular(15)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+
+
+                  // Company pincode0
+                          Card(
+                            elevation: 4,
+                            shadowColor: Colors.black26,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFEF7FF),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'PinCode',
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 15,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  CommonTextForm(
+                                    fillColor: Colors.white,
+                                    labelColor: Colors.black54,
+                                    contentpadding: 10,
+                                    focusNode: pincodenode,
+                                    controller: pincodeController,
+                                    labeltext: 'Enter Pincode',
+                                    borderc: 10,
+                                    BorderColor: Colors.black26,
+                                    icon: Icon(Icons.web, color: Colors.black54),
+                                    obsecureText: false,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Please enter website";
+                                      }
+                                      return null;
+                                    },
+                                    onfieldsumbitted: (value) {
+                                      FocusScope.of(context).requestFocus(webnode);
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          // Company Website Card
                           Card(
                             elevation: 4,
                             shadowColor: Colors.black26,
@@ -1046,7 +1270,58 @@ Future<void>FatchGroup ()async{
                             ),
                           ),
                           SizedBox(height: 10),
-                  
+
+                          Card(
+                            elevation: 4,
+                            shadowColor: Colors.black26,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              decoration: BoxDecoration(
+                                // color: Color(0xFFFEF7FF),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Company Work Details',
+                                    style: GoogleFonts.raleway(
+                                      fontSize: 15,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  CommonTextForm(
+                                    maxline: 2,
+                                    fillColor: Colors.white,
+                                    labelColor: Colors.black54,
+                                    contentpadding: 10,
+                                    focusNode: companyWorknode,
+                                    controller: companyWorkController,
+                                    labeltext: "Enter Company's Work Details",
+                                    borderc: 10,
+                                    BorderColor: Colors.black26,
+                                    icon: Icon(Icons.web, color: Colors.black54),
+                                    obsecureText: false,
+                                    // validator: (value) {
+                                    //   if (value == null || value.isEmpty) {
+                                    //     return "Please enter website";
+                                    //   }
+                                    //   return null;
+                                    // },
+                                    onfieldsumbitted: (value) {
+                                      FocusScope.of(context).requestFocus(notenode);
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
                   // Note Card
                           Card(
                             elevation: 4,
