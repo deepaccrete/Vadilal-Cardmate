@@ -30,11 +30,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Timer(Duration(seconds: 3), () {
       _startAnimation();
-      if (appStore.isLoggedIn) {
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
-      } else {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-      }
+      // if (appStore.isLoggedIn) {
+      //   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Bottomnav()), (route) => false);
+      // } else {
+      //   Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      // }
 
       //
     });
@@ -145,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             bottom: 16,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Text("V0.0.2", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300)),
+              child: Text("V1.0.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300)),
             ),
           ),
         ],

@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:math';
+import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/tempscreen/newEditScreen.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:mobx/mobx.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/model/cardModel.dart';
@@ -19,14 +22,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service_plus/contacts_service_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../api/GroupApi.dart';
+import '../api/TagApi.dart';
+import '../model/GroupModel.dart';
+import '../model/TagModel.dart';
+import 'bottomnav.dart';
 import 'fullScreenImageViewer.dart';
 
 class DetailsScreen extends StatefulWidget {
   // final CardDetails cardDetails;
   DataCard dataCard;
+  bool newEntry;
 
   // final int index;
-  DetailsScreen({super.key, required this.dataCard});
+  DetailsScreen({super.key, required this.dataCard,this.newEntry=false});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -64,6 +74,106 @@ Future<void> sendmail({required String toEmail, String subject = '', String body
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
+  // New entry fields
+  TextEditingController noteController = TextEditingController();
+  List<Datatag> taglist = [];
+  Datatag ? selectedTag;
+
+  // List<Grou>
+  List<Data> Groups = [];
+  Data? selectedGroups;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.newEntry) {
+      // Initialize your tag and group lists here
+      _loadTagsAndGroups();
+    }
+  }
+
+  // Add this method to load your tags and groups
+  void _loadTagsAndGroups() {
+    if(widget.newEntry){
+      FetchTag();
+      FetchGroup();
+    }
+  }
+
+  bool get hasInputData {
+    return noteController.text.isNotEmpty ||
+        selectedTag != null ||
+        selectedGroups != null;
+  }
+
+  Future<void> _updateCard() async {
+    // TODO: Implement your update logic here
+    print('Updating card with:');
+    print('Note: ${noteController.text}');
+    print('Selected Tag: ${selectedTag?.tagname}');
+    print('Selected Group: ${selectedGroups?.groupname}');
+    await CardApi.updateCardTagGroupNote(widget.dataCard.cardID, noteController.text, selectedTag?.tagid, selectedGroups?.groupid).then((value) {
+      print("--------------> ${value}");
+      if(value){
+        Bottomnav().launch(context,isNewTask:true);
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error Updating')));
+      }
+    },);
+    // After successful update, you might want to navigate back
+    // Navigator.pop(context, true);t
+
+  }
+
+  Future<void>FetchGroup ()async{
+    try{
+      GroupModel groupModel = await GroupApi.getGroup();
+      if(groupModel.success == 1 && groupModel.data != null){
+        setState(() {
+          Groups = groupModel.data!;
+          if(widget.dataCard!.groupid!=null){
+            int indexOfSelectedGroup= Groups.indexWhere((element) =>element.groupid==widget.dataCard!.groupid);
+            selectedGroups=Groups[indexOfSelectedGroup];
+          }
+        });
+      }else{   }
+    }catch(e){
+      setState(() {
+      });
+    }
+  }
+
+  Future<void> FetchTag ()async{
+    // istagLoading = true;
+    try{
+      TagModel tagModel = await TagApi.getTag();
+      if(tagModel.success == 1 && tagModel.data != null){
+        setState(() {
+          taglist = tagModel.data!;
+          if(widget.dataCard!.tagid!=null){
+            int indexOfSelectedTag= taglist.indexWhere((element) =>element.tagid==widget.dataCard!.tagid);
+            selectedTag=taglist[indexOfSelectedTag];
+          }
+        });
+      }else{
+      }
+      ; }catch(e){
+      print('something Went Wrong => $e');
+
+    }finally{
+      setState(() {
+      });
+    }
+  }
+
+  void _cancelUpdate() {
+    setState(() {
+      noteController.clear();
+      selectedTag = null;
+      selectedGroups = null;
+    });
+    Navigator.pop(context);
+  }
 
   //Hive Load Card
   /*Future<void> _loadCard() async {
@@ -306,77 +416,67 @@ class _DetailsScreenState extends State<DetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Existing card details section continues here...
               Center(
                 child: Container(
                   alignment: Alignment.center,
-                  // color: Colors.grey.shade300,
-                  // height: height * 0.4,
-                  // color:Colors.red,
-                  // width: width * 0.85,
                   child:
-                      images.isNotEmpty
-                          ? CarouselSlider(
-                            carouselController: CarouselSliderController(),
-                            options: CarouselOptions(
-                              onPageChanged: (index, reason) {
-                                setState(() {
-                                  _currentIndex = index;
-                                });
-                              },
-                              // height: height * 0.4,
-                              enlargeCenterPage: true,
-                              enableInfiniteScroll: false,
-                              autoPlay: false,
-                              viewportFraction: 0.9,
+                  images.isNotEmpty
+                      ? CarouselSlider(
+                    carouselController: CarouselSliderController(),
+                    options: CarouselOptions(
+                      onPageChanged: (index, reason) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      },
+                      enlargeCenterPage: true,
+                      enableInfiniteScroll: false,
+                      autoPlay: false,
+                      viewportFraction: 0.9,
+                    ),
+                    items:
+                    images.map((imgBytes) {
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) =>
+                                      FullScreenImageViewer(
+                                        images: images,
+                                        initialIndex: _currentIndex,
+                                      ),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.symmetric(horizontal: 5.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: InteractiveViewer(
+                                  minScale: 0.5,
+                                  maxScale: 5.0,
+                                  child: Image.memory(imgBytes, fit: BoxFit.contain),
+                                ),
+                              ),
                             ),
-                            items:
-                                images.map((imgBytes) {
-                                  return Builder(
-                                    builder: (BuildContext context) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            PageRouteBuilder(
-                                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                                  FullScreenImageViewer(
-                                                    images: images,
-                                                    initialIndex: _currentIndex,
-                                                  ),
-                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                                return FadeTransition(
-                                                  opacity: animation,
-                                                  child: child,
-                                                );
-                                              },
-                                              transitionDuration: const Duration(milliseconds: 300),
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: MediaQuery.of(context).size.width,
-                                          margin: EdgeInsets.symmetric(horizontal: 5.0),
-                                          // decoration: BoxDecoration(
-                                          //   color: Colors.grey[200],
-                                          //   borderRadius: BorderRadius.circular(
-                                          //     10,
-                                          //   ),
-                                          // ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(10),
-                                            child: InteractiveViewer(
-                                              minScale: 0.5,
-                                              maxScale: 5.0,
-                                              child: Image.memory(imgBytes, fit: BoxFit.contain),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                }).toList(),
-                          )
-                          : Icon(Icons.image, color: Colors.grey),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  )
+                      : Icon(Icons.image, color: Colors.grey),
                 ),
               ),
 
@@ -391,191 +491,174 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       color: Colors.grey,
                       activeColor: Colors.blueAccent,
                       size: Size.square(9.0),
-                      // activeSize: Size(12.0, 9.0),
                       activeShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                       spacing: EdgeInsets.all(4.0),
                     ),
-                    // onTap: (postion){
-                    //
-                    // },
                   ),
                 ),
               SizedBox(height: 20),
-              Container(
-                // color: Colors.red,
-                width: width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Add button
-                    if (appStore.appSetting!.isadd ?? false)InkWell(
-                      onTap: () async {
-                        try {
-                          await SaveContact(
-                            firstname: widget.dataCard.companyName ?? '',
-                            email: widget.dataCard.companyEmail ?? '',
-                            phone: widget.dataCard.companyPhoneNumber ?? '',
-                            // lastName: widget.dataCard.ownerName ?? ''
-                          );
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text(
-                                  'Contact Saved',
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
-                                ),
-                                content: Container(
-                                  decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
-                                  child: Icon(Icons.check, color: Colors.white, size: 100),
-                                ),
-                                actions: [
-                                  Center(
-                                    child: TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text('OK', style: GoogleFonts.poppins(fontSize: 18)),
-                                    ),
+
+              // Only show action buttons if NOT in newEntry mode
+              if (!widget.newEntry)
+                Container(
+                  width: width,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Add button
+                      if (appStore.appSetting!.isadd ?? false)InkWell(
+                        onTap: () async {
+                          try {
+                            await SaveContact(
+                              firstname: widget.dataCard.companyName ?? '',
+                              email: widget.dataCard.companyEmail ?? '',
+                              phone: widget.dataCard.companyPhoneNumber ?? '',
+                            );
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text(
+                                    'Contact Saved',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
                                   ),
-                                ],
+                                  content: Container(
+                                    decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                                    child: Icon(Icons.check, color: Colors.white, size: 100),
+                                  ),
+                                  actions: [
+                                    Center(
+                                      child: TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('OK', style: GoogleFonts.poppins(fontSize: 18)),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } catch (e) {
+                            print("Error during contact save: $e");
+                          }
+                        },
+
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
+                              child: Icon(Icons.person_add_alt_outlined, color: Colors.green),
+                            ),
+                            Text(
+                              'Add',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: HexColor('#639766'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Share button
+                      if(appStore.appSetting!.isshare??false)InkWell(
+                        onTap: () {
+                          _shareAllCardDetails();
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
+                              child: Icon(Icons.share, color: HexColor('#3380B6')),
+                            ),
+                            Text(
+                              'Share',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: HexColor('#3380B6'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Edit button
+                      if(appStore.appSetting!.isedit??false)
+                        InkWell(
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => NewEditCard(dataCard: widget.dataCard)),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(color: Colors.grey.shade500, shape: BoxShape.circle),
+                                child: Icon(Icons.edit_outlined, color: HexColor('#000000')),
+                              ),
+                              Text(
+                                'Edit',
+                                style: GoogleFonts.raleway(
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                  color: HexColor('#00000'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Delete button
+                      if(appStore.appSetting!.isdeletecard??false)InkWell(
+                        onTap: () async {
+                          showConfirmDialogCustom(
+                            context,
+                            title: "Are you sure you want to delete this card",
+                            dialogType: DialogType.DELETE,
+                            onAccept: (p0) async {
+                              await CardApi.deleteCard(widget.dataCard.cardID).then(
+                                    (value) {
+                                  if(value['success']==1){
+                                    Bottomnav().launch(context,isNewTask: true);
+                                  }
+                                },
                               );
                             },
                           );
-                        } catch (e) {
-                          print("Error during contact save: $e");
-                        }
-                      },
-
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
-                            child: Icon(Icons.person_add_alt_outlined, color: Colors.green),
-                          ),
-                          Text(
-                            'Add',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#639766'),
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(color: Colors.red.shade100, shape: BoxShape.circle),
+                              child: Icon(Icons.delete_outline, color: HexColor('903034')),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Share button
-                    if(appStore.appSetting!.isshare??false)InkWell(
-                      onTap: () {
-                        _shareAllCardDetails();
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
-                            child: Icon(Icons.share, color: HexColor('#3380B6')),
-                          ),
-                          Text(
-                            'Share',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#3380B6'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Edit button
-                    // if(appStore.appSetting!.isedit??false)
-                      InkWell(
-                      onTap: () async {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => NewEditCard(dataCard: widget.dataCard)),
-                        );
-                        // final result =  await
-                        // Navigator.push(context,MaterialPageRoute(builder: (context)=> EditDetails(cardDetails: widget.cardDetails,
-                        //     index:widget.index)));
-                        // if(result == true){
-                        // Navigator.pop(context , true);
-                        // }
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(color: Colors.grey.shade500, shape: BoxShape.circle),
-                            child: Icon(Icons.edit_outlined, color: HexColor('#000000')),
-                          ),
-                          Text(
-                            'Edit',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('#00000'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Delete button
-                    if(appStore.appSetting!.isdeletecard??false)InkWell(
-                      onTap: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text('Delete Card'),
-                                content: Text('Are you sure you want to delete this card?'),
-                                actions: [
-                                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('Cancel')),
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(true),
-                                    child: Text('Delete', style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
+                            Text(
+                              'Delete',
+                              style: GoogleFonts.raleway(
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: HexColor('903034'),
                               ),
-                        );
-
-                        // if (confirm == true) {
-                        //   final box = await Hive.openBox<CardDetails>('cardbox');
-                        //   await box.deleteAt(widget.index); // Delete using index
-                        //   Navigator.pop(context, true); // Pop and return true to refresh previous screen
-                        // }
-                      },
-
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(color: Colors.red.shade100, shape: BoxShape.circle),
-                            child: Icon(Icons.delete_outline, color: HexColor('903034')),
-                          ),
-                          Text(
-                            'Delete',
-                            style: GoogleFonts.raleway(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 16,
-                              color: HexColor('903034'),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               SizedBox(height: 20),
-              // Card Details And Genral
+              // Card Details And General
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -598,7 +681,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // bussiness
+                    // business
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
@@ -640,15 +723,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
                           ListTile(
                             onTap: () {
-                              // if(widget.dataCard.companyEmail!= null&&
-                              //     widget.dataCard.companyEmail!.isNotEmpty){
-                              //   sendmail(toEmail: widget.dataCard.companyEmail
-                              //       .toString());
-                              // }
-                              // if(widget.dataCard.companyEmail==null){
-                              //   sendmail(toEmail: widget.dataCard.companyEmail
-                              //       .toString());
-                              // }
                               // Handle company email tap
                             },
                             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -680,55 +754,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ),
                           ),
 
-                          // (person.email== null || person.email!.trim().isEmpty || person.email!.toLowerCase()=='null')
-
-                          // if (widget.dataCard.companyEmail != null &&
-                          //     widget.dataCard.companyEmail!.isNotEmpty
-                          // // &&  widget.dataCard.companyEmail!.toLowerCase()=='null'
-                          // )
                           (widget.dataCard.companyEmail == null ||
-                                  widget.dataCard.companyEmail!.trim().isEmpty ||
-                                  widget.dataCard.companyEmail!.toLowerCase() == 'null')
+                              widget.dataCard.companyEmail!.trim().isEmpty ||
+                              widget.dataCard.companyEmail!.toLowerCase() == 'null')
                               ? SizedBox()
                               : ListTile(
-                                onTap: () {
-                                  // if(widget.dataCard.companyEmail!= null&&
-                                  //     widget.dataCard.companyEmail!.isNotEmpty){
-                                  //   sendmail(toEmail: widget.dataCard.companyEmail
-                                  //       .toString());
-                                  // }
-                                  if (widget.dataCard.companyEmail == null) {
-                                    sendmail(toEmail: widget.dataCard.companyEmail.toString());
-                                  }
-                                  // Handle company email tap
-                                },
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(Icons.email_outlined, color: Colors.blue[700], size: 20),
-                                ),
-                                title: Text(
-                                  'Email',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  widget.dataCard.companyEmail!,
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 14,
-                                    color: Colors.grey[800],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                            onTap: () {
+                              if (widget.dataCard.companyEmail == null) {
+                                sendmail(toEmail: widget.dataCard.companyEmail.toString());
+                              }
+                            },
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              child: Icon(Icons.email_outlined, color: Colors.blue[700], size: 20),
+                            ),
+                            title: Text(
+                              'Email',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.companyEmail!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
 
 
                           if (phoneNumbers != null &&
@@ -738,48 +800,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 .split(',')
                                 .map(
                                   (phone) => ListTile(
-                                    onTap: () {
-                                      callNumber(phone.toString());
-
-                                      // callNumber(phone.split('+91-').toString());
-                                      //    callNumber(phone.replaceAll('+91-', '').trim());
-                                      //    callNumber('1234567890');
-                                      //    child: Text('Test Call');
-                                    },
-                                    onLongPress: () async {
-                                      await Clipboard.setData(ClipboardData(text: phone.trim()));
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
-                                    },
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    leading: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 20),
-                                    ),
-                                    title: Text(
-                                      'Phone',
-                                      style: GoogleFonts.raleway(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      phone.trim(),
-                                      style: GoogleFonts.raleway(
-                                        fontSize: 14,
-                                        color: Colors.grey[800],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                                onTap: () {
+                                  callNumber(phone.toString());
+                                },
+                                onLongPress: () async {
+                                  await Clipboard.setData(ClipboardData(text: phone.trim()));
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                                },
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                )
+                                  child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 20),
+                                ),
+                                title: Text(
+                                  'Phone',
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  phone.trim(),
+                                  style: GoogleFonts.raleway(
+                                    fontSize: 14,
+                                    color: Colors.grey[800],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            )
                                 .toList(),
 
 
@@ -828,8 +885,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           ),
 
                           if (widget.dataCard.companyAddress != null && widget.dataCard.companyAddress!.isNotEmpty && widget.dataCard.companyAddress! != "null")
-                            // (widget.dataCard.companyAddress == null || widget.dataCard.companyAddress!.trim().isEmpty || widget.dataCard.companyAddress!.toLowerCase()=='null')
-                            //  ?SizedBox():
                             ListTile(
                               onTap: () {},
                               onLongPress: () async {
@@ -869,43 +924,43 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             ),
                           //Country
                           if (widget.dataCard.country != null && widget.dataCard.country!.isNotEmpty && widget.dataCard.country! != "null")
-                          ListTile(
-                            onTap: () {},
-                            onLongPress: () async {
-                              await Clipboard.setData(
-                                ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
-                              );
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
-                            },
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                            ListTile(
+                              onTap: () {},
+                              onLongPress: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: widget.dataCard.companyAddress!.join(', ')),
+                                );
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                              },
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
                               ),
-                              child: Icon(Icons.location_on_outlined, color: Colors.orange[700], size: 20),
-                            ),
-                            title: Text(
-                              'Country',
-                              style: GoogleFonts.raleway(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
+                              title: Text(
+                                'Country',
+                                style: GoogleFonts.raleway(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              subtitle: Text(
+                                widget.dataCard.country!,
+                                style: GoogleFonts.raleway(
+                                  fontSize: 14,
+                                  color: Colors.grey[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
-                            subtitle: Text(
-                              widget.dataCard.country!,
-                              style: GoogleFonts.raleway(
-                                fontSize: 14,
-                                color: Colors.grey[800],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
 
                           //State
                           if (widget.dataCard.state != null && widget.dataCard.state!.isNotEmpty && widget.dataCard.state! != "null")
@@ -987,40 +1042,72 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 ),
                               ),
                             ),
-                          // if (widget.dataCard.companySWorkDetails != null &&
-                          //
+
                           (widget.dataCard.companySWorkDetails == null ||
-                                  widget.dataCard.companySWorkDetails!.trim().isEmpty ||
-                                  widget.dataCard.companySWorkDetails!.toLowerCase() == 'null')
+                              widget.dataCard.companySWorkDetails!.trim().isEmpty ||
+                              widget.dataCard.companySWorkDetails!.toLowerCase() == 'null')
                               ? SizedBox()
                               : ListTile(
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.purple.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(Icons.work_outline, color: Colors.purple[700], size: 20),
-                                ),
-                                title: Text(
-                                  'Company Work',
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  widget.dataCard.companySWorkDetails!,
-                                  style: GoogleFonts.raleway(
-                                    fontSize: 14,
-                                    color: Colors.grey[800],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              child: Icon(Icons.work_outline, color: Colors.purple[700], size: 20),
+                            ),
+                            title: Text(
+                              'Company Work',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.companySWorkDetails!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+
+                          (widget.dataCard.note == null ||
+                              widget.dataCard.note!.trim().isEmpty ||
+                              widget.dataCard.note!.toLowerCase() == 'null')
+                              ? SizedBox()
+                              : ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.note_alt_outlined, color: Colors.grey[700], size: 20),
+                            ),
+                            title: Text(
+                              'Note',
+                              style: GoogleFonts.raleway(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              widget.dataCard.note!,
+                              style: GoogleFonts.raleway(
+                                fontSize: 14,
+                                color: Colors.grey[800],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1066,7 +1153,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                       SizedBox(height: 12),
                       ...widget.dataCard.personDetails!.map(
-                        (person) => Container(
+                            (person) => Container(
                           margin: const EdgeInsets.only(bottom: 12.0),
                           child: Card(
                             elevation: 2,
@@ -1121,28 +1208,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             (person.name == null ||
-                                                    person.name!.trim().isEmpty ||
-                                                    person.name!.toLowerCase() == 'null')
+                                                person.name!.trim().isEmpty ||
+                                                person.name!.toLowerCase() == 'null')
                                                 ? SizedBox()
                                                 : Text(
-                                                  person.name!,
-                                                  // person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
-                                                  style: GoogleFonts.raleway(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.grey[800],
-                                                  ),
-                                                ),
-                                            // Text(
-                                            //   // person.name ?? 'N/A',
-                                            //   person.name!.contains('null') ? person.position.toString() : person.name.toString() ?? "N/A" ,
-                                            //   style: GoogleFonts.raleway(
-                                            //     fontSize: 16,
-                                            //     fontWeight: FontWeight.w600,
-                                            //     color: Colors.grey[800],
-                                            //   ),
-                                            // ),
-
+                                              person.name!,
+                                              style: GoogleFonts.raleway(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.grey[800],
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -1155,130 +1231,101 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                     ],
                                   ),
 
-                                  // if (person.phoneNumber != null ||
-                                  //     person.email != null)
-
-                                  // (person.phoneNumber == null ||
-                                  //         person.phoneNumber!.trim().isEmpty ||
-                                  //         person.phoneNumber!.toLowerCase() == 'null')
-                                  //     ? SizedBox()
-                                  //     :
                                   Container(
-                                        margin: EdgeInsets.only(top: 16),
-                                        padding: EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey[50],
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Column(
-                                          children: [
-
-
-
-                                            (person.position == null || person.position!.trim().isEmpty || person.position!.toLowerCase() == 'null')
+                                    margin: EdgeInsets.only(top: 16),
+                                    padding: EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        (person.position == null || person.position!.trim().isEmpty || person.position!.toLowerCase() == 'null')
                                             ?SizedBox()
-                                           : ListTile(
-                                                // onTap: () {
-                                                //   callNumber(person.position.toString());
-                                                // },
-                                                // onLongPress: () async {
-                                                //   await Clipboard.setData(ClipboardData(text: person.phoneNumber!));
-                                                //   ScaffoldMessenger.of(
-                                                //     context,
-                                                //   ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
-                                                // },
-                                                contentPadding: EdgeInsets.zero,
-                                                leading: Container(
-                                                  width: 32,
-                                                  height: 32,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.green.withOpacity(0.1),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Icon(Icons.work, color: Colors.green[700], size: 18),
-                                                ),
-                                                title: Text(
-                                                  person.position!,
-                                                  style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
-                                                ),
-                                              ),
-
-
-                                            (person.phoneNumber == null ||
-                                                person.phoneNumber!.trim().isEmpty ||
-                                                    person.phoneNumber!.toLowerCase() == 'null')
-                                                ? SizedBox()
-                                                :
-                                              ListTile(
-                                                onTap: () {
-                                                  callNumber(person.phoneNumber.toString());
-                                                },
-                                                onLongPress: () async {
-                                                  await Clipboard.setData(ClipboardData(text: person.phoneNumber!));
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
-                                                },
-                                                contentPadding: EdgeInsets.zero,
-                                                leading: Container(
-                                                  width: 32,
-                                                  height: 32,
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.green.withOpacity(0.1),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 18),
-                                                ),
-                                                title: Text(
-                                                  person.phoneNumber!,
-                                                  style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
-                                                ),
-                                              ),
-
-
-
-                                            (person.email == null ||
-                                                    person.email!.trim().isEmpty ||
-                                                    person.email!.toLowerCase() == 'null')
-                                                ? SizedBox()
-                                                : ListTile(
-                                                  onTap: () {
-                                                    // Handle email tap
-                                                  },
-                                                  contentPadding: EdgeInsets.zero,
-                                                  leading: Container(
-                                                    width: 32,
-                                                    height: 32,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.red.withOpacity(0.1),
-                                                      borderRadius: BorderRadius.circular(8),
-                                                    ),
-                                                    child: Icon(Icons.email_outlined, color: Colors.red[700], size: 18),
-                                                  ),
-                                                  title: Text(
-                                                    person.email!,
-                                                    style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
-                                                  ),
-                                                  trailing: IconButton(
-                                                    icon: Icon(Icons.open_in_new, color: Colors.grey[600], size: 20),
-                                                    onPressed: () {
-                                                      // if(person.email==null){
-                                                      //   sendmail(toEmail: person.email.toString());
-                                                      // }
-
-                                                      sendmail(
-                                                        subject: '',
-                                                        body: '',
-                                                        toEmail: person.email!,
-                                                        // Subject: 'HelloFromVadilal',
-                                                        //   body: 'Test Mail'
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                          ],
+                                            : ListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          leading: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(Icons.work, color: Colors.green[700], size: 18),
+                                          ),
+                                          title: Text(
+                                            person.position!,
+                                            style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                          ),
                                         ),
-                                      ),
+
+                                        (person.phoneNumber == null ||
+                                            person.phoneNumber!.trim().isEmpty ||
+                                            person.phoneNumber!.toLowerCase() == 'null')
+                                            ? SizedBox()
+                                            :
+                                        ListTile(
+                                          onTap: () {
+                                            callNumber(person.phoneNumber.toString());
+                                          },
+                                          onLongPress: () async {
+                                            await Clipboard.setData(ClipboardData(text: person.phoneNumber!));
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(SnackBar(content: Text('Copied To ClipBoard')));
+                                          },
+                                          contentPadding: EdgeInsets.zero,
+                                          leading: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(Icons.phone_outlined, color: Colors.green[700], size: 18),
+                                          ),
+                                          title: Text(
+                                            person.phoneNumber!,
+                                            style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                          ),
+                                        ),
+
+                                        (person.email == null ||
+                                            person.email!.trim().isEmpty ||
+                                            person.email!.toLowerCase() == 'null')
+                                            ? SizedBox()
+                                            : ListTile(
+                                          onTap: () {
+                                            // Handle email tap
+                                          },
+                                          contentPadding: EdgeInsets.zero,
+                                          leading: Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Icon(Icons.email_outlined, color: Colors.red[700], size: 18),
+                                          ),
+                                          title: Text(
+                                            person.email!,
+                                            style: GoogleFonts.raleway(fontSize: 14, color: Colors.grey[800]),
+                                          ),
+                                          trailing: IconButton(
+                                            icon: Icon(Icons.open_in_new, color: Colors.grey[600], size: 20),
+                                            onPressed: () {
+                                              sendmail(
+                                                subject: '',
+                                                body: '',
+                                                toEmail: person.email!,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1288,6 +1335,180 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                 ),
+              // New Entry Section - Show when newEntry is true
+              if (widget.newEntry) ...[
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Add Details',
+                          style: GoogleFonts.raleway(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+
+                        // Note TextField
+                        TextFormField(
+                          controller: noteController,
+                          decoration: InputDecoration(
+                            labelText: 'Enter Note',
+                            hintText: 'Add a note for this card...',
+                            labelStyle: GoogleFonts.poppins(fontSize: 14),
+                            hintStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue, width: 2),
+                            ),
+                            prefixIcon: Icon(Icons.note_add, color: Colors.grey[600]),
+                          ),
+                          maxLines: 3,
+                          onChanged: (value) {
+                            setState(() {}); // Refresh to show/hide update button
+                          },
+                        ),
+                        SizedBox(height: 16),
+
+                        // Tag Dropdown
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.local_offer, color: Colors.grey[600], size: 20),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonHideUnderline(
+                                  child: taglist.isEmpty
+                                      ? Center(child: CircularProgressIndicator(color: primarycolor))
+                                      : DropdownButton<Datatag>(
+                                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.black),
+                                    isExpanded: true,
+                                    hint: Text("Select Tag", style: GoogleFonts.poppins()),
+                                    value: selectedTag,
+                                    items: taglist.map((tag) {
+                                      return DropdownMenuItem<Datatag>(
+                                        value: tag,
+                                        child: Text(tag.tagname.toString()),
+                                      );
+                                    }).toList(),
+                                    onChanged: (Datatag? value) {
+                                      setState(() {
+                                        selectedTag = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+
+                        // Group Dropdown
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.group, color: Colors.grey[600], size: 20),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonHideUnderline(
+                                  child: Groups.isEmpty
+                                      ? Center(child: CircularProgressIndicator(color: primarycolor))
+                                      : DropdownButton<Data>(
+                                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.black),
+                                    isExpanded: true,
+                                    hint: Text("Select Group", style: GoogleFonts.poppins()),
+                                    value: selectedGroups,
+                                    items: Groups.map((group) {
+                                      return DropdownMenuItem<Data>(
+                                        value: group,
+                                        child: Text(group.groupname.toString()),
+                                      );
+                                    }).toList(),
+                                    onChanged: (Data? value) {
+                                      setState(() {
+                                        selectedGroups = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20),
+
+                        // Update and Cancel Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: _cancelUpdate,
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: Colors.grey),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: hasInputData ? _updateCard : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: hasInputData ? Colors.blue : Colors.grey[300],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                  elevation: hasInputData ? 2 : 0,
+                                ),
+                                child: Text(
+                                  'Update',
+                                  style: GoogleFonts.poppins(
+                                    color: hasInputData ? Colors.white : Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
             ],
           ),
         ),
@@ -1329,15 +1550,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Container(
-          //   width: 10,
-          //   height: 10,
-          //   decoration: BoxDecoration(
-          //     color: _getDynamicColor(colorIndex),
-          //     shape: BoxShape.circle,
-          //   ),
-          // ),
-          // SizedBox(width: 8),
           Icon(icon, size: 16, color: _getDynamicColor(colorIndex)),
           SizedBox(width: 6),
           Text(
@@ -1347,11 +1559,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
               fontSize: 10,
               fontWeight: FontWeight.w400,
               color: Colors.black87,
-
             ),
           )
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    noteController.dispose();
+    super.dispose();
   }
 }

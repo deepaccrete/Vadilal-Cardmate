@@ -3,13 +3,13 @@ import 'package:camera_app/main.dart';
 import 'package:camera_app/screen/Camera_Screen_2.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
-import 'package:camera_app/screen/tempscreen/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
 import '../util/const.dart';
+import 'ProfileScreen.dart';
 import 'groupandtags.dart';
 import 'login1.dart';
 
@@ -21,32 +21,12 @@ class Bottomnav extends StatefulWidget {
 class _BottomnavState extends State<Bottomnav> {
   int _SelectedIndex = 0;
 
-
-
-  Future<void>logout()async{
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove(TOKEN);
-    prefs.setBool(IS_LOGGED_IN, false);
-    prefs.remove('loginResponse');
-    // prefs.remove()
-    // await prefs.clear();
-
-    // appStore.setUser(null);
-    appStore.setIsLogin(false);
-    appStore.setUserToken(null);
-
-    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (_)=>
-    LoginScreen()),
-        (route) => false);
-
-  }
-
   static final List<Widget> _WidgetOption = [
     HomeScreen(),
     // CameraScreen(),
     AddManual(),
     GroupAndTags(),
-    LogOut(),
+    ProfileScreen(),
   ];
 
   Widget _getSelectedScreen(int index) {
@@ -59,35 +39,17 @@ class _BottomnavState extends State<Bottomnav> {
         return AddManual();
       case 2:
         return GroupAndTags();
-
       case 3:
-        return LogOut();
+        return ProfileScreen();
       default:
         return HomeScreen();
     }
   }
 
   void _onTap(int index) {
-    if (index == 3) {
-      // Show confirmation dialog instead of navigating
-      showConfirmDialogCustom(
-        context,
-        title: "Do you want to logout from the app?",
-        dialogType: DialogType.CONFIRMATION,
-        centerImage: 'URL',
-        onAccept:(p0) {
-          logout();
-        },
-        onCancel: (p0) {
-        },
-        height: 300,
-        width: 400,
-      );
-    } else {
       setState(() {
         _SelectedIndex = index;
       });
-    }
   }
 
   Widget buildCenterButton(BuildContext context) {
@@ -157,7 +119,7 @@ class _BottomnavState extends State<Bottomnav> {
                         children: [
                           buildNavItem(Icons.sell_outlined, "Tags", 2),
                           SizedBox(width: 30),
-                          buildNavItem(Icons.logout, "LogOut", 3),
+                          buildNavItem(Icons.account_circle, "Profile", 3),
                         ],
                       ),
                     ],

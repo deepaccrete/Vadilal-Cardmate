@@ -215,6 +215,10 @@ class _EditCardState extends State<NewEditCard> {
     if(widget.dataCard!.city!=null && widget.dataCard!.city!=''){
       city.text=widget.dataCard!.city!;
     }
+    if(widget.dataCard!.note!=null && widget.dataCard!.note!=''){
+      companyNoteController.text=widget.dataCard!.note!;
+    }
+
   }
 
   void addemptyPerson(){
@@ -369,6 +373,7 @@ class _EditCardState extends State<NewEditCard> {
        cardID: widget.dataCard!.cardID,
          tagid: selectedTag!.tagid,
          groupid: selectedGroups!.groupid,
+         note:companyNoteController.text.trim(),
          companyName: companynameController.text.trim(),
          personDetails: finalpersonDetails,
         country: country.text,
