@@ -1,10 +1,10 @@
 class AppApiConst {
   ///API
   //Local URL
-  static String baseUrl = "http://192.168.120.144:8002/api/v1";
+  // static String baseUrl = "http://192.168.120.144:8002/api/v1";
 
   //Live URL
-  // static String baseUrl = "http://Vadilal-QC-Server-NLB-7c5300d13cc148cf.elb.ap-south-1.amazonaws.com:8001/api/v1";
+  static String baseUrl = "http://Vadilal-QC-Server-NLB-7c5300d13cc148cf.elb.ap-south-1.amazonaws.com:8001/api/v1";
 
   ///Login
   static String login = '$baseUrl/auth/login';
@@ -18,6 +18,10 @@ class AppApiConst {
   static String TagPost = '$baseUrl/tag/inserttag';
   static String cardupdate = '$baseUrl/card/updatecard';
   static String addCardManually='$baseUrl/card/savecard';
+  //Delete Card
+  static String cardDelete = '$baseUrl/card/deleteCard/';
+  //Update Card Note Group and tag
+  static String updateCardNoteTagGroup = '$baseUrl/card/updateCardTagGroupNote';
 }
 
 const IS_LOGGED_IN = 'IS_LOGGED_IN';

@@ -118,4 +118,76 @@ class CardApi {
     }
   }
 
+  static Future deleteCard(cardId) async {
+    try {
+      var headers1 = {'Content-Type': 'application/json','Authorization': 'Bearer ${appStore.userData!.token}'};
+      final response = await http.post(Uri.parse('${AppApiConst.cardDelete}${cardId}'), headers: headers1);
+
+      debugPrint(
+        "===============================-=-=-=-=-=-=>>>>>>>>>>>${response.body}",
+      );
+      debugPrint(
+        "===============================-=-=-=-=-=-=>>>>>>>>>>>${response.statusCode}",
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return jsonDecode(response.body);
+      }
+    } catch (e) {
+      print("this is the error ------------------>> $e");
+      return {'success': 0, 'msg': e.toString()};
+    }
+  }
+
+  static Future<bool> updateCardTagGroupNote(cardID,note,tagID,groupID) async {
+
+    if (cardID == null) {
+      debugPrint('Cannot Update cardid is null');
+      return false;
+    }
+
+    // final url = Uri.parse(AppApiConst.cardupdate);
+    var headers1 = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${appStore.userData!.token}'};
+
+    final Map<String, dynamic> payload = {
+      'cardid': cardID,
+      'note': note??'',
+    };
+
+    if (tagID != null) {
+      payload['tagid'] = tagID;
+    }
+    if (groupID != null) {
+      payload['groupid'] = groupID;
+    }
+
+    var body1 = jsonEncode(payload);
+
+    try {
+      final response = await http.post(
+        Uri.parse(AppApiConst.updateCardNoteTagGroup),
+        headers: headers1,
+        body: body1,
+      );
+      debugPrint("API URL (UPDATE): ${AppApiConst.updateCardNoteTagGroup}");
+      debugPrint("API STATUSCODE (UPDATE): ${response.statusCode}");
+      debugPrint("API RESPONSE (UPDATE): ${response.body}");
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        debugPrint(
+          'Failed to create card. Status code: ${response.statusCode}. Body: ${response.body}',
+        );
+        return false;
+      }
+    } catch (e) {
+      print('Faild to Update $e');
+      return false;
+    }
+  }
 }

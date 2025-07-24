@@ -60,7 +60,6 @@ class CommonTextForm extends StatelessWidget {
       height: heightTextform,
       width: widthTextform,
       child: TextFormField(
-
         maxLines:maxline,
         keyboardType: keyboardType??TextInputType.text,
         onFieldSubmitted:onfieldsumbitted ,

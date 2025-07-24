@@ -143,7 +143,7 @@ print("-----------==================> 2");
           SnackBar(content: Text('Image uploaded successfully!')),
         );
 
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> DetailsScreen(dataCard: newcard))) ;
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (_)=> DetailsScreen(dataCard: newcard,newEntry: true))) ;
 
       }else{
         _showError("Upload Faild");

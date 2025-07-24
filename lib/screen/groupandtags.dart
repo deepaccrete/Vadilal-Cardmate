@@ -97,10 +97,10 @@ class _GroupAndTagsState extends State<GroupAndTags> {
 
         if (groupPost.success == 1) {
           print("GROUP ADDED");
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("✅ Group added successfully")));
-          groupcontroller.dispose();
 
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Group added successfully")));
+          // groupcontroller.dispose();
+          Navigator.pop(context);
           await fetchGroups(); // Refresh the group list
         } else {
           // Show actual message from server
@@ -123,7 +123,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
           print("TAG ADDED ");
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tag Added Successfuly')));
-          tagcontroller.dispose();
+          // tagcontroller.dispose();
           await fetchTag();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tagpost.msg}Failed to Add Tag')));

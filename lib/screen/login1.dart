@@ -94,9 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // lOGO
               Container(
-                height: height * 0.1,
-                width: width * 0.5,
-                child: Image.asset('assets/images/logovadilal.png', fit: BoxFit.fill),
+                // height: height * 0.1,
+                width: width * 0.4,
+                child: Image.asset('assets/images/Blue_heart_PNG.png', fit: BoxFit.fill),
               ),
               SizedBox(height: 10),
               Container(height: height * 0.16, width: width, child: Image.asset('assets/images/Sign up (1).png')),

@@ -46,6 +46,7 @@ class DataCard {
   int? groupid;
   String? tag;
   String? group;
+  String? note;
 
   DataCard({
     this.cardID,
@@ -70,7 +71,8 @@ class DataCard {
     this.city,
     this.country,
     this.state,
-    this.pincode
+    this.pincode,
+    this.note
   });
 
   DataCard.fromJson(Map<String, dynamic> json) {
@@ -105,7 +107,7 @@ class DataCard {
     }
 
     // Notice the double space in 'Company  Email' from your JSON example
-    companyEmail = json['Company  Email']?.toString();
+    companyEmail = json['Company Email']?.toString();
     webAddress = json['Web Address']?.toString();
     country = json['Country']?.toString();
     state = json['State']?.toString();
@@ -118,8 +120,8 @@ class DataCard {
     companySWorkDetails = json['Companys Work Details']?.toString() ?? json['Company\'s Work Details']?.toString();
 
     gSTIN = json['GSTIN']?.toString();
-    cardFrontImageBase64 = json['Card Front Image']?.toString(); // Check if your JSON key includes "Base64"
-    cardBackImageBase64 = json['Card Back Image']?.toString();   // Check if your JSON key includes "Base64"
+    cardFrontImageBase64 = json['cardFrontImageBase64']?.toString(); // Check if your JSON key includes "Base64"
+    cardBackImageBase64 = json['cardBackImageBase64']?.toString();   // Check if your JSON key includes "Base64"
     createdBy = json['Created By'] as int?;
     createdAt = json['Created At']?.toString();
     extractedJSON = json['Extracted JSON']?.toString();
@@ -128,6 +130,7 @@ class DataCard {
     groupid = json['groupid'] as int?;
     tag = json['tag'];
     group = json['group'];
+    note=json['note'];
 
   }
 
@@ -140,12 +143,12 @@ class DataCard {
     }
     data['Company Phone Number'] = this.companyPhoneNumber;
     data['Company Address'] = this.companyAddress;
-    data['Company  Email'] = this.companyEmail; // Retaining double space as per your json
+    data['Company Email'] = this.companyEmail; // Retaining double space as per your json
     data['Web Address'] = this.webAddress;
     data['Companys Work Details'] = this.companySWorkDetails; // Retaining this key as per your toJson
     data['GSTIN'] = this.gSTIN;
-    data['Card Front Image'] = this.cardFrontImageBase64; // Retaining this key as per your toJson
-    data['Card Back Image'] = this.cardBackImageBase64;   // Retaining this key as per your toJson
+    data['cardFrontImageBase64'] = this.cardFrontImageBase64; // Retaining this key as per your toJson
+    data['cardBackImageBase64'] = this.cardBackImageBase64;   // Retaining this key as per your toJson
     data['Created By'] = this.createdBy;
     data['Created At'] = this.createdAt;
     data['Extracted JSON'] = this.extractedJSON;
@@ -158,6 +161,7 @@ class DataCard {
     data['State']=this.state;
     data['City']=this.city;
     data['Pincode']=this.pincode;
+    data['note']=this.note;
     return data;
   }
 
