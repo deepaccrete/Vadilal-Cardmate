@@ -560,7 +560,7 @@ class _EditCardState extends State<NewEditCard> {
 
 
 
-    final width = MediaQuery.of(context).size.width * 1;
+    final   width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     return Scaffold(
       backgroundColor:screenBGColor,
