@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:camera_app/api/GroupApi.dart';
 import 'package:camera_app/api/TagApi.dart';
 import 'package:camera_app/componets/button.dart';
+import 'package:camera_app/componets/snakbar.dart';
 import 'package:camera_app/componets/textform.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
@@ -28,21 +27,6 @@ class _GroupAndTagsState extends State<GroupAndTags> {
   bool isTagLoading = true;
   String? errorMessage;
   String? errorMessageTag;
-
-  // Future<bool> isInternetConnected() async {
-  //   try {
-  //     // Try to lookup google.com or any reliable host
-  //     final result = await InternetAddress.lookup('google.com');
-  //
-  //     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-  //       print('Internet Available');
-  //       return true;
-  //     }
-  //   } catch (e) {
-  //     print('No Internet: $e');
-  //   }
-  //   return false;
-  // }
 
   Future<void> fetchGroups() async {
     try {
@@ -89,59 +73,60 @@ class _GroupAndTagsState extends State<GroupAndTags> {
     }
   }
 
-  Future<void> Groupadd() async {
+  Future<void> groupAdd() async {
     try {
-      if (_form.currentState!.validate()) {
+      if (_formGroup.currentState!.validate()) {
         // Optional: show loading
         final groupPost = await GroupApi.postGroup(groupname: groupcontroller.text.trim());
 
         if (groupPost.success == 1) {
           print("GROUP ADDED");
-
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Group added successfully")));
+showCustomSnackbar(context,"Group added successfully" );
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Group added successfully")));
           // groupcontroller.dispose();
           Navigator.pop(context);
           await fetchGroups(); // Refresh the group list
         } else {
           // Show actual message from server
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${groupPost.msg}Failed to add group")));
+          showCustomSnackbar(context,"${groupPost.msg}Failed to add group" );
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${groupPost.msg}Failed to add group")));
           Navigator.pop(context);
         }
       }
     } catch (e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("❌ Error: $e")));
+      showCustomSnackbar(context, '"❌ Error: $e"');
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("❌ Error: $e")));
     }
   }
 
-  Future<void> TagAdd() async {
+  Future<void> tagAdd() async {
     try {
-      if (_form.currentState!.validate()) {
+      if (_formTag.currentState!.validate()) {
         final tagpost = await TagApi.PostTag(tagname: tagcontroller.text.trim());
 
         if (tagpost.success == 1) {
           print("TAG ADDED ");
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tag Added Successfuly')));
+showCustomSnackbar(context, 'Tag Added Successfuly');
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tag Added Successfuly')));
           // tagcontroller.dispose();
           await fetchTag();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tagpost.msg}Failed to Add Tag')));
+          showCustomSnackbar(context,'${tagpost.msg}Failed to Add Tag');
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tagpost.msg}Failed to Add Tag')));
           Navigator.pop(context);
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("ERROR $e")));
+      showCustomSnackbar(context,"ERROR $e");
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("ERROR $e")));
     }
   }
 
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   super.dispose();
-  // groupcontroller.dispose();
-  // }
-  final _form = GlobalKey<FormState>();
+
+  final _formTag = GlobalKey<FormState>();
+  final _formGroup = GlobalKey<FormState>();
   @override
   void initState() {
     // TODO: implement initState
@@ -160,15 +145,11 @@ class _GroupAndTagsState extends State<GroupAndTags> {
       backgroundColor: screenBGColor,
       appBar: AppBar(
         centerTitle: true,
-        // elevation: 10,
+
         backgroundColor: screenBGColor,
-        // shadowColor: Colors.black12,
         automaticallyImplyLeading: false,
-        // leading: IconButton(
-        //     onPressed: (){
-        //       Navigator.pop(context);
-        //     },
-        //     icon: Icon(Icons.arrow_back_ios)),
+
+
         title: Text(
           'Group & Tags',
           style: GoogleFonts.raleway(color: Colors.black, fontWeight: FontWeight.w700, fontSize: 18),
@@ -206,7 +187,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                               context: context,
                               builder: (context) {
                                 return Form(
-                                  key: _form,
+                                  key: _formGroup,
                                   child: AlertDialog(
                                     title: Text(
                                       'ADD GROUP',
@@ -231,7 +212,10 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                                         bordercircular: 5,
                                         height: height * 0.05,
                                         onTap: () {
-                                          Groupadd();
+
+                                            groupAdd();
+
+
                                         },
                                         child: Text(
                                           'Save',
@@ -355,6 +339,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                   ),
                 ],
               ),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +355,7 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                                 context: context,
                                 builder: (context) {
                                   return Form(
-                                    key: _form,
+                                    key: _formTag,
                                     child: AlertDialog(
                                       title: Text(
                                         'ADD TAG',
@@ -395,7 +380,9 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                                           bordercircular: 5,
                                           height: height * 0.05,
                                           onTap: () {
-                                            TagAdd();
+
+                                            tagAdd();
+
                                           },
                                           child: Text(
                                             'Save',
@@ -476,38 +463,12 @@ class _GroupAndTagsState extends State<GroupAndTags> {
                   ),
                 ],
               ),
-              // Network check
-              // SizedBox(height: 10,),
-              // CommonButton(
-              //     width: width * 0.5,
-              //     height:  height * 0.05,
-              //     onTap: ()async{
-              //
-              //       bool  connected =  await isInternetConnected();
-              //       if(connected){
-              //         print('Connected');
-              //       }else{
-              //         print('Not Connected');
-              //       }
-              //
-              //     },
-              //     child:Text('Check Network',style: GoogleFonts.poppins(color: Colors.white),))
+
             ],
           ),
         ),
       ),
-      // body: isLoading?
-      //    Center(child: CircularProgressIndicator(),):
-      //     ListView.builder(
-      //         itemCount: groups.length,
-      //         itemBuilder: (context , index){
-      //           final group = groups[index];
-      //           return ListTile(
-      //             title: Text(group.groupname ?? 'unnamed Group'),
-      //           subtitle: Text('Group ID : ${group.groupid}'),
-      //           );
-      //         })
-      //
+
     );
   }
 

@@ -1,26 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:camera_app/api/GroupApi.dart';
 import 'package:camera_app/api/TagApi.dart';
+import 'package:camera_app/componets/snakbar.dart';
 import 'package:camera_app/model/GroupModel.dart';
 import 'package:camera_app/model/TagModel.dart';
 import 'package:camera_app/model/cardModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../local_package/country_state_city Picker/country_state_city_picker.dart';
-
 import '../api/CardApi.dart';
-import '../api/ImageUploadApi.dart';
 import '../componets/button.dart';
 import '../componets/textform.dart';
 import '../constant/colors.dart';
 import 'package:http/http.dart'as http ;
-
 import 'bottomnav.dart';
+
 class AddManual extends StatefulWidget {
   const AddManual({super.key});
 
@@ -28,12 +25,7 @@ class AddManual extends StatefulWidget {
   State<AddManual> createState() => _AddManualState();
 }
 
-// class _AddManualState extends State<AddManual> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(child: Text('Add Mnual'),);
-//   }
-// }
+
 
 class _AddManualState extends State<AddManual> {
 
@@ -74,13 +66,12 @@ class _AddManualState extends State<AddManual> {
   List<Map<String, dynamic>> listdata = [];
   final ImagePicker _picker = ImagePicker();
   File? _selectFrontImage;
-  File? _selectBackImage;
+  // File? _selectBackImage;
+
 
   List<Datatag> taglist = [];
-  Datatag ? selectedTag;
-
-  // List<Grou>
   List<Data> Groups = [];
+  Datatag ? selectedTag;
   Data? selectedGroups;
 
   bool isGroupLoading = true;
@@ -143,31 +134,7 @@ Future<void>FatchGroup ()async{
   FetchTag();
     FatchGroup();
   }
-  // function to add data in hive
-  // Future<void> _addcardtoHive()async{
-  //   if(_formkey.currentState!.validate()){
-  //     final newCard = CardDetails(
-  //       id: Uuid().v4().toString(),
-  //       fullname:nameController.text,
-  //       designation: designationController.text,
-  //       number: phoneController.text,
-  //       email: emailController.text,
-  //       companyname: companynameController.text,
-  //       address: addressController.text,
-  //       website: webController.text,
-  //       note: noteController.text,
-  //     );
-  //
-  //
-  //     await HiveBoxes.addCard(newCard);
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Card Saved SuccessFully!'))
-  //     );
-  //     _gotohome();
-  //     // dispose();
-  //
-  //   }
-  // }
+
 
   void dispose(){
     nameController.dispose();
@@ -200,67 +167,15 @@ Future<void>FatchGroup ()async{
     }
   }
 
-  void _clearIMage(){
-    setState(() {
-      _selectFrontImage = null;
-    });
-  }
 
 
-  //
-  // Future<void> UploadData(){
-  //   if(!_formkey.currentState!.validate()){
-  //    print('Enter Details');
-  //     return ;
-  //   }
-  //   try{
-  //     List<PersonDetails> persons = [];
-  //     if (nameController.text.isNotEmpty ||
-  //         phoneController.text.isNotEmpty ||
-  //         emailController.text.isNotEmpty ||
-  //         designationController.text.isNotEmpty) {
-  //       persons.add(
-  //         PersonDetails(
-  //           name: nameController.text,
-  //           phoneNumber: phoneController.text,
-  //           email: emailController.text,
-  //           position: designationController.text,
-  //         ),
-  //       );
-  //     }
-  //
-  //
-  //
-  //     DataCard cardTextData = DataCard(
-  //       companyName: companynameController.text,
-  //       personDetails: persons.isNotEmpty ? persons : null, // Send null if no person details
-  //       companyPhoneNumber: phoneController.text, // Assuming this is company main phone
-  //       companyAddress: addressController.text.isNotEmpty
-  //           ? [addressController.text]
-  //           : null, // Split by comma if multiple are expected
-  //       companyEmail: companyemailController.text, // Using new company email controller
-  //       webAddress: webController.text,
-  //       companySWorkDetails: noteController.text, // Assuming Note is for company work details
-  //       gSTIN: null, // Add a controller for GSTIN if needed
-  //       createdBy: null, // Replace with actual user ID if available (e.g., from auth)
-  //       isBase64: 0, // Indicate images are NOT Base64
-  //       extractedJSON: json.encode({'tag_id': selectedTag!.tagid, 'tag_name': selectedTag!.tagname}),);
-  //
-  //     String jsonTextBody = json.encode(cardTextData.toJson());
-  //
-  //     var request = http.MultipartRequest('POST', Uri.parse(''));
-  //
-  //   }catch(e){
-  //
-  //   }
-  // }
 
   void _showSnackBar(String message) {
     // Ensure the widget is still mounted before trying to show a SnackBar.
     // This prevents errors if the user navigates away rapidly.
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+showCustomSnackbar(context, message);
   }
 
   // --- Data Upload Function ---
@@ -384,47 +299,13 @@ Future<void>FatchGroup ()async{
     noteController.clear();
     setState(() {
       _selectFrontImage = null;
-      _selectBackImage = null;
+      // _selectBackImage = null;
       selectedTag = null;
     });
     _formkey.currentState?.reset(); // Resets form validation state
   }
 
 
-  // void _gotohome(){
-  //   Navigator.push(context,MaterialPageRoute(builder: (_)=> Bottomnav(
-  //     // datalist: listdata,
-  //   )));
-  // }
-
-
-
-
-  //@override
-  // void initState() {
-  //   super.initState();
-  //
-  //   for (var person in widget.dataCard?.personDetails ?? []) {
-  //     personNameControllers.add(TextEditingController(text: person.name));
-  //     personMobileControllers.add(TextEditingController(text: person.phoneNumber));
-  //     personEmailControllers.add(TextEditingController(text: person.email));
-  //     personPositionControllers.add(TextEditingController(text: person.position));
-  //   }
-  //   companynameController = TextEditingController(text: widget.dataCard!.companyName);
-  //   emailController = TextEditingController(text: widget.dataCard!.companyEmail);
-  //   addressController = TextEditingController(
-  //     text: widget.dataCard!.companyAddress?.join(', ') ?? '',
-  //     // nameController = TextEditingController(text: widget.dataCard.personDetails)
-  //   );
-  //
-  //
-  //   // Initialize controllers for each person
-  //   // for (var person in widget.dataCard?.personDetails ?? []) {
-  //   //   personNameControllers.add(TextEditingController(text: person.name));
-  //   //   personMobileControllers.add(TextEditingController(text: person.phoneNumber));
-  //   // }
-  //
-  // }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width * 1;
@@ -514,49 +395,7 @@ Future<void>FatchGroup ()async{
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Text(
-                          //   'Bussiness Tags',
-                          //   style: GoogleFonts.inter(
-                          //     fontWeight: FontWeight.w600,
-                          //     fontSize: 14,
-                          //   ),
-                          // ),
-                          //
-                          // // General
-                          // InkWell(
-                          //   onTap: () {
-                          //     Navigator.push(
-                          //       context,
-                          //       MaterialPageRoute(
-                          //         builder: (context) => GroupAndTags(),
-                          //       ),
-                          //     );
-                          //   },
-                          //   child: Container(
-                          //     padding: EdgeInsets.symmetric(
-                          //       horizontal: 10,
-                          //       vertical: 5,
-                          //     ),
-                          //     height: height * 0.06,
-                          //     decoration: BoxDecoration(
-                          //       borderRadius: BorderRadius.circular(10),
-                          //       border: Border.all(color: Colors.grey),
-                          //     ),
-                          //     child: Row(
-                          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          //       children: [
-                          //         Text(
-                          //           'General',
-                          //           style: GoogleFonts.poppins(
-                          //             fontSize: 12,
-                          //             fontWeight: FontWeight.w500,
-                          //           ),
-                          //         ),
-                          //         Icon(Icons.keyboard_arrow_down),
-                          //       ],
-                          //     ),
-                          //   ),
-                          // ),
+
                           Text('Person Details',style: GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 16),),
                   
                           SizedBox(height: 5,),
@@ -1055,9 +894,9 @@ Future<void>FatchGroup ()async{
                                 suffixIcon: const Icon(Icons.arrow_downward_rounded),
                                 border:OutlineInputBorder(
                                     borderSide: BorderSide(
-                                        color:Colors.black
+                                        color:Colors.black26
                                     ),
-                                    borderRadius: BorderRadius.circular(15)),
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
                             )],
                         ),
@@ -1105,9 +944,9 @@ Future<void>FatchGroup ()async{
                               suffixIcon: const Icon(Icons.arrow_downward_rounded),
                               border:OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color:Colors.black
+                                      color:Colors.black26
                                   ),
-                                  borderRadius: BorderRadius.circular(15)),
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
                             ),
                           ],
@@ -1158,7 +997,7 @@ Future<void>FatchGroup ()async{
                                     borderSide: BorderSide(
                                         color:Colors.black
                                     ),
-                                    borderRadius: BorderRadius.circular(15)),
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
                           ],
@@ -1168,7 +1007,7 @@ Future<void>FatchGroup ()async{
 
 
 
-                  // Company pincode0
+                  // Company pincode
                           Card(
                             elevation: 4,
                             shadowColor: Colors.black26,
@@ -1277,7 +1116,8 @@ Future<void>FatchGroup ()async{
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),),
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15),
+                              padding: EdgeInsets.all(20),
+
                               decoration: BoxDecoration(
                                 // color: Color(0xFFFEF7FF),
                                 borderRadius: BorderRadius.circular(15),
@@ -1306,12 +1146,7 @@ Future<void>FatchGroup ()async{
                                     BorderColor: Colors.black26,
                                     icon: Icon(Icons.web, color: Colors.black54),
                                     obsecureText: false,
-                                    // validator: (value) {
-                                    //   if (value == null || value.isEmpty) {
-                                    //     return "Please enter website";
-                                    //   }
-                                    //   return null;
-                                    // },
+
                                     onfieldsumbitted: (value) {
                                       FocusScope.of(context).requestFocus(notenode);
                                     },
@@ -1379,13 +1214,6 @@ Future<void>FatchGroup ()async{
                             height: height * 0.06,
                             bordercircular: 20,
                             onTap: _uploadCardData,
-                                // (){
-                              // if(_formkey.currentState!.validate()){
-                              //   _addcardtoHive();
-                              // }
-                              // _addcardtoHive();
-                              // _addData();
-                            // },
                             child: Text(
                               'Add Details',
                               style: GoogleFonts.poppins(

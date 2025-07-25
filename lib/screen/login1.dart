@@ -1,14 +1,12 @@
 import 'dart:convert';
-
 import 'package:camera_app/componets/button.dart';
+import 'package:camera_app/componets/snakbar.dart';
 import 'package:camera_app/constant/colors.dart';
-import 'package:camera_app/screen/home.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../api/AuthAPI.dart';
 import '../main.dart';
 import '../util/const.dart';
@@ -29,11 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode passwordFocus = FocusNode();
   bool? isLoading = false;
   ValueNotifier obsecurepass = ValueNotifier(true);
-
   final _formkey = GlobalKey<FormState>();
-
   final outborder = OutlineInputBorder(
-    // borderSide: BorderSide(color: primarycolor),
     borderRadius: BorderRadius.circular(10),
   );
 
@@ -58,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return null; // Valid
   }
 
-  bool rememberme = false;
+  bool rememberMe = false;
 
   @override
   void dispose() {
@@ -80,11 +75,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // print('Rebuild ');
-
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
-
     return Scaffold(
       backgroundColor: primarycolor,
       body: SingleChildScrollView(
@@ -92,14 +84,20 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
             children: [
+
               // lOGO
               Container(
                 // height: height * 0.1,
                 width: width * 0.4,
                 child: Image.asset('assets/images/Blue_heart_PNG.png', fit: BoxFit.fill),
               ),
+
               SizedBox(height: 10),
-              Container(height: height * 0.16, width: width, child: Image.asset('assets/images/Sign up (1).png')),
+
+              // logo
+              Container(height: height * 0.16, width: width,
+                  child: Image.asset('assets/images/Sign up (1).png')),
+
               SizedBox(height: 50),
 
               // LOGInText
@@ -111,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.openSans(color: Colors.white, fontSize: 20),
                 ),
               ),
+
               SizedBox(height: 25),
 
               Form(
@@ -119,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Email Address', style: GoogleFonts.openSans(color: Colors.white)),
-                    SizedBox(height: 10),
+                   const SizedBox(height: 10),
                     Container(
                       // color: Colors.red,
                       // height: height * 0.1,
@@ -188,13 +187,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    Container(
-                      // padding:EdgeInsets.all(10),
-                      // color: Colors.red,
-                      width: width * 0.8,
 
-                      // alignment: Alignment.bottomLeft,
-                      // padding:EdgeInsets.symmetric(horizontal: 20),
+                    // rememberMe
+                    Container(
+                      width: width * 0.8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -204,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             //     activeColor: Colors.red,
                             // focusColor: Colors.green,
                             // checkColor: Colors.white,
-                            value: rememberme,
+                            value: rememberMe,
                             onChanged: _handleRemember,
                           ),
                           //   (value) {
@@ -219,6 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 25),
 
+              // login
               Observer(
                 builder:
                     (_) => CommonButton(
@@ -246,17 +243,17 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  loginReq() async {
+       loginReq() async {
     if (_formkey.currentState!.validate()) {
       // setState(() {
       //   // isLoading = true;
       //   appStore.isLoading = true;
       // });
       // appStore.isLoading = true;
+      appStore.setIsLoading(true);
 
       try {
         // appStore.isLoading = true;
-        appStore.setIsLoading(true);
 
         final loginResponse = await AuthApi.login(
           email: emailController.text.trim(),
@@ -293,37 +290,42 @@ class _LoginScreenState extends State<LoginScreen> {
           //   appStore.isLoading = false;
           appStore.setIsLoading(false);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.grey.shade100,
-              showCloseIcon: true,
-              content: Text(
-                loginResponse.msg ?? 'Invalid credentials',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w500),
-              ),
-            ),
-          );
+          showCustomSnackbar(context,    loginResponse.msg ?? 'Invalid credentials',);
+
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     backgroundColor: Colors.grey.shade100,
+          //     showCloseIcon: true,
+          //     content: Text(
+          //       loginResponse.msg ?? 'Invalid credentials',
+          //       textAlign: TextAlign.center,
+          //       style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w500),
+          //     ),
+          //   ),
+          // );
         }
       } catch (e) {
         // setState(() {
         //   isLoading = false;
         // });
         appStore.setIsLoading(false);
+
         // appStore.isLoading = false;
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An error occurred. Please try again.')));
+        showCustomSnackbar(context,'An error occurred. Please try again.' );
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An error occurred. Please try again.')));
       }
     }
   }
 
-  void _handleRemember(bool? value) async {
+  void _handleRemember(bool? value) async
+  {
     try {
       print('Handle Remember Me');
-      rememberme = value!;
+      rememberMe = value!;
       SharedPreferences pref = await SharedPreferences.getInstance();
       await pref.setBool("Remember_Me_Key", value);
-      if (rememberme) {
+      if (rememberMe) {
         await pref.setString("Saved_Email", emailController.text);
         await pref.setString("Saved_Password", passwordController.text);
 
@@ -339,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       appStore.setIsRememberMe(value);
       setState(() {
-        rememberme = value;
+        rememberMe = value;
       });
     } catch (e) {
       print('Handle Remember ==>');
@@ -355,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
       var _password = pref.getString("Saved_Password") ?? '';
       if (_rememberme) {
         setState(() {
-          rememberme = true;
+          rememberMe = true;
         });
 
         emailController.text = _email ?? "";
@@ -366,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {});
       } else {
         setState(() {
-          rememberme = false;
+          rememberMe = false;
         });
         emailController.text = '';
         passwordController.text = '';

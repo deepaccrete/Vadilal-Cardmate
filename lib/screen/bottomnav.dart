@@ -1,17 +1,11 @@
-import 'package:camera_app/constant/colors.dart';
-import 'package:camera_app/main.dart';
+
 import 'package:camera_app/screen/Camera_Screen_2.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:nb_utils/nb_utils.dart';
-
 import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
-import '../util/const.dart';
 import 'ProfileScreen.dart';
 import 'groupandtags.dart';
-import 'login1.dart';
 
 class Bottomnav extends StatefulWidget {
   @override
@@ -23,28 +17,12 @@ class _BottomnavState extends State<Bottomnav> {
 
   static final List<Widget> _WidgetOption = [
     HomeScreen(),
-    // CameraScreen(),
     AddManual(),
     GroupAndTags(),
     ProfileScreen(),
   ];
 
-  Widget _getSelectedScreen(int index) {
-    switch (index) {
-      case 0:
-        return HomeScreen();
-      // case 1:
-      //     return  CameraScreen();
-      case 1:
-        return AddManual();
-      case 2:
-        return GroupAndTags();
-      case 3:
-        return ProfileScreen();
-      default:
-        return HomeScreen();
-    }
-  }
+
 
   void _onTap(int index) {
       setState(() {
@@ -132,9 +110,7 @@ class _BottomnavState extends State<Bottomnav> {
                   onTap: () {
 
                     _openScannerAndShowPreview(context);
-                    // Navigator.push(context, MaterialPageRoute(builder: (context)=> CameraScreen2()));
-                    // CameraScreen2
-                    // CameraScreen().launch(context);
+
                   },
                   child: buildCenterButton(context),
                 ),

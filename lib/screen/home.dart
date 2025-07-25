@@ -5,21 +5,11 @@ import 'package:camera_app/api/CardApi.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/main.dart';
 import 'package:camera_app/model/cardModel.dart';
-import 'package:camera_app/model/dbModel/cardDetailsModel.dart';
-
-// import 'package:camera_app/screen/add.dart';
 import 'package:camera_app/screen/details_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-// import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:io';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:universal_html/html.dart' as web;
 
 // web
 import 'package:shimmer/shimmer.dart';
@@ -42,25 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     borderRadius: BorderRadius.circular(10),
   );
 
-  // Map<String, dynamic> dataCardToExportableMap(DataCard card) {
-  //   return {
-  //     'Card ID': card.cardID?.toString() ?? '',
-  //     'Company Name': card.companyName ?? '',
-  //     'Person Names': card.personDetails?.map((p) => p.name).join(', ') ?? '',
-  //     'Person Designations': card.personDetails?.map((p) => p.position).join(', ') ?? '',
-  //     'Person Phone ': card.personDetails?.map((p) => p.phoneNumber).join(',') ?? '',
-  //     'Company Phone': card.companyPhoneNumber ?? '',
-  //     'Company Address': card.companyAddress?.join(', ') ?? '',
-  //     'Company Email': card.companyEmail ?? '',
-  //     'Web Address': card.webAddress ?? '',
-  //     'Work Details': card.companySWorkDetails ?? '',
-  //     'GSTIN': card.gSTIN ?? '',
-  //     'Created By': card.createdBy?.toString() ?? '',
-  //     'Created At': card.createdAt ?? '',
-  //   };
-  // }
-  //
-  // // List<CardDetails> _cards = [];
+
 
   List<DataCard> _cardapi = [];
 
@@ -259,14 +231,6 @@ class _HomeScreenState extends State<HomeScreen> {
     FetchCard();
   }
 
-  /*Future<void> _loadCard() async {
-    final box = await Hive.openBox<CardDetails>('cardbox');
-    setState(() {
-      _cards = box.values.toList();
-    });
-  }
-*/
-
 bool ispersonvisible = true;
 
   @override
@@ -310,19 +274,18 @@ bool ispersonvisible = true;
             FocusScope.of(context).unfocus();
           },
           child: RefreshIndicator(
-            color: primarycolor,
+            color:  primarycolor,
             backgroundColor: Colors.grey.shade300,
             onRefresh: () {
               return FetchCard();
             },
             child: SingleChildScrollView(
               child: Container(
-                // color: Colors.red,
-                // height: height,
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 child: Column(
                   children: [
-                    // name
+
+                    //  NAME
                     Row(
                       children: [
                         Container(
@@ -348,7 +311,10 @@ bool ispersonvisible = true;
                         ),
                       ],
                     ),
+
                     Divider(),
+
+                    // SEARCH BAR
                     Card(
                       elevation: 10,
                       child: Container(
@@ -379,6 +345,7 @@ bool ispersonvisible = true;
                       ),
                     ),
 
+
                     Container(
                       // color: Colors.blue,  // Removing blue background
                       width: width,
@@ -386,11 +353,12 @@ bool ispersonvisible = true;
                       // Adjusted height to leave space for FAB
                       child: Column(
                         children: [
-                          // SizedBox(height: 10),
+
                           Expanded(
                             child:
                                 isCardLoading
-                                    ? ListView.builder(itemBuilder: (context, index)=> Shimmer.fromColors(
+                                    ? ListView.builder(
+                                    itemBuilder: (context, index)=> Shimmer.fromColors(
                                     child: _buildShimmerCarde(context),
                                     baseColor: Colors.grey.shade300,
                                     highlightColor: Colors.grey.shade300))
@@ -453,8 +421,10 @@ bool ispersonvisible = true;
                                                         ),
                                                         child: Column(
                                                           children: [
+
                                                             Row(
                                                               children: [
+                                                                // Image
                                                                 Container(
                                                                   height:
                                                                       height *
@@ -514,85 +484,9 @@ bool ispersonvisible = true;
                                                                             ),
                                                                           ),
                                                                 ),
-                                                                SizedBox(
-                                                                  width: 20,
-                                                                ),
+                                                                SizedBox(width: 20,),
 
-                                                                // Expanded(
-                                                                //   child: Builder(
-                                                                //     builder: (context) {
-                                                                //       final validPersons = card.personDetails!
-                                                                //           .where((person) =>
-                                                                //       person.name != null &&
-                                                                //           person.name!.trim().isNotEmpty &&
-                                                                //           person.name!.toLowerCase() != 'null')
-                                                                //           .toList();
-                                                                //
-                                                                //       return Column(
-                                                                //         crossAxisAlignment: CrossAxisAlignment.start,
-                                                                //         children: [
-                                                                //           // Show each valid person's name and position
-                                                                //           ...validPersons.map((person) {
-                                                                //             final hasPosition = person.position != null &&
-                                                                //                 person.position!.trim().isNotEmpty &&
-                                                                //                 person.position!.toLowerCase() != 'null';
-                                                                //
-                                                                //             return Column(
-                                                                //               crossAxisAlignment: CrossAxisAlignment.start,
-                                                                //               children: [
-                                                                //                 Row(
-                                                                //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                //                   children: [
-                                                                //                     Text(
-                                                                //                       person.name!,
-                                                                //                       style: GoogleFonts.raleway(
-                                                                //                         fontWeight: FontWeight.w600,
-                                                                //                         fontSize: 14,
-                                                                //                         color: Colors.black,
-                                                                //                       ),
-                                                                //                     ),
-                                                                //                     if (hasPosition)
-                                                                //                       Container(
-                                                                //                         margin: const EdgeInsets.only(top: 4),
-                                                                //                         padding:
-                                                                //                         const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                                //                         decoration: BoxDecoration(
-                                                                //                           color: Colors.blue.withAlpha(20),
-                                                                //                           borderRadius: BorderRadius.circular(4),
-                                                                //                         ),
-                                                                //                         child: Text(
-                                                                //                           person.position!.toUpperCase(),
-                                                                //                           style: GoogleFonts.raleway(
-                                                                //                             fontSize: 12,
-                                                                //                             color: Colors.blue[700],
-                                                                //                           ),
-                                                                //                         ),
-                                                                //                       ),
-                                                                //                   ],
-                                                                //                 ),
-                                                                //                 const SizedBox(height: 5),
-                                                                //               ],
-                                                                //             );
-                                                                //           }).toList(),
-                                                                //
-                                                                //           // Show company name only once if there are valid persons
-                                                                //           if (validPersons.isNotEmpty)
-                                                                //             Padding(
-                                                                //               padding: const EdgeInsets.only(top: 4.0),
-                                                                //               child: Text(
-                                                                //                 card.companyName ?? '',
-                                                                //                 style: GoogleFonts.raleway(
-                                                                //                   fontWeight: FontWeight.w500,
-                                                                //                   fontSize: 14,
-                                                                //                   color: subtext,
-                                                                //                 ),
-                                                                //               ),
-                                                                //             ),
-                                                                //         ],
-                                                                //       );
-                                                                //     },
-                                                                //   ),
-                                                                // )
+                                                                // person Name And Company Name
                                                                 Expanded(
                                                                   child: Builder(
                                                                     builder: (context) {
@@ -763,21 +657,7 @@ bool ispersonvisible = true;
     );
   }
 
-  Widget BuildImage(DataCard dataCard) {
-    final imagestr = dataCard.cardFrontImageBase64 ?? '';
-    final isBase64 = dataCard.isBase64 ?? 0;
 
-    if (isBase64 == 1) {
-      final byte = decodeBase64Image(imagestr);
-      if (byte != null) {
-        return Image.memory(byte, fit: BoxFit.cover);
-      } else {
-        return Icon(Icons.image);
-      }
-    }
-
-    return Image.network(imagestr, fit: BoxFit.cover);
-  }
 
   Widget _buildShimmerCarde(BuildContext context) {
     // Get screen dimensions. Replace 'height' and 'width' variables if they are global
@@ -914,15 +794,7 @@ bool ispersonvisible = true;
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Container(
-          //   width: 10,
-          //   height: 10,
-          //   decoration: BoxDecoration(
-          //     color: _getDynamicColor(colorIndex),
-          //     shape: BoxShape.circle,
-          //   ),
-          // ),
-          // SizedBox(width: 8),
+
           Icon(icon, size: 16, color: _getDynamicColor(colorIndex)),
           SizedBox(width: 6),
           Text(

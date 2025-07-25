@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../../componets/snakbar.dart';
 import '../../model/country_model.dart';
 
 class CountryStateCityPicker extends StatefulWidget {
@@ -116,7 +117,7 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
             if (widget.country!.text.isNotEmpty) {
               _showDialog(context);
             } else {
-              _showSnackBar('Select Country');
+              showCustomSnackbar(context, 'Select Country');
             }
           },
           decoration: widget.textFieldDecoration == null
@@ -136,7 +137,7 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
             if (widget.state!.text.isNotEmpty) {
               _showDialog(context);
             } else {
-              _showSnackBar('Select State');
+              showCustomSnackbar(  context , 'Select State');
             }
           },
           decoration: widget.textFieldDecoration == null
@@ -316,13 +317,13 @@ class _CountryStateCityPickerState extends State<CountryStateCityPicker> {
     );
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        content: Text(message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 16.0))));
-  }
+  // void _showSnackBar(String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //       backgroundColor: Theme.of(context).primaryColor,
+  //       content: Text(message,
+  //           textAlign: TextAlign.center,
+  //           style: const TextStyle(color: Colors.white, fontSize: 16.0))));
+  // }
 
   InputDecoration defaultDecoration = const InputDecoration(
       isDense: true,

@@ -58,7 +58,7 @@ dependencies:
 #  contacts_service: ^0.6.1
   contacts_service_plus: ^0.0.2
   share_plus: ^11.0.0
-  #
+
   qr_flutter: ^4.1.0
 
   flutter_doc_scanner:

@@ -7,19 +7,19 @@ import 'package:shimmer/shimmer.dart';
 import '../../api/GroupApi.dart';
 import '../../api/TagApi.dart';
 import '../../componets/button.dart';
+import '../../componets/snakbar.dart';
 import '../../componets/textform.dart';
 import '../../constant/colors.dart';
 import '../../local_package/country_state_city Picker/country_state_city_picker.dart';
 import '../../model/GroupModel.dart';
 import '../../model/TagModel.dart';
 import '../../model/cardModel.dart';
-
-import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:math';
 import 'package:flutter/services.dart';
 
+import '../../util/decordimage.dart';
 import '../fullScreenImageViewer.dart';
+
 
 
 class NewEditCard extends StatefulWidget {
@@ -32,16 +32,16 @@ class NewEditCard extends StatefulWidget {
 
 class _EditCardState extends State<NewEditCard> {
 
+  //Goups and Tags
   List<Datatag> taglist = [];
-  Datatag ? selectedTag;
-
-  // List<Grou>
   List<Data> Groups = [];
+  List<Uint8List> images = [];
+  Datatag ? selectedTag;
   Data? selectedGroups;
-
   bool isGroupLoading = true;
-  String? errormsg;
   bool istagLoading = true;
+
+  String? errormsg;
 
   // Controllers for company details
   TextEditingController  companyEmailController       = TextEditingController();
@@ -86,13 +86,7 @@ class _EditCardState extends State<NewEditCard> {
   final _formkey = GlobalKey<FormState>();
 
   @override
-  void dispose()
-  {
-    // Single controllers
-    // nameController.dispose();
-    // designationController.dispose();
-    // phoneController.dispose();
-    // emailController.dispose();
+  void dispose() {
     companyEmailController.dispose();
     companynameController.dispose();
     companyAddressController.dispose();
@@ -100,11 +94,6 @@ class _EditCardState extends State<NewEditCard> {
     companyNoteController.dispose();
     companyPhoneController.dispose();
 
-    // Focus nodes
-    // namenode.dispose();
-    // desinationnode.dispose();
-    // phonenode.dispose();
-    // emailnode.dispose();
     companynamenode.dispose();
     companyAddressnode.dispose();
     companyWebnode.dispose();
@@ -136,10 +125,12 @@ class _EditCardState extends State<NewEditCard> {
           (Route<dynamic> route) => false,
     );
   }
+
   @override
   void initState() {
     FetchTag();
     FatchGroup();
+    _decodeCardImages();
     super.initState();
     for (var person in widget.dataCard?.personDetails ?? []) {
       personNameControllers.add(TextEditingController(text:
@@ -222,7 +213,7 @@ class _EditCardState extends State<NewEditCard> {
   }
 
   void addemptyPerson(){
- setState(() {
+    setState(() {
    personNameControllers.add(TextEditingController());
    personEmailControllers.add(TextEditingController());
    personMobileControllers.add(TextEditingController());
@@ -349,20 +340,25 @@ class _EditCardState extends State<NewEditCard> {
            position: personPositionControllers[i].text.trim(),
          )
          );
-         
+
        }
      }
 
      if(selectedGroups == null){
-       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Please select a Group.')),
-       );
+       showCustomSnackbar(context,'Please select a Group.' );
+
+       // ScaffoldMessenger.of(context).showSnackBar(
+       //   const SnackBar(content: Text('Please select a Group.')),
+       // );
        return;
      }
       if (selectedTag == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a Tag.')),
-        );
+        showCustomSnackbar(context,'Please select a Tag.' );
+
+
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('Please select a Tag.')),
+        // );
         return;
       }
 
@@ -387,24 +383,6 @@ class _EditCardState extends State<NewEditCard> {
      );
 
 
-     // Map<String, dynamic> cardjson =  cardtosave.toJson();
-    //
-    //  String prettyjson = JsonEncoder.withIndent('').convert(cardjson);
-    //
-    //  debugPrint("=================================================");
-    //  debugPrint("  Generated Card JSON (for debugging):          ");
-    //  debugPrint("=================================================");
-    //  debugPrint(prettyjson);
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('Card data collected and printed to console!')),
-    //   );
-    // }else{
-    //   print('Error on save Details');
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('Please correct the errors in the form.')),
-    //   );
-    //
-    // }
 
 
     bool success = false;
@@ -417,21 +395,27 @@ class _EditCardState extends State<NewEditCard> {
         success = await CardApi.updateCard(cardtosave);
         if(success){
           print('Card Updated Successfully');
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Card Updated')));
+          showCustomSnackbar(context,'Card Updated' );
+
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Card Updated')));
         _gotohome();
         }else{
           print('Card Updated Faild');
+          showCustomSnackbar(context,'Failed to save card. Please try again.' );
 
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save card. Please try again.')));
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save card. Please try again.')));
 
         }
       }
 
     }
     catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving card: $e')),
-      );
+      showCustomSnackbar(context,'Error saving card: $e' );
+
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Error saving card: $e')),
+      // );
       debugPrint('API Error: $e');
 
     }
@@ -443,128 +427,39 @@ class _EditCardState extends State<NewEditCard> {
 
   int _currentIndex = 0;
 
+  void _decodeCardImages() {
+    // A temporary list to hold the results.
+    final List<Uint8List> decodedImages = [];
+
+    // List of all possible images to process.
+    final base64Strings = [
+      widget.dataCard?.cardFrontImageBase64,
+      widget.dataCard?.cardBackImageBase64,
+    ];
+
+    // Loop through the strings and decode them.
+    for (final b64String in base64Strings) {
+      // Use a single helper for null/empty checks
+      if (b64String != null && b64String.isNotEmpty) {
+        final imageBytes = decodeBase64Image(b64String);
+        if (imageBytes != null) {
+          decodedImages.add(imageBytes);
+        }
+      }
+    }
+
+    // CRITICAL: Call setState to update the UI with the processed images.
+    // The 'if (mounted)' check is a safety measure to prevent errors.
+    if (mounted) {
+      setState(() {
+        images = decodedImages;
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    List<Uint8List> images = [];
-    Uint8List? decodeBase64Image(String base64String) {
-      try {
-        print('Attempting to decode base64 string...');
-
-        if (base64String.isEmpty) {
-          print('Error: base64 string is empty');
-          return null;
-        }
-
-        // Print the first part of the string to see what format we're dealing with
-        print('Original string starts with: ${base64String.substring(0, min(50, base64String.length))}');
-
-        String cleanBase64 = base64String;
-
-        // If the string starts with 'data:', extract the base64 part
-        if (cleanBase64.startsWith('data:')) {
-          int commaIndex = cleanBase64.indexOf(',');
-          if (commaIndex != -1) {
-            cleanBase64 = cleanBase64.substring(commaIndex + 1);
-            print('Removed data: prefix directly from string');
-          }
-        }
-
-        // Remove any whitespace
-        cleanBase64 = cleanBase64.replaceAll(RegExp(r'[\s\n]'), '');
-
-        // Add padding if needed
-        int paddingLength = cleanBase64.length % 4;
-        if (paddingLength > 0) {
-          cleanBase64 += '=' * (4 - paddingLength);
-        }
-
-        try {
-          // First decode attempt
-          var bytes = base64Decode(cleanBase64);
-          print('First decode successful, got ${bytes.length} bytes');
-
-          // Check if the result is another base64 string
-          String decodedString = String.fromCharCodes(bytes);
-          if (decodedString.contains('base64,')) {
-            print('Found another base64 string, decoding again...');
-            String secondBase64 = decodedString.split('base64,').last;
-            // Clean up the second base64 string
-            secondBase64 = secondBase64.replaceAll(RegExp(r'[\s\n]'), '');
-            paddingLength = secondBase64.length % 4;
-            if (paddingLength > 0) {
-              secondBase64 += '=' * (4 - paddingLength);
-            }
-            bytes = base64Decode(secondBase64);
-            print('Second decode successful, got ${bytes.length} bytes');
-          }
-
-          // Verify this is actually an image by checking for common image headers
-          if (bytes.length > 8) {
-            // Check for JPEG header (FF D8)
-            if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
-              print('Detected JPEG image format');
-              return bytes;
-            }
-            // Check for PNG header (89 50 4E 47)
-            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
-              print('Detected PNG image format');
-              return bytes;
-            }
-            // Check for GIF header (47 49 46)
-            if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
-              print('Detected GIF image format');
-              return bytes;
-            }
-
-            print(
-              'Warning: No valid image header detected. First 8 bytes: [${bytes.take(8).map((b) => '0x${b.toRadixString(16).padLeft(2, '0')}').join(', ')}]',
-            );
-          }
-
-          return bytes;
-        } catch (e) {
-          print('Base64 decoding error: $e');
-          return null;
-        }
-      } catch (e) {
-        print('Error in decodeBase64Image: $e');
-        return null;
-      }
-    }
-
-    print('\nProcessing front image...');
-    if (widget.dataCard!.cardFrontImageBase64 != null && widget.dataCard!.cardFrontImageBase64!.isNotEmpty) {
-      final frontImage = decodeBase64Image(widget.dataCard!.cardFrontImageBase64!);
-      if (frontImage != null) {
-        images.add(frontImage);
-        print('Successfully added front image');
-      } else {
-        print('Failed to decode front image');
-      }
-    } else {
-      print('No front image data available');
-    }
-
-    print('\nProcessing back image...');
-    if (widget.dataCard!.cardBackImageBase64 != null && widget.dataCard!.cardBackImageBase64!.isNotEmpty) {
-      final backImage = decodeBase64Image(widget.dataCard!.cardBackImageBase64!);
-      if (backImage != null) {
-        images.add(backImage);
-        print('Successfully added back image');
-      } else {
-        print('Failed to decode back image');
-      }
-    } else {
-      print('No back image data available');
-    }
-
-    print('\nFinal results:');
-    print('Total images decoded: ${images.length}');
-    print(Theme.of(context).cardColor);
-
-
-
-
     final   width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     return Scaffold(
@@ -587,20 +482,6 @@ class _EditCardState extends State<NewEditCard> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //text card
-
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 10),
-              //   child: Text(
-              //     'Card Front',
-              //     textAlign: TextAlign.start,
-              //     style: GoogleFonts.raleway(
-              //       fontWeight: FontWeight.w700,
-              //       fontSize: 16,
-              //     ),
-              //   ),
-              // ),
-
               // img
               Center(
                 child: Container(
@@ -686,7 +567,9 @@ class _EditCardState extends State<NewEditCard> {
                   ),
                 ),
               ),
+
               SizedBox(height: 10),
+              // company details
               Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: 16,
@@ -736,8 +619,6 @@ class _EditCardState extends State<NewEditCard> {
                     children: [
                       // Company Name Card
                       Card(
-                        // margin: const EdgeInsets.only(bottom: 12.0),
-                        // elevation: 5,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: Container(
                           padding: EdgeInsets.all(10),
@@ -769,18 +650,17 @@ class _EditCardState extends State<NewEditCard> {
                                       Shimmer.fromColors(child: buildShimmer(context),
                                           baseColor: Colors.grey.shade200,
                                           highlightColor: Colors.grey.shade200)
-
                                           :Container(
                                         padding:EdgeInsets.all(5),
                                         decoration: BoxDecoration(
                                             border: Border.all(width:2,color:Colors.grey.shade200),
                                             color: Colors.white,
                                             borderRadius:BorderRadius.circular(10)
-
                                         ),
                                         child: DropdownButtonHideUnderline(
                                           child:   Groups.isEmpty?
                                           Center(child: CircularProgressIndicator(color: primarycolor,)):
+
                                           DropdownButton<Data>(
                                               style: GoogleFonts.poppins(fontSize: 12,color: Colors.black),
                                               isExpanded: true,
@@ -872,7 +752,6 @@ class _EditCardState extends State<NewEditCard> {
 
                              Container(
                                padding: EdgeInsets.symmetric(horizontal: 15),
-
                                decoration: BoxDecoration(
                                  // color: Color(0xFFFEF7FF),
                                  borderRadius: BorderRadius.circular(10)),
@@ -914,11 +793,11 @@ class _EditCardState extends State<NewEditCard> {
                                   ),
 
 
-                          
+
                               SizedBox(height: 6),
+
                              Container(
                                padding: EdgeInsets.symmetric(horizontal: 15),
-
                                decoration: BoxDecoration(
                                  // color: Color(0xFFFEF7FF),
                                  borderRadius: BorderRadius.circular(10)),
@@ -1032,8 +911,8 @@ class _EditCardState extends State<NewEditCard> {
                                           dialogColor: Colors.grey.shade200,
                                           textFieldDecoration: InputDecoration(
                                               fillColor: Colors.white,
-                                              filled: true, 
-                                            contentPadding: EdgeInsets.all(10), 
+                                              filled: true,
+                                            contentPadding: EdgeInsets.all(10),
                                               suffixIcon: const Icon(Icons.arrow_downward_rounded),
                                               border:OutlineInputBorder(
                                                   borderSide: BorderSide(
@@ -1174,7 +1053,7 @@ class _EditCardState extends State<NewEditCard> {
                                     ],
                                   ),
                                 ),
-                          
+
                               SizedBox(height: 6),
                               Container(
                                   padding: EdgeInsets.symmetric(horizontal: 15),
@@ -1262,7 +1141,7 @@ class _EditCardState extends State<NewEditCard> {
                                     ],
                                   ),
                                 ),
-                          
+
                               SizedBox(height: 10),
                             ],
                           ),
@@ -1316,7 +1195,9 @@ class _EditCardState extends State<NewEditCard> {
                                   onTap: (){
                                     setState(() {
                                       addemptyPerson();
-                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Persone Added')));
+                                      showCustomSnackbar(context,'Persone Added' );
+
+                                      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Persone Added')));
 
                                     });
                                   },
@@ -1362,26 +1243,16 @@ class _EditCardState extends State<NewEditCard> {
                                             setState(() {
 
                                               removePerson(index);
+                                              showCustomSnackbar(context,'Person Removed' );
 
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Person Removed')));
+                                              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Person Removed')));
 
                                             });
                                           },
                                           child: Icon(Icons.close,color: Colors.red,size: 30,),
                                         ),
 
-                                        // CommonButton(
-                                        //   bordercircular: 5,
-                                        //   width: width * 0.2,
-                                        //   height: height * 0.04,
-                                        //   child: Text('ADD+',style: GoogleFonts.poppins(color: Colors.white),),
-                                        //   onTap: (){
-                                        //   addemptyPersone();
-                                        //   setState(() {
-                                        //
-                                        //   });
-                                        //   },
-                                        // )
+
                                       ],
                                     ),
                                     SizedBox(height: 6),
@@ -1580,14 +1451,7 @@ class _EditCardState extends State<NewEditCard> {
                         onTap: (){
                           _SaveCard();
 
-                          // widget.dataCard!.companyName=companynameController.text;
-                          // print("------------------->>>>>>>>>>>${widget.dataCard!.toJson()}");
-                          // // Navigator.push(context,MaterialPageRoute(builder: (context)=> Bottomnav()));
-                          // // if(_formkey.currentState!.validate()){
-                          // //   _addcardtoHive();
-                          // // }
-                          // // _addcardtoHive();
-                          // // _addData();
+
                         },
                         child: Text(
                           'Add Details',
@@ -1641,5 +1505,8 @@ class _EditCardState extends State<NewEditCard> {
       ),
     );
   }
+
+
+
 }
 
