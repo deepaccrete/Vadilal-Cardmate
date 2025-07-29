@@ -4,11 +4,13 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
-  final List<Uint8List> images;
+  // final bool isbase64;
+  final List<dynamic> images;
   final int initialIndex;
 
   const FullScreenImageViewer({
     Key? key,
+    // required this.isbase64,
     required this.images,
     this.initialIndex = 0,
   }) : super(key: key);
@@ -24,6 +26,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   @override
   void initState() {
     super.initState();
+    print("this si hte lneth of image 0---------------- ${widget.images.length}");
     _currentIndex = widget.initialIndex;
     _carouselController = CarouselSliderController();
   }
@@ -63,7 +66,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 5.0,
-                child: Image.memory(
+                child: Image.network(
                   widget.images[0],
                   fit: BoxFit.contain,
                 ),
@@ -84,18 +87,23 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               ),
               items: widget.images.asMap().entries.map((entry) {
                 int index = entry.key;
-                Uint8List imageBytes = entry.value;
+                // Uint8List imageBytes = entry.value;
+                String imageurl = entry.value;
 
                 return Hero(
                   tag: 'image_$index',
                   child: InteractiveViewer(
                     minScale: 0.5,
                     maxScale: 5.0,
-                    child: Image.memory(
-                      imageBytes,
-                      fit: BoxFit.contain,
-                      width: MediaQuery.of(context).size.width,
-                    ),
+                    child:
+                    // widget.isbase64?
+                    // Image.memory(
+                    //   imageBytes,
+                    //   fit: BoxFit.contain,
+                    //   width: MediaQuery.of(context).size.width,
+                    // )
+                    Image.network(imageurl,    fit: BoxFit.contain,
+                      width: MediaQuery.of(context).size.width,)
                   ),
                 );
               }).toList(),

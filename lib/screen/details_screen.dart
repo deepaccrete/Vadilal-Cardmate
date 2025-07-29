@@ -83,7 +83,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _decodeCardImages();
+    // _decodeCardImages();
+    _imagetoList();
     if (widget.newEntry) {
       // Initialize your tag and group lists here
       _loadTagsAndGroups();
@@ -269,38 +270,80 @@ class _DetailsScreenState extends State<DetailsScreen> {
   int _currentIndex = 0;
 
 
-  List<Uint8List> images = [];
+  //if decode image use this
+  // List<Uint8List> images = [];
+
+List<String> imagesurl = [];
 
 
-  void _decodeCardImages() {
-    // A temporary list to hold the results.
-    final List<Uint8List> decodedImages = [];
 
-    // List of all possible images to process.
-    final base64Strings = [
-      widget.dataCard.cardFrontImageBase64,
-      widget.dataCard.cardBackImageBase64,
-    ];
 
-    // Loop through the strings and decode them.
-    for (final b64String in base64Strings) {
-      // Use a single helper for null/empty checks
-      if (b64String != null && b64String.isNotEmpty) {
-        final imageBytes = decodeBase64Image(b64String);
-        if (imageBytes != null) {
-          decodedImages.add(imageBytes);
-        }
-      }
-    }
 
-    // CRITICAL: Call setState to update the UI with the processed images.
-    // The 'if (mounted)' check is a safety measure to prevent errors.
-    if (mounted) {
-      setState(() {
-        images = decodedImages;
-      });
-    }
+
+void _imagetoList (){
+  if(widget.dataCard.cardFrontImageBase64!= null &&
+      widget.dataCard.cardFrontImageBase64!.isNotEmpty
+  ){
+    imagesurl.add(widget.dataCard.cardFrontImageBase64!);
+
   }
+  if(widget.dataCard.cardBackImageBase64!= null &&
+      widget.dataCard.cardBackImageBase64!.isNotEmpty
+  ){
+    imagesurl.add(widget.dataCard.cardBackImageBase64!);
+  }
+
+}
+
+  // void _decodeCardImages() {
+  //
+  //
+  //   if(widget.dataCard.isBase64==1){
+  //     // A temporary list to hold the results.
+  //     final List<Uint8List> decodedImages = [];
+  //
+  //     // List of all possible images to process.
+  //     final base64Strings = [
+  //       widget.dataCard.cardFrontImageBase64,
+  //       widget.dataCard.cardBackImageBase64,
+  //     ];
+  //
+  //     // Loop through the strings and decode them.
+  //     for (final b64String in base64Strings) {
+  //       // Use a single helper for null/empty checks
+  //       if (b64String != null && b64String.isNotEmpty) {
+  //         final imageBytes = decodeBase64Image(b64String);
+  //         if (imageBytes != null) {
+  //           decodedImages.add(imageBytes);
+  //         }
+  //       }
+  //     }
+  //
+  //     // CRITICAL: Call setState to update the UI with the processed images.
+  //     // The 'if (mounted)' check is a safety measure to prevent errors.
+  //
+  //
+  //     if (mounted) {
+  //       setState(() {
+  //         images = decodedImages;
+  //       });
+  //     }
+  //   }else{
+  //     if(widget.dataCard.cardFrontImageBase64!= null &&
+  //         widget.dataCard.cardFrontImageBase64!.isNotEmpty
+  //     ){
+  //       imagesurl.add(widget.dataCard.cardFrontImageBase64!);
+  //
+  //     }
+  //     if(widget.dataCard.cardBackImageBase64!= null &&
+  //         widget.dataCard.cardBackImageBase64!.isNotEmpty
+  //     ){
+  //       imagesurl.add(widget.dataCard.cardBackImageBase64!);
+  //     }
+  //
+  //   }
+  //
+  // }
   @override
 
   Widget build(BuildContext context) {
@@ -461,11 +504,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
               _buildImage(),
 
             // DotIndicator(pageController: pageController, pages: items),
-            if (images.isNotEmpty)
+
+               // List imagesrc = widget.dataCard.isBase64 ? images :imagesurl
+            if (imagesurl.isNotEmpty)
           Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: DotsIndicator(
-        dotsCount: images.length,
+        dotsCount: imagesurl.length,
         position: _currentIndex.toDouble(),
         decorator: DotsDecorator(
           color: Colors.grey,
@@ -694,66 +739,138 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
 
   Widget _buildImage (){
+    final bool isBase64 = widget.dataCard.isBase64 == 1;
+    // Determine the correct data source list.
+    // final List<dynamic> imageSource = isBase64 ? images : imagesurl;
+
+    if (imagesurl.isEmpty) {
+      return const Center(child: Icon(Icons.image, color: Colors.grey, size: 50));
+    }
+
    return  Center(
       child: Container(
         alignment: Alignment.center,
         child:
-        images.isNotEmpty
-            ? CarouselSlider(
-          carouselController: CarouselSliderController(),
-          options: CarouselOptions(
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            enlargeCenterPage: true,
-            enableInfiniteScroll: false,
-            autoPlay: false,
-            viewportFraction: 0.9,
-          ),
-          items:
-          images.map((imgBytes) {
-            return Builder(
-              builder: (BuildContext context) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            FullScreenImageViewer(
-                              images: images,
-                              initialIndex: _currentIndex,
-                            ),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
-                        transitionDuration: const Duration(milliseconds: 300),
+            // widget.dataCard.isBase64 == 1?
+        //    ( images.isNotEmpty ?
+        //    CarouselSlider(
+        //   carouselController: CarouselSliderController(),
+        //   options: CarouselOptions(
+        //     onPageChanged: (index, reason) {
+        //       setState(() {
+        //         _currentIndex = index;
+        //       });
+        //     },
+        //     enlargeCenterPage: true,
+        //     enableInfiniteScroll: false,
+        //     autoPlay: false,
+        //     viewportFraction: 0.9,
+        //   ),
+        //   items:
+        //   images.map((imgBytes) {
+        //     return Builder(
+        //       builder: (BuildContext context) {
+        //         return GestureDetector(
+        //           onTap: () {
+        //             Navigator.push(
+        //               context,
+        //               PageRouteBuilder(
+        //                 pageBuilder: (context, animation, secondaryAnimation) =>
+        //                     FullScreenImageViewer(
+        //                       images: images,
+        //                       initialIndex: _currentIndex,
+        //                     ),
+        //                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        //                   return FadeTransition(
+        //                     opacity: animation,
+        //                     child: child,
+        //                   );
+        //                 },
+        //                 transitionDuration: const Duration(milliseconds: 300),
+        //               ),
+        //             );
+        //           },
+        //           child: Container(
+        //             width: MediaQuery.of(context).size.width,
+        //             margin: EdgeInsets.symmetric(horizontal: 5.0),
+        //             child: ClipRRect(
+        //               borderRadius: BorderRadius.circular(10),
+        //               child: InteractiveViewer(
+        //                 minScale: 0.5,
+        //                 maxScale: 5.0,
+        //                 child: Image.memory(imgBytes, fit: BoxFit.contain),
+        //               ),
+        //             ),
+        //           ),
+        //         );
+        //       },
+        //     );
+        //   }).toList(),
+        // )
+        //     : Icon(Icons.image, color: Colors.grey))
+        //    :imagesurl.isNotEmpty?
+           CarouselSlider(
+              carouselController: CarouselSliderController(),
+              options: CarouselOptions(
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                enlargeCenterPage: true,
+                enableInfiniteScroll: false,
+                autoPlay: false,
+                viewportFraction: 0.9,
+              ),
+              items:
+              imagesurl.map((imgBytes) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                FullScreenImageViewer(
+                                  // isbase64: widget.dataCard.isBase64==1,
+                                  images: imagesurl,
+                                  initialIndex: _currentIndex,
+                                ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 300),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 5.0,
+                            child:
+
+                              // if want use decode use this
+
+                            // isBase64?
+                            // Image.memory(imgBytes, fit: BoxFit.contain):
+                              Image.network(imgBytes ?? '', fit: BoxFit.contain),
+                          ),
+                        ),
                       ),
                     );
                   },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: EdgeInsets.symmetric(horizontal: 5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: InteractiveViewer(
-                        minScale: 0.5,
-                        maxScale: 5.0,
-                        child: Image.memory(imgBytes, fit: BoxFit.contain),
-                      ),
-                    ),
-                  ),
                 );
-              },
-            );
-          }).toList(),
-        )
-            : Icon(Icons.image, color: Colors.grey),
+              }).toList(),
+            )
+                // : Icon(Icons.image, color: Colors.grey)
       ),
     );
   }
@@ -851,7 +968,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
           // Edit button
-          if(appStore.appSetting!.isedit??false)
+          // if(appStore.appSetting!.isedit??false)
             InkWell(
               onTap: () async {
                 Navigator.push(

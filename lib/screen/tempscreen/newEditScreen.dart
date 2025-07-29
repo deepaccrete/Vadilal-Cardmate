@@ -35,7 +35,8 @@ class _EditCardState extends State<NewEditCard> {
   //Goups and Tags
   List<Datatag> taglist = [];
   List<Data> Groups = [];
-  List<Uint8List> images = [];
+  // List<Uint8List> images = [];
+  List<dynamic> images = [];
   Datatag ? selectedTag;
   Data? selectedGroups;
   bool isGroupLoading = true;
@@ -130,7 +131,7 @@ class _EditCardState extends State<NewEditCard> {
   void initState() {
     FetchTag();
     FatchGroup();
-    _decodeCardImages();
+    _imagetoList();
     super.initState();
     for (var person in widget.dataCard?.personDetails ?? []) {
       personNameControllers.add(TextEditingController(text:
@@ -427,34 +428,51 @@ class _EditCardState extends State<NewEditCard> {
 
   int _currentIndex = 0;
 
-  void _decodeCardImages() {
-    // A temporary list to hold the results.
-    final List<Uint8List> decodedImages = [];
 
-    // List of all possible images to process.
-    final base64Strings = [
-      widget.dataCard?.cardFrontImageBase64,
-      widget.dataCard?.cardBackImageBase64,
-    ];
+  // decode image
+  // void _decodeCardImages() {
+  //   // A temporary list to hold the results.
+  //   final List<Uint8List> decodedImages = [];
+  //
+  //   // List of all possible images to process.
+  //   final base64Strings = [
+  //     widget.dataCard?.cardFrontImageBase64,
+  //     widget.dataCard?.cardBackImageBase64,
+  //   ];
+  //
+  //   // Loop through the strings and decode them.
+  //   for (final b64String in base64Strings) {
+  //     // Use a single helper for null/empty checks
+  //     if (b64String != null && b64String.isNotEmpty) {
+  //       final imageBytes = decodeBase64Image(b64String);
+  //       if (imageBytes != null) {
+  //         decodedImages.add(imageBytes);
+  //       }
+  //     }
+  //   }
+  //
+  //   // CRITICAL: Call setState to update the UI with the processed images.
+  //   // The 'if (mounted)' check is a safety measure to prevent errors.
+  //   if (mounted) {
+  //     setState(() {
+  //       images = decodedImages;
+  //     });
+  //   }
+  // }
 
-    // Loop through the strings and decode them.
-    for (final b64String in base64Strings) {
-      // Use a single helper for null/empty checks
-      if (b64String != null && b64String.isNotEmpty) {
-        final imageBytes = decodeBase64Image(b64String);
-        if (imageBytes != null) {
-          decodedImages.add(imageBytes);
-        }
-      }
+  void _imagetoList (){
+    if(widget.dataCard!.cardBackImageBase64!= null &&
+        widget.dataCard!.cardFrontImageBase64!.isNotEmpty
+    ){
+      images.add(widget.dataCard!.cardFrontImageBase64!);
+
+    }
+    if(widget.dataCard!.cardBackImageBase64!= null &&
+        widget.dataCard!.cardBackImageBase64!.isNotEmpty
+    ){
+      images.add(widget.dataCard!.cardBackImageBase64!);
     }
 
-    // CRITICAL: Call setState to update the UI with the processed images.
-    // The 'if (mounted)' check is a safety measure to prevent errors.
-    if (mounted) {
-      setState(() {
-        images = decodedImages;
-      });
-    }
   }
 
 
@@ -517,6 +535,7 @@ class _EditCardState extends State<NewEditCard> {
                                 PageRouteBuilder(
                                   pageBuilder: (context, animation, secondaryAnimation) =>
                                       FullScreenImageViewer(
+                                        // isbase64: widget.dataCard!.isBase64 == 1,
                                         images: images,
                                         initialIndex: _currentIndex,
                                       ),
@@ -544,7 +563,9 @@ class _EditCardState extends State<NewEditCard> {
                                 child: InteractiveViewer(
                                   minScale: 0.5,
                                   maxScale: 5.0,
-                                  child: Image.memory(imgBytes, fit: BoxFit.contain),
+                                  child:
+                                  // Image.memory(imgBytes, fit: BoxFit.contain),
+                                  Image.network(imgBytes, fit: BoxFit.contain),
                                 ),
                               ),
                             ),

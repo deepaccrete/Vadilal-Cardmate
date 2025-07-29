@@ -41,7 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isCardLoading = true;
   String? errormessage;
 
-  Uint8List? decodeBase64Image(String base64String) {
+
+  // image decode for base 64
+/*  Uint8List? decodeBase64Image(String base64String) {
     try {
       print('Attempting to decode base64 string...');
 
@@ -129,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error in decodeBase64Image: $e');
       return null;
     }
-  }
+  }*/
 
   Future<void> FetchCard() async {
     setState(() {
@@ -377,17 +379,17 @@ bool ispersonvisible = true;
                                           // final card = _cardapi[index];
                                           final card = fillterCard[index];
 
-                                          final frontImageBytes =
-                                              card.isBase64 == 1 &&
-                                                      card.cardFrontImageBase64 !=
-                                                          null &&
-                                                      card
-                                                          .cardFrontImageBase64!
-                                                          .isNotEmpty
-                                                  ? decodeBase64Image(
-                                                    card.cardFrontImageBase64!,
-                                                  )
-                                                  : null;
+                                          // final frontImageBytes =
+                                          //     card.isBase64 == 1 &&
+                                          //             card.cardFrontImageBase64 !=
+                                          //                 null &&
+                                          //             card
+                                          //                 .cardFrontImageBase64!
+                                          //                 .isNotEmpty
+                                          //         ? decodeBase64Image(
+                                          //           card.cardFrontImageBase64!,
+                                          //         )
+                                          //         : null;
 
                                           return AnimationConfiguration.staggeredList(
                                             position: index,
@@ -440,28 +442,28 @@ bool ispersonvisible = true;
                                                                         ),
                                                                   ),
                                                                   child:
-                                                                      card.isBase64 ==
-                                                                              1
-                                                                          ? (frontImageBytes !=
-                                                                                  null
-                                                                              ? ClipRRect(
-                                                                                borderRadius: BorderRadius.circular(
-                                                                                  8,
-                                                                                ),
-                                                                                child: Image.memory(
-                                                                                  frontImageBytes,
-                                                                                  fit:
-                                                                                      BoxFit.cover,
-                                                                                ),
-                                                                              )
-                                                                              : Icon(
-                                                                                Icons.image,
-                                                                                color:
-                                                                                    Colors.white,
-                                                                                size:
-                                                                                    40,
-                                                                              ))
-                                                                          : ClipRRect(
+                                                                      // card.isBase64 ==
+                                                                      //         1
+                                                                      //     ? (frontImageBytes !=
+                                                                      //             null
+                                                                      //         ? ClipRRect(
+                                                                      //           borderRadius: BorderRadius.circular(
+                                                                      //             8,
+                                                                      //           ),
+                                                                      //           child: Image.memory(
+                                                                      //             frontImageBytes,
+                                                                      //             fit:
+                                                                      //                 BoxFit.cover,
+                                                                      //           ),
+                                                                      //         )
+                                                                      //         : Icon(
+                                                                      //           Icons.image,
+                                                                      //           color:
+                                                                      //               Colors.white,
+                                                                      //           size:
+                                                                      //               40,
+                                                                      //         )):
+                                                          ClipRRect(
                                                                             borderRadius:
                                                                                 BorderRadius.circular(
                                                                                   8,

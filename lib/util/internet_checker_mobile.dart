@@ -7,7 +7,7 @@ Future<bool> checkInternet() async {
         .get(Uri.parse('https://www.google.com'));
         // .timeout(const Duration(seconds: 5));
 
-    print('Internet is Working');
+    // print('Internet is Working');
     return response.statusCode == 200;
   } catch (e) {
     print('No Internet $e');
