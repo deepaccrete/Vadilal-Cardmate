@@ -60,8 +60,7 @@ dependencies:
   share_plus: ^11.0.0
 
   qr_flutter: ^4.1.0
-
-  flutter_doc_scanner:
+  flutter_doc_scanner: ^0.0.16
   universal_html: ^2.0.9
   web: ^1.1.1
   #database

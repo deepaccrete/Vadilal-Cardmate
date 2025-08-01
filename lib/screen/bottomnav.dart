@@ -1,9 +1,11 @@
 
+import 'package:camera_app/constant/colors.dart';
 import 'package:camera_app/screen/Camera_Screen_2.dart';
 import 'package:camera_app/screen/addmanual.dart';
 import 'package:camera_app/screen/home.dart';
 import 'package:flutter/material.dart';
-import '../local_package/flutter_doc_scanner/flutter_doc_scanner.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'ProfileScreen.dart';
 import 'groupandtags.dart';
 
@@ -59,6 +61,11 @@ class _BottomnavState extends State<Bottomnav> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+    ));
     bool showBottomNav = ![
       // CameraScreen, // or some screen where you want full view
     ].contains(_WidgetOption
@@ -123,7 +130,7 @@ class _BottomnavState extends State<Bottomnav> {
 
   Widget buildNavItem(IconData icon, String label, int index) {
     final isSelected = _SelectedIndex == index;
-    final color = isSelected ? Colors.blue : Colors.black45;
+    final color = isSelected ? primarycolor : Colors.black45;
 
     return GestureDetector(
       onTap:()=> _onTap(index),
@@ -148,6 +155,7 @@ Future<void> _openScannerAndShowPreview(BuildContext context) async {
 
   // 1. Start the document scan
   final List<String>? imagePaths = await _startScanForPreview();
+  print("this is the list give by app ------------- ${imagePaths} --- length ${imagePaths}");
   if (imagePaths == null || imagePaths.isEmpty) {
     // User cancelled the scan or an error occurred.
     return;
@@ -173,6 +181,12 @@ Future<List<String>?> _startScanForPreview() async {
 
     print("[Preview Scan] Raw scan result: $result");
 
+    // iOS case: result is a List of file paths
+    if (result is List) {
+      return result.map((e) => e.toString()).toList();
+    }
+
+    // Android case: result is a Map with 'Uri' key
     if (result is Map && result.containsKey('Uri')) {
       final dynamic uriValue = result['Uri'];
       final List<String> paths = [];
@@ -182,7 +196,9 @@ Future<List<String>?> _startScanForPreview() async {
         for (var page in uriValue) {
           final rawPageString = page.toString();
           final match = regex.firstMatch(rawPageString);
-          if (match != null) paths.add(match.group(1)!.replaceFirst('file://', ''));
+          if (match != null) {
+            paths.add(match.group(1)!.replaceFirst('file://', ''));
+          }
         }
       } else if (uriValue is String) {
         final matches = regex.allMatches(uriValue);

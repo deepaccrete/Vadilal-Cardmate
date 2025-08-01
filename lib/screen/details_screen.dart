@@ -968,7 +968,7 @@ void _imagetoList (){
             ),
           ),
           // Edit button
-          // if(appStore.appSetting!.isedit??false)
+          if(appStore.appSetting!.isedit??false)
             InkWell(
               onTap: () async {
                 Navigator.push(

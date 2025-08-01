@@ -145,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             bottom: 16,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Text("V1.0.0", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300)),
+              child: Text("V1.0.1", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300)),
             ),
           ),
         ],

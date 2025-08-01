@@ -48,12 +48,6 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            onPressed: () {
-              // Add share functionality if needed
-            },
-            icon: const Icon(Icons.share, color: Colors.white),
-          ),
         ],
       ),
       body: Stack(

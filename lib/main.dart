@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camera_app/screen/splashScreen.dart';
 import 'package:camera_app/store/appStore.dart';
 import 'package:camera_app/util/internet_check.dart';
@@ -7,6 +9,15 @@ import 'package:flutter/material.dart';
 
 final appStore = AppStore();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 
 void main() async{
@@ -18,7 +29,7 @@ void main() async{
   // Hive.registerAdapter(PendingImageAdapter());
   // final box = Hive.openBox('pending_images');
   // await Hive.openBox<PendingImage>('pending_images');
-
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 class MyApp extends StatefulWidget {

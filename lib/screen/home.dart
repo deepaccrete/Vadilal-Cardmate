@@ -10,9 +10,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // web
 import 'package:shimmer/shimmer.dart';
+
+import '../util/const.dart';
+import 'login1.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? token;
@@ -148,6 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (cardModel.success == 0) {
         isCardLoading = false;
         _cardapi = [];
+        if(cardModel.msg=='jwt expired'){
+          logout(context);
+        }
         setState(() {});
       }
     } catch (e) {
@@ -281,376 +288,370 @@ bool ispersonvisible = true;
             onRefresh: () {
               return FetchCard();
             },
-            child: SingleChildScrollView(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                child: Column(
-                  children: [
-
-                    //  NAME
-                    Row(
-                      children: [
-                        Container(
-                          alignment: Alignment.center,
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue,
-                          ),
-                          child: Text(
-                            '${appStore.userData?.firstname![0]}',
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          '${appStore.userData?.firstname} ${appStore.userData?.lastname}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Divider(),
-
-                    // SEARCH BAR
-                    Card(
-                      elevation: 10,
-                      child: Container(
-                        width: width,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              child: Column(
+                children: [
+                  //  NAME
+                  Row(
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          shape: BoxShape.circle,
+                          color: Colors.blue,
                         ),
-                        child: TextFormField(
-                          onChanged: (v) {
-                            setState(() {});
-                          },
-                          controller: searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Name, email, tags,etc...',
-                            hintStyle: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                            prefixIcon: Icon(Icons.search, color: Colors.grey),
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            focusedErrorBorder: InputBorder.none,
+                        child: Text(
+                          '${appStore.userData?.firstname![0]}',
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        '${appStore.userData?.firstname} ${appStore.userData?.lastname}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  // SEARCH BAR
+                  Card(
+                    elevation: 10,
+                    child: Container(
+                      width: width,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: TextFormField(
+                        onChanged: (v) {
+                          setState(() {});
+                        },
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Name, email, tags,etc...',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey),
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
                         ),
                       ),
                     ),
-
-
-                    Container(
+                  ),
+                  Expanded(
+                    child: Container(
                       // color: Colors.blue,  // Removing blue background
-                      width: width,
-                      height: height * 0.7,
+                      // width: width,
                       // Adjusted height to leave space for FAB
                       child: Column(
                         children: [
-
+                    
                           Expanded(
                             child:
-                                isCardLoading
-                                    ? ListView.builder(
-                                    itemBuilder: (context, index)=> Shimmer.fromColors(
+                            isCardLoading
+                                ? ListView.builder(
+                                itemBuilder: (context, index)=> Shimmer.fromColors(
                                     child: _buildShimmerCarde(context),
                                     baseColor: Colors.grey.shade300,
                                     highlightColor: Colors.grey.shade300))
-                                // Center(child: CircularProgressIndicator())
-                                    : _cardapi.isEmpty
-                                    ? Container(
-                                      child: Image.asset(
-                                        'assets/images/no card found .png',
-                                      ),
-                                    )
-                                    : AnimationLimiter(
-                                      child: ListView.builder(
-                                        // itemCount: _cardapi.length,
-                                        itemCount: fillterCard.length,
-                                        itemBuilder: (context, index) {
-                                          // final card = _cardapi[index];
-                                          final card = fillterCard[index];
-
-                                          // final frontImageBytes =
-                                          //     card.isBase64 == 1 &&
-                                          //             card.cardFrontImageBase64 !=
-                                          //                 null &&
-                                          //             card
-                                          //                 .cardFrontImageBase64!
-                                          //                 .isNotEmpty
-                                          //         ? decodeBase64Image(
-                                          //           card.cardFrontImageBase64!,
-                                          //         )
-                                          //         : null;
-
-                                          return AnimationConfiguration.staggeredList(
-                                            position: index,
-                                            duration: const Duration(seconds: 2),
-                                            child: SlideAnimation(
-                                              verticalOffset: 50.0,
-                                              child: FadeInAnimation(
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(
-                                                    8.0,
-                                                  ),
-                                                  child: Card(
-                                                    elevation: 10,
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    DetailsScreen(
-                                                                      dataCard:
-                                                                          card,
-                                                                    ),
-                                                          ),
-                                                        );
-                                                      },
-                                                      child: Container(
-                                                        padding: EdgeInsets.all(
-                                                          16,
+                            // Center(child: CircularProgressIndicator())
+                                : _cardapi.isEmpty
+                                ? Container(
+                              child: Image.asset(
+                                'assets/images/no card found .png',
+                              ),
+                            )
+                                : AnimationLimiter(
+                              child: ListView.builder(
+                                // itemCount: _cardapi.length,
+                                itemCount: fillterCard.length,
+                                itemBuilder: (context, index) {
+                                  // final card = _cardapi[index];
+                                  final card = fillterCard[index];
+                    
+                                  // final frontImageBytes =
+                                  //     card.isBase64 == 1 &&
+                                  //             card.cardFrontImageBase64 !=
+                                  //                 null &&
+                                  //             card
+                                  //                 .cardFrontImageBase64!
+                                  //                 .isNotEmpty
+                                  //         ? decodeBase64Image(
+                                  //           card.cardFrontImageBase64!,
+                                  //         )
+                                  //         : null;
+                    
+                                  return AnimationConfiguration.staggeredList(
+                                    position: index,
+                                    duration: const Duration(seconds: 2),
+                                    child: SlideAnimation(
+                                      verticalOffset: 50.0,
+                                      child: FadeInAnimation(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(
+                                            8.0,
+                                          ),
+                                          child: Card(
+                                            elevation: 10,
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (context) =>
+                                                        DetailsScreen(
+                                                          dataCard:
+                                                          card,
                                                         ),
-                                                        child: Column(
-                                                          children: [
-
-                                                            Row(
-                                                              children: [
-                                                                // Image
-                                                                Container(
-                                                                  height:
-                                                                      height *
-                                                                      0.1,
-                                                                  width:
-                                                                      width * 0.2,
-                                                                  decoration: BoxDecoration(
-                                                                    color:
-                                                                        darkcolor,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          8,
-                                                                        ),
-                                                                  ),
-                                                                  child:
-                                                                      // card.isBase64 ==
-                                                                      //         1
-                                                                      //     ? (frontImageBytes !=
-                                                                      //             null
-                                                                      //         ? ClipRRect(
-                                                                      //           borderRadius: BorderRadius.circular(
-                                                                      //             8,
-                                                                      //           ),
-                                                                      //           child: Image.memory(
-                                                                      //             frontImageBytes,
-                                                                      //             fit:
-                                                                      //                 BoxFit.cover,
-                                                                      //           ),
-                                                                      //         )
-                                                                      //         : Icon(
-                                                                      //           Icons.image,
-                                                                      //           color:
-                                                                      //               Colors.white,
-                                                                      //           size:
-                                                                      //               40,
-                                                                      //         )):
+                                                  ),
+                                                );
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.all(
+                                                  16,
+                                                ),
+                                                child: Column(
+                                                  children: [
+                    
+                                                    Row(
+                                                      children: [
+                                                        // Image
+                                                        Container(
+                                                          height:
+                                                          height *
+                                                              0.1,
+                                                          width:
+                                                          width * 0.2,
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                            darkcolor,
+                                                            borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                          ),
+                                                          child:
+                                                          // card.isBase64 ==
+                                                          //         1
+                                                          //     ? (frontImageBytes !=
+                                                          //             null
+                                                          //         ? ClipRRect(
+                                                          //           borderRadius: BorderRadius.circular(
+                                                          //             8,
+                                                          //           ),
+                                                          //           child: Image.memory(
+                                                          //             frontImageBytes,
+                                                          //             fit:
+                                                          //                 BoxFit.cover,
+                                                          //           ),
+                                                          //         )
+                                                          //         : Icon(
+                                                          //           Icons.image,
+                                                          //           color:
+                                                          //               Colors.white,
+                                                          //           size:
+                                                          //               40,
+                                                          //         )):
                                                           ClipRRect(
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(
-                                                                                  8,
-                                                                                ),
-                                                                            child: Image.network(
-                                                                              card.cardFrontImageBase64 ??
-                                                                                  '',
-                                                                              fit:
-                                                                                  BoxFit.cover,
-                                                                              errorBuilder:
-                                                                                  (
-                                                                                    context,
-                                                                                    error,
-                                                                                    stackTrace,
-                                                                                  ) => Icon(
-                                                                                    Icons.image,
-                                                                                    size:
-                                                                                        40,
-                                                                                  ),
-                                                                            ),
-                                                                          ),
-                                                                ),
-                                                                SizedBox(width: 20,),
-
-                                                                // person Name And Company Name
-                                                                Expanded(
-                                                                  child: Builder(
-                                                                    builder: (context) {
-                                                                      final validPersons = card.personDetails!
-                                                                          .where((person) =>
-                                                                      person.name != null &&
-                                                                          person.name!.trim().isNotEmpty &&
-                                                                          person.name!.toLowerCase() != 'null')
-                                                                          .toList();
-
-                                                                      final showCompanyName = (card.companyName ?? '').trim().isNotEmpty;
-
-                                                                      return Column(
-                                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          // Show valid person(s)
-                                                                          ...validPersons.map((person) {
-                                                                            final hasPosition = person.position != null &&
-                                                                                person.position!.trim().isNotEmpty &&
-                                                                                person.position!.toLowerCase() != 'null';
-
-                                                                            return Column(
-                                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                                              mainAxisAlignment:MainAxisAlignment.start,
-                                                                              children: [
-                                                                                Container(
-                                                                                  // color: Colors.red,
-                                                                                  // width: width ,
-                                                                                  child: Column(
-                                                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                    children: [
-                                                                                      Text(
-                                                                                        person.name!,textAlign: TextAlign.start,
-                                                                                        style: GoogleFonts.raleway(
-                                                                                          fontWeight: FontWeight.w600,
-                                                                                          fontSize: 14,
-                                                                                          color: Colors.black,
-                                                                                        ),
-                                                                                      ),
-                                                                                      if (hasPosition)
-                                                                                        Container(
-                                                                                          // alignment: Alignment.centerLeft,
-                                                                                          margin: const EdgeInsets.only(top: 4),
-                                                                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Colors.blue.withAlpha(20),
-                                                                                            borderRadius: BorderRadius.circular(4),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            person.position!.toUpperCase(),
-                                                                                            style: GoogleFonts.raleway(
-                                                                                              fontSize: 12,
-                                                                                              color: Colors.blue[700],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                                const SizedBox(height: 5),
-                                                                              ],
-                                                                            );
-                                                                          }).toList(),
-
-                                                                          // Show company name with conditional style
-                                                                          if (showCompanyName)
-                                                                            Padding(
-                                                                              padding: const EdgeInsets.only(top: 4.0),
-                                                                              child: Text(
-                                                                                card.companyName!,
+                                                            borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                            child: Image.network(
+                                                              card.cardFrontImageBase64 ??
+                                                                  '',
+                                                              fit:
+                                                              BoxFit.cover,
+                                                              errorBuilder:
+                                                                  (
+                                                                  context,
+                                                                  error,
+                                                                  stackTrace,
+                                                                  ) => Icon(
+                                                                Icons.image,
+                                                                size:
+                                                                40,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(width: 20,),
+                    
+                                                        // person Name And Company Name
+                                                        Expanded(
+                                                          child: Builder(
+                                                            builder: (context) {
+                                                              final validPersons = card.personDetails!
+                                                                  .where((person) =>
+                                                              person.name != null &&
+                                                                  person.name!.trim().isNotEmpty &&
+                                                                  person.name!.toLowerCase() != 'null')
+                                                                  .toList();
+                    
+                                                              final showCompanyName = (card.companyName ?? '').trim().isNotEmpty;
+                    
+                                                              return Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  // Show valid person(s)
+                                                                  ...validPersons.map((person) {
+                                                                    final hasPosition = person.position != null &&
+                                                                        person.position!.trim().isNotEmpty &&
+                                                                        person.position!.toLowerCase() != 'null';
+                    
+                                                                    return Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      mainAxisAlignment:MainAxisAlignment.start,
+                                                                      children: [
+                                                                        Container(
+                                                                          // color: Colors.red,
+                                                                          // width: width ,
+                                                                          child: Column(
+                                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Text(
+                                                                                person.name!,textAlign: TextAlign.start,
                                                                                 style: GoogleFonts.raleway(
-                                                                                  fontWeight:
-                                                                                  validPersons.isEmpty ? FontWeight.w600 : FontWeight.w500,
+                                                                                  fontWeight: FontWeight.w600,
                                                                                   fontSize: 14,
-                                                                                  color: validPersons.isEmpty ? Colors.black : subtext,
+                                                                                  color: Colors.black,
                                                                                 ),
                                                                               ),
-                                                                            ),
-                                                                        ],
-                                                                      );
-                                                                    },
-                                                                  ),
-                                                                ),
-
-
-
-
-                                                              ],
-                                                            ),
-                                                            Divider(),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Row(
-                                                                  children: [
-                                                                    Icon(
-                                                                      Icons
-                                                                          .date_range,
-                                                                      color:
-                                                                          Colors
-                                                                              .grey,
-                                                                    ),
-                                                                    Text(
-                                                                      card.createdAt!
-                                                                          .substring(
-                                                                            0,
-                                                                            10,
+                                                                              if (hasPosition)
+                                                                                Container(
+                                                                                  // alignment: Alignment.centerLeft,
+                                                                                  margin: const EdgeInsets.only(top: 4),
+                                                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: Colors.blue.withAlpha(20),
+                                                                                    borderRadius: BorderRadius.circular(4),
+                                                                                  ),
+                                                                                  child: Text(
+                                                                                    person.position!.toUpperCase(),
+                                                                                    style: GoogleFonts.raleway(
+                                                                                      fontSize: 12,
+                                                                                      color: Colors.blue[700],
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                            ],
                                                                           ),
-                                                                      style: GoogleFonts.inter(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w700,
-                                                                        fontSize:
-                                                                            12,
-                                                                        color:
-                                                                            Colors
-                                                                                .grey
-                                                                                .shade700,
+                                                                        ),
+                                                                        const SizedBox(height: 5),
+                                                                      ],
+                                                                    );
+                                                                  }).toList(),
+                    
+                                                                  // Show company name with conditional style
+                                                                  if (showCompanyName)
+                                                                    Padding(
+                                                                      padding: const EdgeInsets.only(top: 4.0),
+                                                                      child: Text(
+                                                                        card.companyName!,
+                                                                        style: GoogleFonts.raleway(
+                                                                          fontWeight:
+                                                                          validPersons.isEmpty ? FontWeight.w600 : FontWeight.w500,
+                                                                          fontSize: 14,
+                                                                          color: validPersons.isEmpty ? Colors.black : subtext,
+                                                                        ),
                                                                       ),
                                                                     ),
-                                                                  ],
-                                                                ),
-
-                                                                Row(
-                                                                  children: [
-                                                                    if(card.tag!=null && card.tag != '')
-                                                                    _buildSelectedItem(
-                                                                      card.tag!,
-                                                                      Icons.local_offer,
-                                                                      0,
-                                                                      true,
-                                                                    ),
-                                                                    Icon(
-                                                                      Icons
-                                                                          .more_vert_outlined,
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                    
+                    
+                    
+                    
+                                                      ],
+                                                    ),
+                                                    Divider(),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .date_range,
+                                                              color:
+                                                              Colors
+                                                                  .grey,
+                                                            ),
+                                                            Text(
+                                                              card.createdAt!
+                                                                  .substring(
+                                                                0,
+                                                                10,
+                                                              ),
+                                                              style: GoogleFonts.inter(
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .w700,
+                                                                fontSize:
+                                                                12,
+                                                                color:
+                                                                Colors
+                                                                    .grey
+                                                                    .shade700,
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
-                                                      ),
+                    
+                                                        Row(
+                                                          children: [
+                                                            if(card.tag!=null && card.tag != '')
+                                                              _buildSelectedItem(
+                                                                card.tag!,
+                                                                Icons.local_offer,
+                                                                0,
+                                                                true,
+                                                              ),
+                                                            Icon(
+                                                              Icons
+                                                                  .more_vert_outlined,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ),
+                                                  ],
                                                 ),
                                               ),
                                             ),
-                                          );
-                                        },
+                                          ),
+                                        ),
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    // SizedBox(height: 10),
-                  ],
-                ),
+                  ),
+                  // SizedBox(height: 10),
+                ],
               ),
             ),
           ),
@@ -810,5 +811,20 @@ bool ispersonvisible = true;
         ],
       ),
     );
+  }
+
+  Future<void> logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove(TOKEN);
+    prefs.setBool(IS_LOGGED_IN, false);
+    prefs.remove('loginResponse');
+    // prefs.remove()
+    // await prefs.clear();
+
+    // appStore.setUser(null);
+    appStore.setIsLogin(false);
+    appStore.setUserToken(null);
+
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => LoginScreen()), (route) => false);
   }
 }

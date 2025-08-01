@@ -472,14 +472,14 @@ END:VCARD
               // Share options
               _buildShareOption(context, Icons.text_fields, 'Share as Text', 'Share profile information as text', () => _shareAsText(profileText)),
               const SizedBox(height: 12),
-              _buildShareOption(
-                context,
-                Icons.email,
-                'Share via Email',
-                'Send profile information via email',
-                () => _shareViaEmail(profileText, context),
-              ),
-              const SizedBox(height: 12),
+              // _buildShareOption(
+              //   context,
+              //   Icons.email,
+              //   'Share via Email',
+              //   'Send profile information via email',
+              //   () => _shareViaEmail(profileText, context),
+              // ),
+              // const SizedBox(height: 12),
               _buildShareOption(
                 context,
                 Icons.business_center,
@@ -554,12 +554,10 @@ END:VCARD
 ━━━━━━━━━━━━━━━━━━━━━━━
     𝐕𝐀𝐃𝐈𝐋𝐀𝐋 𝐆𝐑𝐎𝐔𝐏
 ━━━━━━━━━━━━━━━━━━━━━━━
-
-👤  Name : ${userData['firstname']} ${userData['lastname']}
-💼  Designation : ${userData['designation']}
-📧  Email : ${userData['email']}
-📱  Phone : ${userData['phoneno']}
-
+ Name : ${userData['firstname']} ${userData['lastname']}
+ Designation : ${userData['designation']}
+ Email : ${userData['email']}
+ Phone : ${userData['phoneno']}
 ━━━━━━━━━━━━━━━━━━━━━━━
 ''';
   }

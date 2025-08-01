@@ -4,6 +4,7 @@ import 'package:camera_app/componets/snakbar.dart';
 import 'package:camera_app/constant/colors.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -75,6 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ));
     final width = MediaQuery.of(context).size.width * 1;
     final height = MediaQuery.of(context).size.height * 1;
     return Scaffold(
@@ -280,6 +286,8 @@ class _LoginScreenState extends State<LoginScreen> {
           appStore.setIsLoading(false);
 
           print("Login success");
+          appStore.setEmail(emailController.text);
+          appStore.setPassword(passwordController.text);
           //
           // if (!context.mounted) return;
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Bottomnav()));
@@ -353,13 +361,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       SharedPreferences pref = await SharedPreferences.getInstance();
       var _rememberme = pref.getBool("Remember_Me_Key") ?? false;
-      var _email = pref.getString("Saved_Email") ?? '';
-      var _password = pref.getString("Saved_Password") ?? '';
+
       if (_rememberme) {
         setState(() {
           rememberMe = true;
         });
-
+        var _email = pref.getString("Saved_Email") ?? '';
+        var _password = pref.getString("Saved_Password") ?? '';
         emailController.text = _email ?? "";
         passwordController.text = _password ?? "";
 

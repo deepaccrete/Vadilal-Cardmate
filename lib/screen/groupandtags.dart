@@ -266,7 +266,7 @@ showCustomSnackbar(context, 'Tag Added Successfuly');
                             )
                             : Container(
                               width: width * 0.7,
-                              height: height * 0.2,
+                              height: height * 0.15,
                               // color: Colors.red,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
@@ -280,7 +280,7 @@ showCustomSnackbar(context, 'Tag Added Successfuly');
                                       width: width * 0.25,
                                       // padding: EdgeInsets.only(left: 10),
                                       decoration: BoxDecoration(
-                                        // color: Colors.green,
+                                        color: Colors.white,
                                         border: Border.all(width: 2, color: Colors.grey.shade100),
                                         borderRadius: BorderRadius.circular(12)
                                       ),

@@ -1,11 +1,13 @@
 class CardModel {
   int? success;
   List<DataCard>? data;
+  String? msg;
 
-  CardModel({this.success, this.data});
+  CardModel({this.success, this.data,this.msg});
 
   CardModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
+    msg = json['msg'];
     if (json['data'] != null) {
       data = <DataCard>[];
       json['data'].forEach((v) { data!.add(new DataCard.fromJson(v)); });
@@ -15,6 +17,7 @@ class CardModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['success'] = this.success;
+    data['msg'] = this.msg;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
